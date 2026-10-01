@@ -74,15 +74,36 @@ export async function fetchPolizaHistorial(supabase: SupabaseClient, polizaId: s
     .order('created_at', { ascending: false });
 }
 
+/**
+ * Las columnas de fecha son DATE nullable: un string vacío ('') no es válido en
+ * Postgres. Convertimos '' (o undefined) a null, pero SOLO en las claves presentes,
+ * para no pisar fechas existentes en updates parciales (p. ej. dar de baja).
+ */
+function normalizePolizaDates(data: Partial<PolizaFormData>): Partial<PolizaFormData> {
+  const out: Partial<PolizaFormData> = { ...data };
+  if ('fecha_inicio' in out && !out.fecha_inicio) out.fecha_inicio = null;
+  if ('fecha_fin' in out && !out.fecha_fin) out.fecha_fin = null;
+  return out;
+}
+
 export async function createPoliza(supabase: SupabaseClient, data: PolizaFormData) {
-  const { data: row, error } = await supabase.from('polizas').insert(data).select().single();
+  const { data: row, error } = await supabase
+    .from('polizas')
+    .insert(normalizePolizaDates(data))
+    .select()
+    .single();
   if (error) throw error;
   await logActividad(supabase, 'CREAR', 'POLIZA', row.id);
   return row as Poliza;
 }
 
 export async function updatePoliza(supabase: SupabaseClient, id: string, data: Partial<PolizaFormData>) {
-  const { data: row, error } = await supabase.from('polizas').update(data).eq('id', id).select().single();
+  const { data: row, error } = await supabase
+    .from('polizas')
+    .update(normalizePolizaDates(data))
+    .eq('id', id)
+    .select()
+    .single();
   if (error) throw error;
   await logActividad(supabase, 'ACTUALIZAR', 'POLIZA', id);
   return row as Poliza;
@@ -91,7 +112,7 @@ export async function updatePoliza(supabase: SupabaseClient, id: string, data: P
 export async function renovarPoliza(
   supabase: SupabaseClient,
   id: string,
-  data: { fecha_inicio: string; fecha_fin: string; prima: number }
+  data: { fecha_inicio: string; fecha_fin?: string | null; prima: number }
 ) {
   return updatePoliza(supabase, id, {
     ...data,

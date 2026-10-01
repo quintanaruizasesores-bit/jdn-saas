@@ -149,7 +149,7 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
                 <Input type="date" value={renovFechaInicio} onChange={(e) => setRenovFechaInicio(e.target.value)} className="border-line bg-bg" />
               </div>
               <div>
-                <Label>Nueva fecha fin</Label>
+                <Label>Nueva fecha fin (opcional)</Label>
                 <Input type="date" value={renovFechaFin} onChange={(e) => setRenovFechaFin(e.target.value)} className="border-line bg-bg" />
               </div>
               <div>

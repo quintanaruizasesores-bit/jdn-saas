@@ -148,7 +148,7 @@ export function PolizaForm({
           <Input type="date" {...register('fecha_inicio')} className="mt-1 border-line bg-bg" />
         </div>
         <div>
-          <Label>Fin vigencia</Label>
+          <Label>Fin vigencia (opcional)</Label>
           <Input type="date" {...register('fecha_fin')} className="mt-1 border-line bg-bg" />
         </div>
         <div className="sm:col-span-2">

@@ -16,7 +16,7 @@ export type PolizaFormData = z.infer<typeof polizaSchema>;
 
 export const renovacionSchema = z.object({
   fecha_inicio: z.string().min(1, 'Fecha inicio requerida'),
-  fecha_fin: z.string().min(1, 'Fecha fin requerida'),
+  fecha_fin: z.string().optional().nullable(),
   prima: z.number().min(0),
   nota: z.string().optional(),
 });
