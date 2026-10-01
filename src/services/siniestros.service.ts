@@ -15,6 +15,16 @@ export async function fetchSiniestros(supabase: SupabaseClient, filters: { clien
   return query;
 }
 
+export async function fetchSiniestroById(supabase: SupabaseClient, id: string) {
+  return supabase
+    .from('siniestros')
+    .select(
+      `*, cliente:clientes(id, nombre, apellido), poliza:polizas(id, numero_poliza, detalle, compania:companias(nombre))`
+    )
+    .eq('id', id)
+    .maybeSingle();
+}
+
 export async function fetchSiniestrosByCliente(supabase: SupabaseClient, clienteId: string) {
   return supabase
     .from('siniestros')

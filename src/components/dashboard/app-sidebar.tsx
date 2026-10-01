@@ -25,7 +25,7 @@ const navItems = [
   { href: '/riesgo', label: 'Riesgo', icon: Shield },
   { href: '/tareas', label: 'Tareas', icon: CheckSquare },
   { href: '/reportes', label: 'Reportes', icon: Download },
-  { href: '/config/companias', label: 'Configuración', icon: Settings },
+  { href: '/config', label: 'Configuración', icon: Settings },
 ];
 
 export function AppSidebar() {
