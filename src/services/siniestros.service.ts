@@ -7,7 +7,7 @@ export async function fetchSiniestros(supabase: SupabaseClient, filters: { clien
   const { cliente_id, page = 0, pageSize = 50 } = filters;
   let query = supabase
     .from('siniestros')
-    .select(`*, cliente:clientes(id, nombre, apellido), poliza:polizas(numero_poliza, detalle)`, { count: 'exact' })
+    .select(`*, cliente:clientes(id, nombre, apellido), poliza:polizas(detalle)`, { count: 'exact' })
     .order('fecha', { ascending: false, nullsFirst: false })
     .range(page * pageSize, (page + 1) * pageSize - 1);
 
@@ -19,7 +19,7 @@ export async function fetchSiniestroById(supabase: SupabaseClient, id: string) {
   return supabase
     .from('siniestros')
     .select(
-      `*, cliente:clientes(id, nombre, apellido), poliza:polizas(id, numero_poliza, detalle, compania:companias(nombre))`
+      `*, cliente:clientes(id, nombre, apellido), poliza:polizas(id, detalle, compania:companias(nombre))`
     )
     .eq('id', id)
     .maybeSingle();
@@ -28,7 +28,7 @@ export async function fetchSiniestroById(supabase: SupabaseClient, id: string) {
 export async function fetchSiniestrosByCliente(supabase: SupabaseClient, clienteId: string) {
   return supabase
     .from('siniestros')
-    .select(`*, poliza:polizas(numero_poliza, detalle, compania:companias(nombre))`)
+    .select(`*, poliza:polizas(detalle, compania:companias(nombre))`)
     .eq('cliente_id', clienteId)
     .order('fecha', { ascending: false });
 }

@@ -4,7 +4,6 @@ export const polizaSchema = z.object({
   cliente_id: z.string().uuid('Cliente requerido'),
   compania_id: z.string().uuid().optional().nullable(),
   ramo_id: z.string().uuid().optional().nullable(),
-  numero_poliza: z.string().min(1, 'Número de póliza requerido'),
   estado: z.enum(['VIGENTE', 'HISTORICA', 'BAJA']),
   fecha_inicio: z.string().optional().nullable(),
   fecha_fin: z.string().optional().nullable(),

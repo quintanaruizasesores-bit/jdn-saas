@@ -24,7 +24,6 @@ type SiniestroDetalle = Siniestro & {
   cliente: { id: string; nombre: string; apellido: string } | null;
   poliza: {
     id: string;
-    numero_poliza: string;
     detalle: string | null;
     compania: { nombre: string } | null;
   } | null;
@@ -132,8 +131,7 @@ export default function SiniestroDetallePage({ params }: { params: Promise<{ id:
         <Row label="Póliza">
           {poliza ? (
             <Link href={`/polizas/${poliza.id}`} className="text-amber hover:underline">
-              #{poliza.numero_poliza}
-              {poliza.detalle ? ` — ${poliza.detalle}` : ''}
+              {poliza.detalle || 'Ver póliza'}
             </Link>
           ) : (
             'Sin póliza asociada'

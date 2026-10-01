@@ -143,7 +143,6 @@ async function main() {
           cliente_id: clienteId,
           compania_id: p.cia ? ciaMap.get(p.cia) ?? null : null,
           ramo_id: p.ramo ? ramoMap.get(p.ramo) ?? null : null,
-          numero_poliza: `LEGACY-${p.id}`,
           estado: p.estado,
           fecha_inicio: p.vigencia,
           fecha_fin: p.fechaBaja,

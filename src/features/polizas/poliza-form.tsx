@@ -41,7 +41,6 @@ export function PolizaForm({
       cliente_id: defaultValues?.cliente_id ?? '',
       compania_id: defaultValues?.compania_id ?? null,
       ramo_id: defaultValues?.ramo_id ?? null,
-      numero_poliza: defaultValues?.numero_poliza ?? '',
       estado: defaultValues?.estado ?? 'VIGENTE',
       fecha_inicio: defaultValues?.fecha_inicio ?? '',
       fecha_fin: defaultValues?.fecha_fin ?? '',
@@ -73,10 +72,6 @@ export function PolizaForm({
               </Select>
             )}
           />
-        </div>
-        <div>
-          <Label>Nº póliza</Label>
-          <Input {...register('numero_poliza')} className="mt-1 border-line bg-bg" />
         </div>
         <div>
           <Label>Compañía</Label>
@@ -156,7 +151,7 @@ export function PolizaForm({
           <Input {...register('detalle')} className="mt-1 border-line bg-bg" />
         </div>
       </div>
-      {errors.numero_poliza && <p className="text-xs text-red">{errors.numero_poliza.message}</p>}
+      {errors.cliente_id && <p className="text-xs text-red">{errors.cliente_id.message}</p>}
       <Button type="submit" disabled={loading} className="bg-amber text-[#1a1510]">
         Guardar
       </Button>

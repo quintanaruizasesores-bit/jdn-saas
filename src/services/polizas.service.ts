@@ -41,8 +41,7 @@ export async function fetchPolizas(supabase: SupabaseClient, filters: PolizasFil
       const nombre = c ? `${c.nombre} ${c.apellido}`.toLowerCase() : '';
       return (
         nombre.includes(s) ||
-        (p.detalle?.toLowerCase().includes(s) ?? false) ||
-        (p.numero_poliza?.toLowerCase().includes(s) ?? false)
+        (p.detalle?.toLowerCase().includes(s) ?? false)
       );
     });
   }
