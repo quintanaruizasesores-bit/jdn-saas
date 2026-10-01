@@ -147,7 +147,7 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
               className="grid grid-cols-[1fr_auto_auto] items-center gap-4 rounded-[3px] border border-line bg-bg2 p-3 hover:border-amber"
             >
               <span className="text-sm text-ink">
-                #{p.numero_poliza} — {p.detalle || 'Sin detalle'}
+                {p.detalle || 'Sin detalle'}
               </span>
               <span className="text-xs text-blue">{(p.compania as { nombre: string })?.nombre}</span>
               <EstadoBadge estado={p.estado as PolizaEstado} />

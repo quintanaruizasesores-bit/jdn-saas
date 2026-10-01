@@ -5,9 +5,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { AppHeader } from '@/components/dashboard/app-header';
 import { createClient } from '@/lib/supabase/client';
-import { fetchTareas, createTarea, updateTarea } from '@/services/tareas.service';
+import { fetchTareas, createTarea, updateTarea, deleteTarea } from '@/services/tareas.service';
 import { formatDate, getClienteNombre } from '@/lib/utils';
+import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -53,6 +55,15 @@ export default function TareasPage() {
     mutationFn: ({ id, estado }: { id: string; estado: 'PENDIENTE' | 'EN_PROCESO' | 'FINALIZADA' }) =>
       updateTarea(createClient(), id, { estado }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['tareas'] }),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteTarea(createClient(), id),
+    onSuccess: () => {
+      toast.success('Tarea eliminada');
+      qc.invalidateQueries({ queryKey: ['tareas'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   return (
@@ -102,24 +113,38 @@ export default function TareasPage() {
                   )}
                   <p className="text-xs text-ink-faint">Vence: {formatDate(t.fecha_vencimiento)}</p>
                 </div>
-                <Select
-                  value={t.estado}
-                  onValueChange={(v) =>
-                    updateMut.mutate({
-                      id: t.id,
-                      estado: v as 'PENDIENTE' | 'EN_PROCESO' | 'FINALIZADA',
-                    })
-                  }
-                >
-                  <SelectTrigger className="w-[140px] border-line bg-bg2">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PENDIENTE">Pendiente</SelectItem>
-                    <SelectItem value="EN_PROCESO">En proceso</SelectItem>
-                    <SelectItem value="FINALIZADA">Finalizada</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={t.estado}
+                    onValueChange={(v) =>
+                      updateMut.mutate({
+                        id: t.id,
+                        estado: v as 'PENDIENTE' | 'EN_PROCESO' | 'FINALIZADA',
+                      })
+                    }
+                  >
+                    <SelectTrigger className="w-[140px] border-line bg-bg2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PENDIENTE">Pendiente</SelectItem>
+                      <SelectItem value="EN_PROCESO">En proceso</SelectItem>
+                      <SelectItem value="FINALIZADA">Finalizada</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <ConfirmDialog
+                    trigger={
+                      <Button variant="ghost" size="sm" className="text-red" aria-label="Eliminar tarea">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    }
+                    title="Eliminar tarea"
+                    description="Esta acción es permanente. ¿Querés eliminar esta tarea?"
+                    confirmLabel="Eliminar"
+                    destructive
+                    onConfirm={() => deleteMut.mutateAsync(t.id)}
+                  />
+                </div>
               </div>
             );
           })

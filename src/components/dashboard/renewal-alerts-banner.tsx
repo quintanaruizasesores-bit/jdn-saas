@@ -30,7 +30,8 @@ export function RenewalAlertsBanner() {
         {data.map((r) => (
           <li key={r.poliza_id}>
             <Link href={`/polizas/${r.poliza_id}`} className="hover:text-amber">
-              {r.cliente_nombre} — {r.numero_poliza} vence en {r.dias_restantes} días
+              {r.cliente_nombre}
+              {r.compania_nombre ? ` · ${r.compania_nombre}` : ''} vence en {r.dias_restantes} días
             </Link>
           </li>
         ))}

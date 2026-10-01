@@ -118,7 +118,7 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
 
   return (
     <div>
-      <AppHeader title={`Póliza #${poliza.numero_poliza}`} subtitle={poliza.detalle ?? undefined} />
+      <AppHeader title={poliza.detalle || 'Póliza'} subtitle={poliza.detalle ? undefined : 'Detalle de póliza'} />
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <EstadoBadge estado={poliza.estado as PolizaEstado} />
@@ -149,7 +149,7 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
                 <Input type="date" value={renovFechaInicio} onChange={(e) => setRenovFechaInicio(e.target.value)} className="border-line bg-bg" />
               </div>
               <div>
-                <Label>Nueva fecha fin</Label>
+                <Label>Nueva fecha fin (opcional)</Label>
                 <Input type="date" value={renovFechaFin} onChange={(e) => setRenovFechaFin(e.target.value)} className="border-line bg-bg" />
               </div>
               <div>

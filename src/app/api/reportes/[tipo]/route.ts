@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import ExcelJS from 'exceljs';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { createClient } from '@/lib/supabase/server';
+import { toCsv, toXlsx, toPdf } from '@/lib/reportes/format';
 
 const TIPOS = ['produccion', 'companias', 'ramos', 'clientes', 'siniestros'] as const;
 
@@ -80,7 +78,7 @@ export async function GET(
   }
 
   if (format === 'csv') {
-    const csv = [headers.join(','), ...rows.map((r) => r.map((c) => `"${c}"`).join(','))].join('\n');
+    const csv = toCsv(headers, rows);
     return new NextResponse(csv, {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
@@ -90,16 +88,7 @@ export async function GET(
   }
 
   if (format === 'pdf') {
-    const doc = new jsPDF();
-    doc.setFontSize(14);
-    doc.text(`Reporte: ${tipo}`, 14, 20);
-    autoTable(doc, {
-      head: [headers],
-      body: rows.map((r) => r.map(String)),
-      startY: 28,
-      styles: { fontSize: 8 },
-    });
-    const buf = doc.output('arraybuffer');
+    const buf = toPdf(tipo, headers, rows);
     return new NextResponse(buf, {
       headers: {
         'Content-Type': 'application/pdf',
@@ -108,13 +97,8 @@ export async function GET(
     });
   }
 
-  const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet('Reporte');
-  sheet.addRow(headers);
-  rows.forEach((r) => sheet.addRow(r));
-  const buffer = await workbook.xlsx.writeBuffer();
-
-  return new NextResponse(buffer, {
+  const buffer = await toXlsx(headers, rows);
+  return new NextResponse(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': `attachment; filename="${filename}.xlsx"`,

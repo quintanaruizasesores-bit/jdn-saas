@@ -54,7 +54,6 @@ export interface Poliza {
   cliente_id: string;
   compania_id: string | null;
   ramo_id: string | null;
-  numero_poliza: string;
   estado: PolizaEstado;
   fecha_inicio: string | null;
   fecha_fin: string | null;
@@ -127,7 +126,6 @@ export interface DashboardKpis {
 
 export interface RenovacionProxima {
   poliza_id: string;
-  numero_poliza: string;
   fecha_fin: string;
   dias_restantes: number;
   alerta_nivel: string;

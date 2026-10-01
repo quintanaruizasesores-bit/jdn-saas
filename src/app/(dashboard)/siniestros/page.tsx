@@ -1,14 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { Plus, Eye, Trash2 } from 'lucide-react';
 import { AppHeader } from '@/components/dashboard/app-header';
 import { createClient } from '@/lib/supabase/client';
-import { fetchSiniestros } from '@/services/siniestros.service';
+import { fetchSiniestros, deleteSiniestro } from '@/services/siniestros.service';
 import { SINIESTRO_TIPO_LABELS, RESPONSABILIDAD_LABELS } from '@/lib/riesgo/calculate-risk-score';
-import { formatDate, getClienteNombre } from '@/lib/utils';
+import { formatCurrency, formatDate, getClienteNombre } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   Table,
   TableBody,
@@ -18,15 +20,27 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ErrorState } from '@/components/ui/error-state';
 
 export default function SiniestrosPage() {
-  const { data, isLoading } = useQuery({
+  const qc = useQueryClient();
+
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['siniestros'],
     queryFn: async () => {
       const result = await fetchSiniestros(createClient(), { pageSize: 100 });
       if (result.error) throw result.error;
       return result.data ?? [];
     },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteSiniestro(createClient(), id),
+    onSuccess: () => {
+      toast.success('Siniestro eliminado');
+      qc.invalidateQueries({ queryKey: ['siniestros'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   return (
@@ -42,6 +56,8 @@ export default function SiniestrosPage() {
       <div className="overflow-hidden rounded-[3px] border border-line bg-panel">
         {isLoading ? (
           <p className="p-8 text-ink-faint">Cargando...</p>
+        ) : isError ? (
+          <ErrorState onRetry={() => refetch()} />
         ) : !data?.length ? (
           <EmptyState title="Sin siniestros" />
         ) : (
@@ -53,6 +69,7 @@ export default function SiniestrosPage() {
                 <TableHead className="text-ink-faint">Responsabilidad</TableHead>
                 <TableHead className="text-ink-faint">Fecha</TableHead>
                 <TableHead className="text-ink-faint">Monto</TableHead>
+                <TableHead className="text-right text-ink-faint">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -65,12 +82,40 @@ export default function SiniestrosPage() {
                         {c ? getClienteNombre(c) : '—'}
                       </Link>
                     </TableCell>
-                    <TableCell>{SINIESTRO_TIPO_LABELS[s.tipo as keyof typeof SINIESTRO_TIPO_LABELS]}</TableCell>
+                    <TableCell>
+                      {SINIESTRO_TIPO_LABELS[s.tipo as keyof typeof SINIESTRO_TIPO_LABELS]}
+                    </TableCell>
                     <TableCell>
                       {RESPONSABILIDAD_LABELS[s.responsabilidad as keyof typeof RESPONSABILIDAD_LABELS]}
                     </TableCell>
                     <TableCell>{formatDate(s.fecha)}</TableCell>
-                    <TableCell>${Number(s.monto_estimado).toLocaleString('es-AR')}</TableCell>
+                    <TableCell>{formatCurrency(Number(s.monto_estimado) || 0)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button asChild variant="ghost" size="sm" className="text-ink-dim">
+                          <Link href={`/siniestros/${s.id}`} aria-label="Ver detalle">
+                            <Eye className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <ConfirmDialog
+                          trigger={
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red"
+                              aria-label="Eliminar"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          }
+                          title="Eliminar siniestro"
+                          description="Esta acción es permanente y no se puede deshacer. ¿Querés eliminar este siniestro?"
+                          confirmLabel="Eliminar"
+                          destructive
+                          onConfirm={() => deleteMutation.mutateAsync(s.id)}
+                        />
+                      </div>
+                    </TableCell>
                   </TableRow>
                 );
               })}

@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import { ConfigManager } from '@/features/config/config-manager';
 
-export default function RamosRedirect() {
-  redirect('/config/companias');
+export default function ConfigRamosPage() {
+  return <ConfigManager defaultTab="ramos" />;
 }
