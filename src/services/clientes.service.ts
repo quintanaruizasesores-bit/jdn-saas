@@ -1,6 +1,7 @@
 import type { Cliente } from '@/types/database';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ClienteFormData } from '@/validations/cliente.schema';
+import { buildClienteSearchFilters } from '@/lib/clientes/search';
 import { logActividad } from './actividad.service';
 
 export interface ClientesFilters {
@@ -22,9 +23,10 @@ export async function fetchClientes(supabase: SupabaseClient, filters: ClientesF
     .range(page * pageSize, (page + 1) * pageSize - 1);
 
   if (search) {
-    query = query.or(
-      `nombre.ilike.%${search}%,apellido.ilike.%${search}%,dni.ilike.%${search}%,email.ilike.%${search}%`
-    );
+    // Un grupo .or() por token → PostgREST los combina con AND (ver search.ts).
+    for (const filter of buildClienteSearchFilters(search)) {
+      query = query.or(filter);
+    }
   }
   if (provincia) query = query.eq('provincia', provincia);
   if (localidad) query = query.eq('localidad', localidad);

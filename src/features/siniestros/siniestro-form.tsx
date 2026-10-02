@@ -2,11 +2,7 @@
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQuery } from '@tanstack/react-query';
 import { siniestroSchema, type SiniestroFormData } from '@/validations/siniestro.schema';
-import { createClient } from '@/lib/supabase/client';
-import { getClienteNombre } from '@/lib/utils';
-import type { Cliente } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ClienteCombobox } from '@/features/clientes/cliente-combobox';
 
 const TIPOS = ['CHOQUE', 'ROBO', 'INCENDIO', 'GRANIZO', 'OTROS'] as const;
 const RESPONSABILIDADES = ['RESPONSABLE', 'NO_RESPONSABLE', 'INDETERMINADA'] as const;
@@ -55,17 +52,6 @@ export function SiniestroForm({
     },
   });
 
-  const { data: clientes } = useQuery({
-    queryKey: ['clientes-select'],
-    queryFn: async () => {
-      const { data } = await createClient()
-        .from('clientes')
-        .select('id, nombre, apellido')
-        .is('deleted_at', null);
-      return (data ?? []) as Cliente[];
-    },
-  });
-
   return (
     <form
       onSubmit={handleSubmit((d) => onSubmit(d))}
@@ -77,18 +63,11 @@ export function SiniestroForm({
           name="cliente_id"
           control={control}
           render={({ field }) => (
-            <Select value={field.value ?? ''} onValueChange={field.onChange}>
-              <SelectTrigger className="mt-1 border-line bg-bg">
-                <SelectValue placeholder="Seleccionar" />
-              </SelectTrigger>
-              <SelectContent>
-                {(clientes ?? []).map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {getClienteNombre(c)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ClienteCombobox
+              value={field.value ?? null}
+              onChange={field.onChange}
+              className="mt-1"
+            />
           )}
         />
         <FieldError message={errors.cliente_id?.message} />
