@@ -9,26 +9,10 @@ import { createClient } from '@/lib/supabase/client';
 import { createPoliza } from '@/services/polizas.service';
 import { fetchCompanias } from '@/services/companias.service';
 import { fetchRamos } from '@/services/ramos.service';
-import { getClienteNombre } from '@/lib/utils';
 import type { PolizaFormData } from '@/validations/poliza.schema';
 
 export default function NuevaPolizaPage() {
   const router = useRouter();
-
-  const { data: clientes } = useQuery({
-    queryKey: ['clientes-select'],
-    queryFn: async () => {
-      const { data } = await createClient()
-        .from('clientes')
-        .select('id, nombre, apellido')
-        .is('deleted_at', null)
-        .order('apellido');
-      return ((data ?? []) as import('@/types/database').Cliente[]).map((c) => ({
-        id: c.id,
-        nombre: getClienteNombre(c),
-      }));
-    },
-  });
 
   const { data: companias } = useQuery({
     queryKey: ['companias'],
@@ -60,7 +44,6 @@ export default function NuevaPolizaPage() {
       <AppHeader title="Nueva póliza" />
       <div className="max-w-2xl rounded-[3px] border border-line bg-panel p-6">
         <PolizaForm
-          clientes={clientes ?? []}
           companias={companias ?? []}
           ramos={ramos ?? []}
           onSubmit={async (d) => {

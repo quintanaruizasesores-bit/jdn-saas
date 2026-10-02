@@ -46,7 +46,7 @@ export function ClienteForm({
           [
             ['nombre', 'Nombre'],
             ['apellido', 'Apellido'],
-            ['dni', 'DNI'],
+            ['dni', 'DNI / CUIT'],
             ['observaciones', 'Observaciones'],
             ['email', 'Email'],
             ['telefono', 'Teléfono'],

@@ -103,7 +103,7 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
                 {cliente.telefono}
               </a>
             )}
-            {cliente.dni && <span>DNI {cliente.dni}</span>}
+            {cliente.dni && <span>DNI / CUIT {cliente.dni}</span>}
           </div>
         </div>
         <div className="text-center">

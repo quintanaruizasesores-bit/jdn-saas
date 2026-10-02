@@ -55,17 +55,6 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
     },
   });
 
-  const { data: clientes } = useQuery({
-    queryKey: ['clientes-select'],
-    queryFn: async () => {
-      const { data } = await createClient().from('clientes').select('id, nombre, apellido').is('deleted_at', null);
-      return ((data ?? []) as import('@/types/database').Cliente[]).map((c) => ({
-        id: c.id,
-        nombre: getClienteNombre(c),
-      }));
-    },
-  });
-
   const { data: companias } = useQuery({
     queryKey: ['companias'],
     queryFn: async () => {
@@ -175,7 +164,6 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
           <h3 className="mb-4 text-sm uppercase tracking-wider text-ink-dim">Editar</h3>
           <PolizaForm
             defaultValues={poliza}
-            clientes={clientes ?? []}
             companias={companias ?? []}
             ramos={ramos ?? []}
             onSubmit={async (d) => {

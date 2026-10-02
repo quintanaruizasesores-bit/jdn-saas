@@ -42,15 +42,36 @@ export async function fetchClienteById(supabase: SupabaseClient, id: string) {
   return supabase.from('clientes').select('*').eq('id', id).single();
 }
 
+/**
+ * fecha_nacimiento es una columna DATE opcional: un '' llegado del form rompe
+ * Postgres (invalid input syntax for type date). Convertimos '' (o undefined) a
+ * null, pero SOLO si la clave está presente, para no pisar el valor en updates
+ * parciales.
+ */
+function normalizeClienteDates(data: Partial<ClienteFormData>): Partial<ClienteFormData> {
+  const out: Partial<ClienteFormData> = { ...data };
+  if ('fecha_nacimiento' in out && !out.fecha_nacimiento) out.fecha_nacimiento = null;
+  return out;
+}
+
 export async function createCliente(supabase: SupabaseClient, data: ClienteFormData) {
-  const { data: row, error } = await supabase.from('clientes').insert(data).select().single();
+  const { data: row, error } = await supabase
+    .from('clientes')
+    .insert(normalizeClienteDates(data))
+    .select()
+    .single();
   if (error) throw error;
   await logActividad(supabase, 'CREAR', 'CLIENTE', row.id);
   return row as Cliente;
 }
 
 export async function updateCliente(supabase: SupabaseClient, id: string, data: ClienteFormData) {
-  const { data: row, error } = await supabase.from('clientes').update(data).eq('id', id).select().single();
+  const { data: row, error } = await supabase
+    .from('clientes')
+    .update(normalizeClienteDates(data))
+    .eq('id', id)
+    .select()
+    .single();
   if (error) throw error;
   await logActividad(supabase, 'ACTUALIZAR', 'CLIENTE', id);
   return row as Cliente;

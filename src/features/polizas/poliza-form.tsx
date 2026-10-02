@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ClienteCombobox } from '@/features/clientes/cliente-combobox';
 import type { Poliza } from '@/types/database';
 
 interface Catalogo {
@@ -22,14 +23,12 @@ interface Catalogo {
 
 export function PolizaForm({
   defaultValues,
-  clientes,
   companias,
   ramos,
   onSubmit,
   loading,
 }: {
   defaultValues?: Partial<Poliza>;
-  clientes: Catalogo[];
   companias: Catalogo[];
   ramos: Catalogo[];
   onSubmit: (data: PolizaFormData) => Promise<void>;
@@ -58,20 +57,14 @@ export function PolizaForm({
             name="cliente_id"
             control={control}
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="mt-1 border-line bg-bg">
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clientes.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ClienteCombobox
+                value={field.value ?? null}
+                onChange={field.onChange}
+                className="mt-1"
+              />
             )}
           />
+          {errors.cliente_id && <p className="mt-1 text-xs text-red">{errors.cliente_id.message}</p>}
         </div>
         <div>
           <Label>Compañía</Label>
@@ -151,7 +144,6 @@ export function PolizaForm({
           <Input {...register('detalle')} className="mt-1 border-line bg-bg" />
         </div>
       </div>
-      {errors.cliente_id && <p className="text-xs text-red">{errors.cliente_id.message}</p>}
       <Button type="submit" disabled={loading} className="bg-amber text-[#1a1510]">
         Guardar
       </Button>
