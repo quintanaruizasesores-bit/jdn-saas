@@ -22,7 +22,7 @@ export interface Cliente {
   nombre: string;
   apellido: string;
   dni: string | null;
-  cuit: string | null;
+  observaciones: string | null;
   email: string | null;
   telefono: string | null;
   direccion: string | null;
