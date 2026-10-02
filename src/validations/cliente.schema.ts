@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const clienteSchema = z.object({
-  nombre: z.string().min(1, 'Nombre requerido'),
-  apellido: z.string().min(1, 'Apellido requerido'),
+  nombre: z.string().optional().nullable(),
+  apellido: z.string().optional().nullable(),
   dni: z.string().optional().nullable(),
   observaciones: z.string().optional().nullable(),
   email: z.string().email('Email inválido').optional().nullable().or(z.literal('')),
