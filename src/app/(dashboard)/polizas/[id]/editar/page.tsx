@@ -11,7 +11,6 @@ import { fetchRamos } from '@/services/ramos.service';
 import { AppHeader } from '@/components/dashboard/app-header';
 import { PolizaForm } from '@/features/polizas/poliza-form';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getClienteNombre } from '@/lib/utils';
 import type { PolizaFormData } from '@/validations/poliza.schema';
 
 export default function EditarPolizaPage({ params }: { params: Promise<{ id: string }> }) {
@@ -24,17 +23,6 @@ export default function EditarPolizaPage({ params }: { params: Promise<{ id: str
       const { data, error } = await fetchPolizaById(createClient(), id);
       if (error) throw error;
       return data;
-    },
-  });
-
-  const { data: clientes } = useQuery({
-    queryKey: ['clientes-select'],
-    queryFn: async () => {
-      const { data } = await createClient().from('clientes').select('id, nombre, apellido').is('deleted_at', null);
-      return ((data ?? []) as import('@/types/database').Cliente[]).map((c) => ({
-        id: c.id,
-        nombre: getClienteNombre(c),
-      }));
     },
   });
 
@@ -72,7 +60,6 @@ export default function EditarPolizaPage({ params }: { params: Promise<{ id: str
         ) : poliza ? (
           <PolizaForm
             defaultValues={poliza}
-            clientes={clientes ?? []}
             companias={companias ?? []}
             ramos={ramos ?? []}
             onSubmit={async (d) => {
