@@ -22,12 +22,12 @@ interface ClienteComboboxProps {
   className?: string;
 }
 
-/** Línea secundaria para desambiguar homónimos: teléfono · email · DNI (sólo lo que existe). */
+/** Línea secundaria para desambiguar homónimos: teléfono · email · DNI / CUIT (sólo lo que existe). */
 function datosSecundarios(c: Cliente): string {
   const partes: string[] = [];
   if (c.telefono) partes.push(`📱 ${c.telefono}`);
   if (c.email) partes.push(c.email);
-  if (c.dni) partes.push(`DNI ${c.dni}`);
+  if (c.dni) partes.push(`DNI / CUIT ${c.dni}`);
   return partes.join('  ·  ');
 }
 

@@ -50,7 +50,7 @@ export default function ClientesPage() {
         <div className="relative min-w-[220px] flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
           <Input
-            placeholder="Buscar nombre, DNI, email..."
+            placeholder="Buscar nombre, DNI / CUIT, email..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -84,7 +84,7 @@ export default function ClientesPage() {
             <TableHeader>
               <TableRow className="border-line hover:bg-panel2">
                 <TableHead className="text-ink-faint">Cliente</TableHead>
-                <TableHead className="text-ink-faint">DNI</TableHead>
+                <TableHead className="text-ink-faint">DNI / CUIT</TableHead>
                 <TableHead className="text-ink-faint">Contacto</TableHead>
                 <TableHead className="text-ink-faint">Localidad</TableHead>
                 <TableHead />
