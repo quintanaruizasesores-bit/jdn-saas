@@ -33,6 +33,14 @@ export async function fetchSiniestrosByCliente(supabase: SupabaseClient, cliente
     .order('fecha', { ascending: false });
 }
 
+export async function fetchSiniestrosByPoliza(supabase: SupabaseClient, polizaId: string) {
+  return supabase
+    .from('siniestros')
+    .select(`*, cliente:clientes(id, nombre, apellido)`)
+    .eq('poliza_id', polizaId)
+    .order('fecha', { ascending: false });
+}
+
 export async function createSiniestro(supabase: SupabaseClient, data: SiniestroFormData) {
   const { data: row, error } = await supabase.from('siniestros').insert(data).select().single();
   if (error) throw error;

@@ -54,7 +54,24 @@ function normalizeClienteDates(data: Partial<ClienteFormData>): Partial<ClienteF
   return out;
 }
 
+/**
+ * Un mismo DNI / CUIT no puede repetirse entre clientes activos. Se valida en la
+ * app (no hay constraint única en la base) para dar un mensaje claro y no romper
+ * por duplicados preexistentes. No hace nada si el DNI viene vacío/null.
+ * `excludeId` evita que un cliente colisione consigo mismo al editar.
+ */
+export async function assertDniUnico(supabase: SupabaseClient, dni?: string | null, excludeId?: string) {
+  const value = dni?.trim();
+  if (!value) return;
+  let query = supabase.from('clientes').select('id').eq('dni', value).is('deleted_at', null).limit(1);
+  if (excludeId) query = query.neq('id', excludeId);
+  const { data, error } = await query;
+  if (error) throw error;
+  if (data && data.length > 0) throw new Error('Ya existe un cliente con ese DNI / CUIT');
+}
+
 export async function createCliente(supabase: SupabaseClient, data: ClienteFormData) {
+  await assertDniUnico(supabase, data.dni);
   const { data: row, error } = await supabase
     .from('clientes')
     .insert(normalizeClienteDates(data))
@@ -66,6 +83,7 @@ export async function createCliente(supabase: SupabaseClient, data: ClienteFormD
 }
 
 export async function updateCliente(supabase: SupabaseClient, id: string, data: ClienteFormData) {
+  if ('dni' in data) await assertDniUnico(supabase, data.dni, id);
   const { data: row, error } = await supabase
     .from('clientes')
     .update(normalizeClienteDates(data))

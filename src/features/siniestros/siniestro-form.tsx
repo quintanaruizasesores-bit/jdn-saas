@@ -1,7 +1,8 @@
 'use client';
 
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery } from '@tanstack/react-query';
 import { siniestroSchema, type SiniestroFormData } from '@/validations/siniestro.schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ClienteCombobox } from '@/features/clientes/cliente-combobox';
+import { createClient } from '@/lib/supabase/client';
+import { fetchPolizasByCliente } from '@/services/polizas.service';
 
 const TIPOS = ['CHOQUE', 'ROBO', 'INCENDIO', 'GRANIZO', 'OTROS'] as const;
 const RESPONSABILIDADES = ['RESPONSABLE', 'NO_RESPONSABLE', 'INDETERMINADA'] as const;
@@ -52,6 +55,17 @@ export function SiniestroForm({
     },
   });
 
+  const clienteId = useWatch({ control, name: 'cliente_id' });
+
+  const { data: polizas = [] } = useQuery({
+    queryKey: ['polizas-cliente', clienteId],
+    enabled: !!clienteId,
+    queryFn: async () => {
+      const { data } = await fetchPolizasByCliente(createClient(), clienteId as string);
+      return (data ?? []) as { id: string; detalle: string | null }[];
+    },
+  });
+
   return (
     <form
       onSubmit={handleSubmit((d) => onSubmit(d))}
@@ -71,6 +85,34 @@ export function SiniestroForm({
           )}
         />
         <FieldError message={errors.cliente_id?.message} />
+      </div>
+
+      <div>
+        <Label>Póliza / Auto</Label>
+        <Controller
+          name="poliza_id"
+          control={control}
+          render={({ field }) => (
+            <Select
+              value={field.value ?? ''}
+              onValueChange={(v) => field.onChange(v === '__none__' ? null : v)}
+              disabled={!clienteId}
+            >
+              <SelectTrigger className="mt-1 border-line bg-bg">
+                <SelectValue placeholder={clienteId ? 'Sin póliza asociada' : 'Elegí un cliente primero'} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Sin póliza asociada</SelectItem>
+                {polizas.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.detalle || 'Sin detalle'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+        <FieldError message={errors.poliza_id?.message} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
