@@ -25,11 +25,14 @@ import {
   renovarPoliza,
   darBajaPoliza,
 } from '@/services/polizas.service';
+import { fetchSiniestrosByPoliza } from '@/services/siniestros.service';
 import { fetchCompanias } from '@/services/companias.service';
 import { fetchRamos } from '@/services/ramos.service';
+import { SINIESTRO_TIPO_LABELS } from '@/lib/riesgo/calculate-risk-score';
 import { formatCurrency, formatDate, getClienteNombre } from '@/lib/utils';
-import type { PolizaEstado } from '@/types/database';
+import type { PolizaEstado, SiniestroTipo } from '@/types/database';
 import type { PolizaFormData } from '@/validations/poliza.schema';
+import { Plus } from 'lucide-react';
 
 export default function PolizaDetallePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -52,6 +55,14 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
     queryFn: async () => {
       const { data } = await fetchPolizaHistorial(createClient(), id);
       return data ?? [];
+    },
+  });
+
+  const { data: siniestros } = useQuery({
+    queryKey: ['siniestros-poliza', id],
+    queryFn: async () => {
+      const { data } = await fetchSiniestrosByPoliza(createClient(), id);
+      return (data ?? []) as Array<{ id: string; tipo: SiniestroTipo; fecha: string | null; descripcion: string | null }>;
     },
   });
 
@@ -183,6 +194,33 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
             ))}
           </ul>
         </div>
+      </div>
+
+      <div className="rounded-[3px] border border-line bg-panel p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-sm uppercase tracking-wider text-ink-dim">Siniestros</h3>
+          <Button asChild variant="outline" className="border-amber text-amber">
+            <Link href={`/siniestros/nuevo?cliente=${cliente?.id ?? poliza.cliente_id}&poliza=${id}`}>
+              <Plus className="mr-1 h-4 w-4" /> Agregar siniestro
+            </Link>
+          </Button>
+        </div>
+        {(siniestros ?? []).length === 0 ? (
+          <p className="text-sm text-ink-faint">Sin siniestros registrados para esta póliza.</p>
+        ) : (
+          <div className="space-y-2">
+            {(siniestros ?? []).map((s) => (
+              <Link
+                key={s.id}
+                href={`/siniestros/${s.id}`}
+                className="flex items-center justify-between rounded-[3px] border border-line bg-bg2 p-3 hover:border-amber"
+              >
+                <span className="text-sm text-ink">{SINIESTRO_TIPO_LABELS[s.tipo]}</span>
+                <span className="text-xs text-ink-faint">{formatDate(s.fecha)}</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -2,12 +2,16 @@
 
 import { use } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { RiskBadge } from '@/components/ui/risk-badge';
 import { EstadoBadge } from '@/components/ui/estado-badge';
+import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { createClient } from '@/lib/supabase/client';
-import { fetchClienteById } from '@/services/clientes.service';
+import { fetchClienteById, softDeleteCliente } from '@/services/clientes.service';
 import { fetchPolizasByCliente } from '@/services/polizas.service';
 import { fetchSiniestrosByCliente } from '@/services/siniestros.service';
 import { fetchTareas } from '@/services/tareas.service';
@@ -16,10 +20,22 @@ import { formatCurrency, formatDate, getClienteNombre } from '@/lib/utils';
 import { SINIESTRO_TIPO_LABELS, RESPONSABILIDAD_LABELS } from '@/lib/riesgo/calculate-risk-score';
 import type { PolizaEstado } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 
 export default function ClienteDetallePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
+  const qc = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: () => softDeleteCliente(createClient(), id),
+    onSuccess: () => {
+      toast.success('Cliente eliminado');
+      qc.invalidateQueries({ queryKey: ['clientes'] });
+      router.push('/clientes');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const { data: cliente, isLoading } = useQuery({
     queryKey: ['cliente', id],
@@ -85,9 +101,28 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
 
   return (
     <div>
-      <Link href="/clientes" className="mb-4 inline-flex items-center gap-2 text-sm text-ink-dim hover:text-amber">
-        <ArrowLeft className="h-4 w-4" /> Volver
-      </Link>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <Link href="/clientes" className="inline-flex items-center gap-2 text-sm text-ink-dim hover:text-amber">
+          <ArrowLeft className="h-4 w-4" /> Volver
+        </Link>
+        <div className="flex gap-2">
+          <Button asChild variant="outline" className="border-amber text-amber">
+            <Link href={`/clientes/${id}/editar`}>Editar</Link>
+          </Button>
+          <ConfirmDialog
+            trigger={
+              <Button variant="destructive" disabled={deleteMutation.isPending}>
+                <Trash2 className="mr-1 h-4 w-4" /> Eliminar
+              </Button>
+            }
+            title="Eliminar cliente"
+            description="Esta acción da de baja al cliente y lo oculta de la cartera. Las pólizas y siniestros se conservan. ¿Continuar?"
+            confirmLabel="Eliminar"
+            destructive
+            onConfirm={() => deleteMutation.mutateAsync()}
+          />
+        </div>
+      </div>
 
       <div className="mb-6 flex flex-wrap justify-between gap-4 rounded-[5px] border border-line bg-gradient-to-br from-panel2 to-panel p-7">
         <div>
@@ -141,28 +176,42 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
         </TabsList>
         <TabsContent value="polizas" className="mt-4 space-y-2">
           {(polizas ?? []).map((p) => (
-            <Link
+            <div
               key={p.id}
-              href={`/polizas/${p.id}`}
-              className="grid grid-cols-[1fr_auto_auto] items-center gap-4 rounded-[3px] border border-line bg-bg2 p-3 hover:border-amber"
+              className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 rounded-[3px] border border-line bg-bg2 p-3 hover:border-amber"
             >
-              <span className="text-sm text-ink">
+              <Link href={`/polizas/${p.id}`} className="text-sm text-ink hover:text-amber">
                 {p.detalle || 'Sin detalle'}
-              </span>
+              </Link>
               <span className="text-xs text-blue">{(p.compania as { nombre: string })?.nombre}</span>
               <EstadoBadge estado={p.estado as PolizaEstado} />
-            </Link>
+              <Link
+                href={`/siniestros/nuevo?cliente=${id}&poliza=${p.id}`}
+                className="inline-flex items-center gap-1 text-xs text-amber hover:underline"
+              >
+                <Plus className="h-3 w-3" /> Siniestro
+              </Link>
+            </div>
           ))}
         </TabsContent>
         <TabsContent value="siniestros" className="mt-4 space-y-3">
           {(siniestros ?? []).map((s) => (
-            <div key={s.id} className="rounded-[3px] border border-line bg-panel p-3">
+            <Link
+              key={s.id}
+              href={`/siniestros/${s.id}`}
+              className="block rounded-[3px] border border-line bg-panel p-3 hover:border-amber"
+            >
               <p className="font-medium text-ink">
                 {SINIESTRO_TIPO_LABELS[s.tipo as keyof typeof SINIESTRO_TIPO_LABELS]} —{' '}
                 {RESPONSABILIDAD_LABELS[s.responsabilidad as keyof typeof RESPONSABILIDAD_LABELS]}
               </p>
               <p className="text-xs text-ink-faint">{formatDate(s.fecha)} · {s.descripcion}</p>
-            </div>
+              {(s.poliza as { detalle: string | null } | null)?.detalle && (
+                <p className="mt-1 text-xs text-blue">
+                  Auto: {(s.poliza as { detalle: string | null }).detalle}
+                </p>
+              )}
+            </Link>
           ))}
         </TabsContent>
         <TabsContent value="tareas" className="mt-4 space-y-2">

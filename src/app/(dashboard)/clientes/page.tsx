@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
-import { Plus, Search } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { Plus, Search, Trash2 } from 'lucide-react';
 import { AppHeader } from '@/components/dashboard/app-header';
 import { createClient } from '@/lib/supabase/client';
-import { fetchClientes } from '@/services/clientes.service';
+import { fetchClientes, softDeleteCliente } from '@/services/clientes.service';
 import { getClienteNombre } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -24,6 +26,16 @@ import { EmptyState } from '@/components/ui/empty-state';
 export default function ClientesPage() {
   const [search, setSearch] = useState('');
   const [debounced, setDebounced] = useState('');
+  const qc = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => softDeleteCliente(createClient(), id),
+    onSuccess: () => {
+      toast.success('Cliente eliminado');
+      qc.invalidateQueries({ queryKey: ['clientes'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ['clientes', debounced],
@@ -102,9 +114,26 @@ export default function ClientesPage() {
                   <TableCell className="text-ink-dim text-xs">{c.email || c.telefono || '—'}</TableCell>
                   <TableCell className="text-ink-dim">{c.localidad || '—'}</TableCell>
                   <TableCell>
-                    <Link href={`/clientes/${c.id}/editar`} className="text-xs text-amber hover:underline">
-                      editar
-                    </Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <Link href={`/clientes/${c.id}/editar`} className="text-xs text-amber hover:underline">
+                        editar
+                      </Link>
+                      <ConfirmDialog
+                        trigger={
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1 text-xs text-red hover:underline"
+                          >
+                            <Trash2 className="h-3 w-3" /> eliminar
+                          </button>
+                        }
+                        title="Eliminar cliente"
+                        description={`Esta acción da de baja a ${getClienteNombre(c)} y lo oculta de la cartera. Las pólizas y siniestros se conservan. ¿Continuar?`}
+                        confirmLabel="Eliminar"
+                        destructive
+                        onConfirm={() => deleteMutation.mutateAsync(c.id)}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
