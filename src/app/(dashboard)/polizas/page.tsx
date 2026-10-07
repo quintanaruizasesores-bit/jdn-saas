@@ -31,11 +31,14 @@ import {
 import type { PolizaEstado } from '@/types/database';
 import { EmptyState } from '@/components/ui/empty-state';
 
+const PAGE_SIZE = 50;
+
 export default function PolizasPage() {
   const [search, setSearch] = useState('');
   const [estado, setEstado] = useState('');
   const [companiaId, setCompaniaId] = useState('');
   const [ramoId, setRamoId] = useState('');
+  const [page, setPage] = useState(0);
 
   const { data: companias } = useQuery({
     queryKey: ['companias'],
@@ -54,19 +57,26 @@ export default function PolizasPage() {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['polizas', search, estado, companiaId, ramoId],
+    queryKey: ['polizas', search, estado, companiaId, ramoId, page],
     queryFn: async () => {
       const result = await fetchPolizas(createClient(), {
         search,
         estado: estado || undefined,
         compania_id: companiaId || undefined,
         ramo_id: ramoId || undefined,
-        pageSize: 200,
+        page,
+        pageSize: PAGE_SIZE,
       });
       if (result.error) throw result.error;
       return result;
     },
   });
+
+  // Al cambiar cualquier filtro o la búsqueda, volvemos a la primera página.
+  const resetToFirstPage = () => setPage(0);
+
+  const total = data?.count ?? 0;
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div>
@@ -85,11 +95,14 @@ export default function PolizasPage() {
           <Input
             placeholder="Buscar cliente, detalle..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              resetToFirstPage();
+            }}
             className="border-line bg-bg2 pl-9"
           />
         </div>
-        <Select value={companiaId || 'all'} onValueChange={(v) => setCompaniaId(v === 'all' ? '' : v)}>
+        <Select value={companiaId || 'all'} onValueChange={(v) => { setCompaniaId(v === 'all' ? '' : v); resetToFirstPage(); }}>
           <SelectTrigger className="w-[160px] border-line bg-bg2">
             <SelectValue placeholder="Compañía" />
           </SelectTrigger>
@@ -102,7 +115,7 @@ export default function PolizasPage() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={ramoId || 'all'} onValueChange={(v) => setRamoId(v === 'all' ? '' : v)}>
+        <Select value={ramoId || 'all'} onValueChange={(v) => { setRamoId(v === 'all' ? '' : v); resetToFirstPage(); }}>
           <SelectTrigger className="w-[140px] border-line bg-bg2">
             <SelectValue placeholder="Ramo" />
           </SelectTrigger>
@@ -115,7 +128,7 @@ export default function PolizasPage() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={estado || 'all'} onValueChange={(v) => setEstado(v === 'all' ? '' : v)}>
+        <Select value={estado || 'all'} onValueChange={(v) => { setEstado(v === 'all' ? '' : v); resetToFirstPage(); }}>
           <SelectTrigger className="w-[130px] border-line bg-bg2">
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
@@ -190,9 +203,36 @@ export default function PolizasPage() {
           </div>
         )}
       </div>
-      <p className="mt-2 text-xs text-ink-faint">
-        <b className="text-amber">{data?.count ?? data?.data?.length ?? 0}</b> pólizas
-      </p>
+      <div className="mt-2 flex items-center justify-between">
+        <p className="text-xs text-ink-faint">
+          <b className="text-amber">{total}</b> pólizas
+        </p>
+        {pageCount > 1 && (
+          <div className="flex items-center gap-2 text-xs text-ink-faint">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-line bg-bg2"
+              disabled={page === 0}
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+            >
+              Anterior
+            </Button>
+            <span className="tabular-nums">
+              Página {page + 1} de {pageCount}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-line bg-bg2"
+              disabled={page >= pageCount - 1}
+              onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+            >
+              Siguiente
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

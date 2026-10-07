@@ -2,6 +2,10 @@ import type { Poliza } from '@/types/database';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { PolizaFormData } from '@/validations/poliza.schema';
 import { logActividad } from './actividad.service';
+import { buildClienteSearchFilters, sanitizeSearchTerm } from '@/lib/clientes/search';
+
+/** Tope de clientes que resuelve la búsqueda por nombre antes de filtrar pólizas. */
+const SEARCH_CLIENTE_LIMIT = 500;
 
 export interface PolizasFilters {
   search?: string;
@@ -16,14 +20,27 @@ export interface PolizasFilters {
 export async function fetchPolizas(supabase: SupabaseClient, filters: PolizasFilters = {}) {
   const { search, compania_id, ramo_id, estado, con_prima, page = 0, pageSize = 50 } = filters;
 
+  // Búsqueda server-side: el nombre vive en la tabla `clientes` (join), así que
+  // primero resolvemos los cliente_id que matchean el término y después filtramos
+  // pólizas por (cliente_id IN ...) OR detalle ILIKE. Así la búsqueda alcanza
+  // TODA la cartera y no solo la página traída. Ver lib/clientes/search.ts.
+  const cleanSearch = search ? sanitizeSearchTerm(search) : '';
+  let clienteIds: string[] = [];
+  if (cleanSearch) {
+    let cq = supabase.from('clientes').select('id');
+    for (const filter of buildClienteSearchFilters(cleanSearch)) cq = cq.or(filter);
+    const { data: cRows, error: cErr } = await cq.limit(SEARCH_CLIENTE_LIMIT);
+    if (cErr) return { data: null, error: cErr, count: null, status: 0, statusText: '' };
+    clienteIds = (cRows ?? []).map((c) => c.id as string);
+  }
+
   let query = supabase
     .from('polizas')
     .select(
       `*, cliente:clientes(id, nombre, apellido, email, telefono), compania:companias(id, nombre), ramo:ramos(id, nombre)`,
       { count: 'exact' }
     )
-    .order('created_at', { ascending: false })
-    .range(page * pageSize, (page + 1) * pageSize - 1);
+    .order('created_at', { ascending: false });
 
   if (compania_id) query = query.eq('compania_id', compania_id);
   if (ramo_id) query = query.eq('ramo_id', ramo_id);
@@ -31,22 +48,13 @@ export async function fetchPolizas(supabase: SupabaseClient, filters: PolizasFil
   if (con_prima === 'con') query = query.gt('prima', 0);
   if (con_prima === 'sin') query = query.eq('prima', 0);
 
-  const result = await query;
-  if (result.error) return result;
-
-  if (search && result.data) {
-    const s = search.toLowerCase();
-    result.data = result.data.filter((p) => {
-      const c = p.cliente as { nombre: string; apellido: string } | null;
-      const nombre = c ? `${c.nombre} ${c.apellido}`.toLowerCase() : '';
-      return (
-        nombre.includes(s) ||
-        (p.detalle?.toLowerCase().includes(s) ?? false)
-      );
-    });
+  if (cleanSearch) {
+    const orParts = [`detalle.ilike.%${cleanSearch}%`];
+    if (clienteIds.length) orParts.push(`cliente_id.in.(${clienteIds.join(',')})`);
+    query = query.or(orParts.join(','));
   }
 
-  return result;
+  return query.range(page * pageSize, (page + 1) * pageSize - 1);
 }
 
 export async function fetchPolizaById(supabase: SupabaseClient, id: string) {
