@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart,
@@ -35,6 +36,8 @@ const CHART_COLORS = ['#c45a2e', '#e8a13c', '#7fa86b', '#6b93a8', '#cf6a5c', '#a
 const COMISION_RATE = 0.14;
 
 export default function DashboardPage() {
+  const router = useRouter();
+
   const { data: kpis, isLoading } = useQuery({
     queryKey: ['dashboard-kpis'],
     queryFn: async () => {
@@ -98,6 +101,16 @@ export default function DashboardPage() {
     );
   }
 
+  const totalRamo = (porRamo ?? []).reduce((acc, r) => acc + Number(r.total_polizas), 0);
+  const porRamoData = (porRamo ?? []).map((r) => ({
+    ...r,
+    pct: totalRamo ? (Number(r.total_polizas) / totalRamo) * 100 : 0,
+  }));
+
+  const goToRamo = (ramoId?: string) => {
+    if (ramoId) router.push(`/polizas?ramo=${ramoId}`);
+  };
+
   return (
     <div>
       <AppHeader
@@ -143,24 +156,54 @@ export default function DashboardPage() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={porRamo ?? []}
+                  data={porRamoData}
                   dataKey="total_polizas"
                   nameKey="ramo_nombre"
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
                   outerRadius={90}
+                  onClick={(e) => goToRamo((e as { ramo_id?: string })?.ramo_id)}
                 >
-                  {(porRamo ?? []).map((_, i) => (
-                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="#221d18" />
+                  {porRamoData.map((_, i) => (
+                    <Cell
+                      key={i}
+                      fill={CHART_COLORS[i % CHART_COLORS.length]}
+                      stroke="#221d18"
+                      className="cursor-pointer outline-none"
+                    />
                   ))}
                 </Pie>
                 <Tooltip
                   contentStyle={{ background: '#2a241e', border: '1px solid #3a322a', fontSize: 11 }}
+                  formatter={(value, _name, item) => [
+                    `${formatNumber(Number(value))} pólizas · ${(item?.payload?.pct ?? 0).toFixed(1)}%`,
+                    item?.payload?.ramo_nombre ?? '',
+                  ]}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
+
+          <ul className="mt-4 space-y-1">
+            {porRamoData.map((r, i) => (
+              <li key={r.ramo_id}>
+                <button
+                  type="button"
+                  onClick={() => goToRamo(r.ramo_id)}
+                  className="flex w-full items-center gap-2 rounded-[3px] px-2 py-1 text-left text-xs text-ink-dim transition-colors hover:bg-bg2 hover:text-ink"
+                >
+                  <span
+                    className="h-2.5 w-2.5 flex-shrink-0 rounded-[2px]"
+                    style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
+                  />
+                  <span className="flex-1 truncate">{r.ramo_nombre}</span>
+                  <span className="tabular-nums text-ink-faint">{formatNumber(Number(r.total_polizas))}</span>
+                  <span className="w-12 text-right tabular-nums text-amber">{r.pct.toFixed(1)}%</span>
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 

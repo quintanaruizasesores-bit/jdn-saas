@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, Search } from 'lucide-react';
 import { AppHeader } from '@/components/dashboard/app-header';
@@ -33,11 +34,12 @@ import { EmptyState } from '@/components/ui/empty-state';
 
 const PAGE_SIZE = 50;
 
-export default function PolizasPage() {
+function PolizasListado() {
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState('');
   const [estado, setEstado] = useState('');
   const [companiaId, setCompaniaId] = useState('');
-  const [ramoId, setRamoId] = useState('');
+  const [ramoId, setRamoId] = useState(searchParams.get('ramo') ?? '');
   const [page, setPage] = useState(0);
 
   const { data: companias } = useQuery({
@@ -234,5 +236,13 @@ export default function PolizasPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PolizasPage() {
+  return (
+    <Suspense fallback={<p className="p-8 text-ink-faint">Cargando...</p>}>
+      <PolizasListado />
+    </Suspense>
   );
 }
