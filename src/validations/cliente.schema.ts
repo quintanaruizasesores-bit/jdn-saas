@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { validateFechaNacimiento } from '@/lib/clientes/fecha-nacimiento';
 
 export const clienteSchema = z.object({
   nombre: z.string().optional().nullable(),
@@ -10,7 +11,15 @@ export const clienteSchema = z.object({
   direccion: z.string().optional().nullable(),
   localidad: z.string().optional().nullable(),
   provincia: z.string().optional().nullable(),
-  fecha_nacimiento: z.string().optional().nullable(),
+  fecha_nacimiento: z
+    .string()
+    .optional()
+    .nullable()
+    .superRefine((v, ctx) => {
+      if (!v) return;
+      const error = validateFechaNacimiento(v);
+      if (error) ctx.addIssue({ code: 'custom', message: error });
+    }),
 });
 
 export type ClienteFormData = z.infer<typeof clienteSchema>;
