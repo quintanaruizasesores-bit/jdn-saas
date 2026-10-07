@@ -115,6 +115,18 @@ export interface Actividad {
   created_at: string;
 }
 
+export interface AppSetting {
+  key: string;
+  value: Record<string, unknown>;
+  updated_at: string;
+}
+
+/** Configuración del módulo Cumpleaños (persistida en app_settings['birthday']). */
+export interface BirthdaySettings {
+  template: string;
+  empresa: string;
+}
+
 export interface DashboardKpis {
   total_clientes: number;
   total_polizas: number;
@@ -194,6 +206,12 @@ export interface Database {
         Row: Actividad;
         Insert: Omit<Actividad, 'id' | 'created_at'> & { id?: string; created_at?: string };
         Update: Partial<Actividad>;
+        Relationships: [];
+      };
+      app_settings: {
+        Row: AppSetting;
+        Insert: Omit<AppSetting, 'updated_at'> & { updated_at?: string };
+        Update: Partial<AppSetting>;
         Relationships: [];
       };
     };

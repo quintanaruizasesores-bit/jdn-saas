@@ -9,6 +9,7 @@ import {
   AlertTriangle,
   Shield,
   CheckSquare,
+  Cake,
   Download,
   Settings,
   PanelLeftClose,
@@ -24,6 +25,7 @@ const navItems = [
   { href: '/siniestros', label: 'Siniestros', icon: AlertTriangle },
   { href: '/riesgo', label: 'Riesgo', icon: Shield },
   { href: '/tareas', label: 'Tareas', icon: CheckSquare },
+  { href: '/cumpleanos', label: 'Cumpleaños', icon: Cake },
   { href: '/reportes', label: 'Reportes', icon: Download },
   { href: '/config', label: 'Configuración', icon: Settings },
 ];

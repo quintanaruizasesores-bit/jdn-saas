@@ -14,8 +14,9 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BirthdayTemplateEditor } from '@/features/config/birthday-template-editor';
 
-type ConfigTab = 'companias' | 'ramos';
+type ConfigTab = 'companias' | 'ramos' | 'cumpleanos';
 
 export function ConfigManager({ defaultTab = 'companias' }: { defaultTab?: ConfigTab }) {
   const qc = useQueryClient();
@@ -101,6 +102,7 @@ export function ConfigManager({ defaultTab = 'companias' }: { defaultTab?: Confi
         <TabsList className="border border-line bg-panel2">
           <TabsTrigger value="companias">Compañías</TabsTrigger>
           <TabsTrigger value="ramos">Ramos</TabsTrigger>
+          <TabsTrigger value="cumpleanos">Cumpleaños</TabsTrigger>
         </TabsList>
 
         <TabsContent value="companias" className="mt-4">
@@ -195,6 +197,10 @@ export function ConfigManager({ defaultTab = 'companias' }: { defaultTab?: Confi
               ))}
             </ul>
           )}
+        </TabsContent>
+
+        <TabsContent value="cumpleanos" className="mt-4">
+          <BirthdayTemplateEditor />
         </TabsContent>
       </Tabs>
     </div>
