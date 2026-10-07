@@ -31,6 +31,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const CHART_COLORS = ['#c45a2e', '#e8a13c', '#7fa86b', '#6b93a8', '#cf6a5c', '#a89c8c', '#d4902f'];
 
+/** Comisión aproximada del corredor sobre el premio. */
+const COMISION_RATE = 0.14;
+
 export default function DashboardPage() {
   const { data: kpis, isLoading } = useQuery({
     queryKey: ['dashboard-kpis'],
@@ -109,8 +112,13 @@ export default function DashboardPage() {
       <div className="mb-6 grid grid-cols-2 gap-3.5 lg:grid-cols-3 xl:grid-cols-6">
         <KpiCard label="Clientes" value={formatNumber(kpis?.total_clientes ?? 0)} variant="blue" />
         <KpiCard label="Pólizas" value={formatNumber(kpis?.total_polizas ?? 0)} />
-        <KpiCard label="Prima total" value={formatCurrency(Number(kpis?.prima_total ?? 0))} variant="green" />
-        <KpiCard label="Prima mensual" value={formatCurrency(Number(kpis?.prima_mensual ?? 0))} variant="green" />
+        <KpiCard label="Premio" value={formatCurrency(Number(kpis?.prima_total ?? 0))} variant="green" />
+        <KpiCard
+          label="Comisión aproximada"
+          value={formatCurrency(Number(kpis?.prima_total ?? 0) * COMISION_RATE)}
+          subtitle="14% del premio"
+          variant="green"
+        />
         <KpiCard label="Siniestros (90d)" value={formatNumber(kpis?.siniestros_recientes ?? 0)} variant="rust" />
         <KpiCard label="Renovaciones 30d" value={formatNumber(kpis?.renovaciones_proximas ?? 0)} variant="rust" />
       </div>
@@ -168,7 +176,7 @@ export default function DashboardPage() {
                 <XAxis dataKey="mes" tick={{ fill: '#6f6557', fontSize: 10 }} />
                 <YAxis tick={{ fill: '#6f6557', fontSize: 10 }} />
                 <Tooltip contentStyle={{ background: '#2a241e', border: '1px solid #3a322a' }} />
-                <Line type="monotone" dataKey="prima" stroke="#e8a13c" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="prima" name="Premio" stroke="#e8a13c" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
