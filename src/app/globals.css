@@ -40,6 +40,8 @@
   --color-green: var(--green);
   --color-red: var(--red);
   --color-blue: var(--blue);
+  --color-whatsapp: #25d366;
+  --color-whatsapp-dark: #1da851;
   /* Roles compartidos por los componentes de la biblioteca. */
   --color-background: var(--bg);
   --color-foreground: var(--ink);

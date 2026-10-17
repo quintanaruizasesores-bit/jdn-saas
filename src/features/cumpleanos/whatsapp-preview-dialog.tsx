@@ -43,10 +43,10 @@ export function WhatsappPreviewDialog({
         </DialogHeader>
 
         <div className="px-6 py-5">
-          <div className="whitespace-pre-wrap rounded-[3px] border border-line bg-bg2 p-4 text-sm leading-relaxed text-ink">
+          <div className="border-line bg-bg2 text-ink rounded-xl border p-4 text-sm leading-relaxed whitespace-pre-wrap">
             {data?.message}
           </div>
-          <p className="mt-3 text-[11px] text-ink-faint">
+          <p className="text-ink-faint mt-3 text-[11px]">
             Se abrirá WhatsApp con el mensaje precargado. Vas a tener que
             presionar «Enviar» vos mismo.
           </p>
@@ -61,7 +61,7 @@ export function WhatsappPreviewDialog({
           <Button
             onClick={onConfirm}
             disabled={!data?.link}
-            className="bg-green text-[#10140d] hover:opacity-90"
+            className="bg-whatsapp text-navy hover:bg-whatsapp-dark"
           >
             <MessageCircle className="mr-1 h-4 w-4" />
             Abrir WhatsApp

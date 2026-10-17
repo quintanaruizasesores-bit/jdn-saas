@@ -5,11 +5,17 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
-import { fetchBirthdaySettings, saveBirthdaySettings } from '@/services/settings.service';
+import {
+  fetchBirthdaySettings,
+  saveBirthdaySettings,
+} from '@/services/settings.service';
 import { fetchClientesConCumple } from '@/services/cumpleanos.service';
 import { AVAILABLE_VARIABLES } from '@/lib/cumpleanos/plantilla';
 import { getTodayInTimezone } from '@/lib/cumpleanos/fechas';
-import { prepareCumpleMessage, type ClienteCumple } from '@/lib/cumpleanos/mensaje';
+import {
+  prepareCumpleMessage,
+  type ClienteCumple,
+} from '@/lib/cumpleanos/mensaje';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -72,7 +78,14 @@ export function BirthdayTemplateEditor() {
         asesor,
         today,
       }).message,
-    [sampleCliente, template, empresa, asesor, today, settingsQuery.data?.empresa]
+    [
+      sampleCliente,
+      template,
+      empresa,
+      asesor,
+      today,
+      settingsQuery.data?.empresa,
+    ]
   );
 
   const save = useMutation({
@@ -91,8 +104,8 @@ export function BirthdayTemplateEditor() {
   if (settingsQuery.isLoading) {
     return (
       <div className="space-y-3">
-        <Skeleton className="h-40 bg-panel2" />
-        <Skeleton className="h-10 w-48 bg-panel2" />
+        <Skeleton className="bg-panel2 h-40" />
+        <Skeleton className="bg-panel2 h-10 w-48" />
       </div>
     );
   }
@@ -109,9 +122,9 @@ export function BirthdayTemplateEditor() {
             value={empresa}
             onChange={(e) => setEmpresa(e.target.value)}
             placeholder="Ej: Seguros XYZ"
-            className="mt-1 max-w-sm border-line bg-bg2"
+            className="border-line bg-bg2 mt-1 max-w-sm"
           />
-          <p className="mt-1 text-[11px] text-ink-faint">
+          <p className="text-ink-faint mt-1 text-[11px]">
             Se usa en la variable <code>{'{{empresa}}'}</code>.
           </p>
         </div>
@@ -125,18 +138,18 @@ export function BirthdayTemplateEditor() {
             value={template}
             onChange={(e) => setTemplate(e.target.value)}
             rows={10}
-            className="mt-1 border-line bg-bg2 font-mono text-sm"
+            className="border-line bg-bg2 font-body mt-1 text-sm"
           />
         </div>
 
-        <div className="rounded-[3px] border border-line bg-panel2 p-4">
-          <p className="mb-2 text-[11px] uppercase tracking-wide text-ink-faint">
+        <div className="border-line bg-panel2 rounded-xl border p-4">
+          <p className="text-ink-faint mb-2 text-[11px] tracking-wide uppercase">
             Variables disponibles
           </p>
           <ul className="space-y-1 text-sm">
             {AVAILABLE_VARIABLES.map((v) => (
               <li key={v.key} className="flex gap-3">
-                <code className="text-amber">{v.token}</code>
+                <code className="text-primary">{v.token}</code>
                 <span className="text-ink-dim">{v.label}</span>
               </li>
             ))}
@@ -146,7 +159,6 @@ export function BirthdayTemplateEditor() {
         <Button
           onClick={() => save.mutate()}
           disabled={!template.trim() || save.isPending}
-          className="bg-amber text-[#1a1510]"
         >
           Guardar plantilla
         </Button>
@@ -156,8 +168,11 @@ export function BirthdayTemplateEditor() {
         <div className="flex items-center justify-between gap-3">
           <Label className="text-ink-dim">Vista previa</Label>
           {!!clientesQuery.data?.length && (
-            <Select value={sampleId || clientesQuery.data[0].id} onValueChange={setSampleId}>
-              <SelectTrigger className="max-w-[220px] border-line bg-bg2 text-xs">
+            <Select
+              value={sampleId || clientesQuery.data[0].id}
+              onValueChange={setSampleId}
+            >
+              <SelectTrigger className="border-line bg-bg2 max-w-[220px] text-xs">
                 <SelectValue placeholder="Cliente de ejemplo" />
               </SelectTrigger>
               <SelectContent>
@@ -170,12 +185,14 @@ export function BirthdayTemplateEditor() {
             </Select>
           )}
         </div>
-        <div className="whitespace-pre-wrap rounded-[3px] border border-line bg-bg2 p-4 text-sm leading-relaxed text-ink">
+        <div className="border-line bg-bg2 text-ink rounded-xl border p-4 text-sm leading-relaxed whitespace-pre-wrap">
           {previewMessage || (
-            <span className="text-ink-faint">Escribí una plantilla para ver la vista previa.</span>
+            <span className="text-ink-faint">
+              Escribí una plantilla para ver la vista previa.
+            </span>
           )}
         </div>
-        <p className="text-[11px] text-ink-faint">
+        <p className="text-ink-faint text-[11px]">
           Ejemplo con los datos de{' '}
           <b className="text-ink-dim">
             {`${sampleCliente.nombre} ${sampleCliente.apellido}`.trim()}
