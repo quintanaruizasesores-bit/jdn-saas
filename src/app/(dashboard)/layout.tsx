@@ -10,7 +10,7 @@ export default function DashboardLayout({
     <div className="flex min-h-screen max-w-[1500px] mx-auto">
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
-        <main className="flex-1 px-6 py-7 pb-20">
+        <main className="flex-1 px-4 py-6 pb-20 sm:px-6 lg:px-8">
           <RenewalAlertsBanner />
           {children}
         </main>

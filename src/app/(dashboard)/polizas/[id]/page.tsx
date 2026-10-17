@@ -34,7 +34,11 @@ import type { PolizaEstado, SiniestroTipo } from '@/types/database';
 import type { PolizaFormData } from '@/validations/poliza.schema';
 import { Plus } from 'lucide-react';
 
-export default function PolizaDetallePage({ params }: { params: Promise<{ id: string }> }) {
+export default function PolizaDetallePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const qc = useQueryClient();
   const [renovFechaInicio, setRenovFechaInicio] = useState('');
@@ -62,7 +66,12 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
     queryKey: ['siniestros-poliza', id],
     queryFn: async () => {
       const { data } = await fetchSiniestrosByPoliza(createClient(), id);
-      return (data ?? []) as Array<{ id: string; tipo: SiniestroTipo; fecha: string | null; descripcion: string | null }>;
+      return (data ?? []) as Array<{
+        id: string;
+        tipo: SiniestroTipo;
+        fecha: string | null;
+        descripcion: string | null;
+      }>;
     },
   });
 
@@ -83,7 +92,8 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: PolizaFormData) => updatePoliza(createClient(), id, data),
+    mutationFn: (data: PolizaFormData) =>
+      updatePoliza(createClient(), id, data),
     onSuccess: () => {
       toast.success('Póliza actualizada');
       qc.invalidateQueries({ queryKey: ['poliza', id] });
@@ -112,30 +122,44 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
     },
   });
 
-  if (isLoading || !poliza) return <p className="text-ink-faint">Cargando...</p>;
+  if (isLoading || !poliza)
+    return <p className="text-ink-faint">Cargando...</p>;
 
-  const cliente = poliza.cliente as { nombre: string; apellido: string; id: string };
+  const cliente = poliza.cliente as {
+    nombre: string;
+    apellido: string;
+    id: string;
+  };
 
   return (
     <div>
-      <AppHeader title={poliza.detalle || 'Póliza'} subtitle={poliza.detalle ? undefined : 'Detalle de póliza'} />
+      <AppHeader
+        title={poliza.detalle || 'Póliza'}
+        subtitle={poliza.detalle ? undefined : 'Detalle de póliza'}
+      />
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <EstadoBadge estado={poliza.estado as PolizaEstado} />
         <span className="text-ink-dim">
           Cliente:{' '}
-          <Link href={`/clientes/${cliente?.id ?? poliza.cliente_id}`} className="text-amber hover:underline">
+          <Link
+            href={`/clientes/${cliente?.id ?? poliza.cliente_id}`}
+            className="text-primary hover:underline"
+          >
             {cliente ? getClienteNombre(cliente) : '—'}
           </Link>
         </span>
-        <span className="text-ink-dim">Prima: {formatCurrency(Number(poliza.prima))}</span>
         <span className="text-ink-dim">
-          Vigencia: {formatDate(poliza.fecha_inicio)} — {formatDate(poliza.fecha_fin)}
+          Prima: {formatCurrency(Number(poliza.prima))}
+        </span>
+        <span className="text-ink-dim">
+          Vigencia: {formatDate(poliza.fecha_inicio)} —{' '}
+          {formatDate(poliza.fecha_fin)}
         </span>
 
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" className="border-amber text-amber">
+            <Button variant="outline" className="border-primary text-primary">
               Renovar
             </Button>
           </DialogTrigger>
@@ -146,17 +170,32 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
             <div className="space-y-3">
               <div>
                 <Label>Nueva fecha inicio</Label>
-                <Input type="date" value={renovFechaInicio} onChange={(e) => setRenovFechaInicio(e.target.value)} className="border-line bg-bg" />
+                <Input
+                  type="date"
+                  value={renovFechaInicio}
+                  onChange={(e) => setRenovFechaInicio(e.target.value)}
+                  className="border-line bg-bg"
+                />
               </div>
               <div>
                 <Label>Nueva fecha fin (opcional)</Label>
-                <Input type="date" value={renovFechaFin} onChange={(e) => setRenovFechaFin(e.target.value)} className="border-line bg-bg" />
+                <Input
+                  type="date"
+                  value={renovFechaFin}
+                  onChange={(e) => setRenovFechaFin(e.target.value)}
+                  className="border-line bg-bg"
+                />
               </div>
               <div>
                 <Label>Prima</Label>
-                <Input type="number" value={renovPrima} onChange={(e) => setRenovPrima(e.target.value)} className="border-line bg-bg" />
+                <Input
+                  type="number"
+                  value={renovPrima}
+                  onChange={(e) => setRenovPrima(e.target.value)}
+                  className="border-line bg-bg"
+                />
               </div>
-              <Button onClick={() => renovMutation.mutate()} className="bg-amber text-[#1a1510]">
+              <Button onClick={() => renovMutation.mutate()}>
                 Confirmar renovación
               </Button>
             </div>
@@ -164,15 +203,21 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
         </Dialog>
 
         {poliza.estado !== 'BAJA' && (
-          <Button variant="outline" className="border-red text-red" onClick={() => bajaMutation.mutate()}>
+          <Button
+            variant="outline"
+            className="border-red text-red"
+            onClick={() => bajaMutation.mutate()}
+          >
             Dar de baja
           </Button>
         )}
       </div>
 
       <div className="mb-8 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-[3px] border border-line bg-panel p-6">
-          <h3 className="mb-4 text-sm uppercase tracking-wider text-ink-dim">Editar</h3>
+        <div className="border-line bg-panel rounded-xl border p-6">
+          <h3 className="text-ink-dim mb-4 text-sm tracking-wider uppercase">
+            Editar
+          </h3>
           <PolizaForm
             defaultValues={poliza}
             companias={companias ?? []}
@@ -183,12 +228,18 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
             loading={updateMutation.isPending}
           />
         </div>
-        <div className="rounded-[3px] border border-line bg-panel p-6">
-          <h3 className="mb-4 text-sm uppercase tracking-wider text-ink-dim">Historial</h3>
+        <div className="border-line bg-panel rounded-xl border p-6">
+          <h3 className="text-ink-dim mb-4 text-sm tracking-wider uppercase">
+            Historial
+          </h3>
           <ul className="space-y-2 text-xs">
             {(historial ?? []).map((h) => (
-              <li key={h.id} className="border-b border-line/40 pb-2 text-ink-dim">
-                <span className="text-amber">{h.tipo}</span> — {formatDate(h.created_at)}
+              <li
+                key={h.id}
+                className="border-line/40 text-ink-dim border-b pb-2"
+              >
+                <span className="text-primary">{h.tipo}</span> —{' '}
+                {formatDate(h.created_at)}
                 {h.nota && <span className="block">{h.nota}</span>}
               </li>
             ))}
@@ -196,27 +247,41 @@ export default function PolizaDetallePage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      <div className="rounded-[3px] border border-line bg-panel p-6">
+      <div className="border-line bg-panel rounded-xl border p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm uppercase tracking-wider text-ink-dim">Siniestros</h3>
-          <Button asChild variant="outline" className="border-amber text-amber">
-            <Link href={`/siniestros/nuevo?cliente=${cliente?.id ?? poliza.cliente_id}&poliza=${id}`}>
+          <h3 className="text-ink-dim text-sm tracking-wider uppercase">
+            Siniestros
+          </h3>
+          <Button
+            asChild
+            variant="outline"
+            className="border-primary text-primary"
+          >
+            <Link
+              href={`/siniestros/nuevo?cliente=${cliente?.id ?? poliza.cliente_id}&poliza=${id}`}
+            >
               <Plus className="mr-1 h-4 w-4" /> Agregar siniestro
             </Link>
           </Button>
         </div>
         {(siniestros ?? []).length === 0 ? (
-          <p className="text-sm text-ink-faint">Sin siniestros registrados para esta póliza.</p>
+          <p className="text-ink-faint text-sm">
+            Sin siniestros registrados para esta póliza.
+          </p>
         ) : (
           <div className="space-y-2">
             {(siniestros ?? []).map((s) => (
               <Link
                 key={s.id}
                 href={`/siniestros/${s.id}`}
-                className="flex items-center justify-between rounded-[3px] border border-line bg-bg2 p-3 hover:border-amber"
+                className="border-line bg-bg2 hover:border-primary flex items-center justify-between rounded-xl border p-3"
               >
-                <span className="text-sm text-ink">{SINIESTRO_TIPO_LABELS[s.tipo]}</span>
-                <span className="text-xs text-ink-faint">{formatDate(s.fecha)}</span>
+                <span className="text-ink text-sm">
+                  {SINIESTRO_TIPO_LABELS[s.tipo]}
+                </span>
+                <span className="text-ink-faint text-xs">
+                  {formatDate(s.fecha)}
+                </span>
               </Link>
             ))}
           </div>

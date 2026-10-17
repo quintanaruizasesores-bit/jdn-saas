@@ -72,9 +72,9 @@ export default function ClientesPage() {
           />
         </div>
         <span className="text-xs text-ink-faint">
-          <b className="text-amber">{data?.count ?? 0}</b> clientes
+          <b className="text-primary">{data?.count ?? 0}</b> clientes
         </span>
-        <Button asChild className="bg-bg2 text-amber-bright border border-amber hover:bg-amber hover:text-[#1a1510]">
+        <Button asChild variant="outline">
           <Link href="/clientes/nuevo">
             <Plus className="mr-1 h-4 w-4" />
             Nuevo cliente
@@ -82,7 +82,7 @@ export default function ClientesPage() {
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-[3px] border border-line bg-panel">
+      <div className="overflow-hidden rounded-xl border border-line bg-panel">
         {isLoading ? (
           <div className="p-8 space-y-2">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -106,7 +106,7 @@ export default function ClientesPage() {
               {data.data.map((c) => (
                 <TableRow key={c.id} className="border-line/50 hover:bg-panel2">
                   <TableCell className="font-medium text-ink">
-                    <Link href={`/clientes/${c.id}`} className="hover:text-amber hover:underline">
+                    <Link href={`/clientes/${c.id}`} className="hover:text-primary hover:underline">
                       {getClienteNombre(c)}
                     </Link>
                   </TableCell>
@@ -115,7 +115,7 @@ export default function ClientesPage() {
                   <TableCell className="text-ink-dim">{c.localidad || '—'}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-3">
-                      <Link href={`/clientes/${c.id}/editar`} className="text-xs text-amber hover:underline">
+                      <Link href={`/clientes/${c.id}/editar`} className="text-xs text-primary hover:underline">
                         editar
                       </Link>
                       <ConfirmDialog

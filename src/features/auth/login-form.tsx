@@ -40,10 +40,10 @@ export function LoginForm() {
         {loading ? 'Ingresando…' : 'Ingresar'}
       </Button>
       <div className="flex justify-between text-xs text-ink-faint">
-        <Link href="/recuperar" className="hover:text-amber">
+        <Link href="/recuperar" className="hover:text-primary">
           ¿Olvidaste tu contraseña?
         </Link>
-        <Link href="/register" className="hover:text-amber">
+        <Link href="/register" className="hover:text-primary">
           Registrarse
         </Link>
       </div>

@@ -30,7 +30,7 @@ import {
 import { formatCurrency, formatNumber } from '@/lib/utils/format';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const CHART_COLORS = ['#c45a2e', '#e8a13c', '#7fa86b', '#6b93a8', '#cf6a5c', '#a89c8c', '#d4902f'];
+const CHART_COLORS = ['#1E5BBF', '#1A2556', '#608BD0', '#154A9F', '#879EC7', '#354B88', '#ABC1E4'];
 
 /** Comisión aproximada del corredor sobre el premio. */
 const COMISION_RATE = 0.14;
@@ -116,13 +116,13 @@ export default function DashboardPage() {
       <AppHeader
         title={
           <>
-            Tablero <em className="text-amber not-italic">operativo</em>
+            Tablero <em className="text-primary not-italic">operativo</em>
           </>
         }
         subtitle="Análisis en vivo de la cartera"
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-3.5 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="mb-6 grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2 lg:grid-cols-3">
         <KpiCard label="Clientes" value={formatNumber(kpis?.total_clientes ?? 0)} variant="blue" />
         <KpiCard label="Pólizas" value={formatNumber(kpis?.total_polizas ?? 0)} />
         <KpiCard label="Premio" value={formatCurrency(Number(kpis?.prima_total ?? 0))} variant="green" />
@@ -137,9 +137,9 @@ export default function DashboardPage() {
       </div>
 
       <div className="mb-4 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-[3px] border border-line bg-panel p-5">
+        <div className="min-w-0 rounded-2xl border border-line bg-panel p-4 sm:p-5">
           <p className="mb-4 text-[11px] uppercase tracking-widest text-ink-dim">
-            Distribución por <b className="text-amber">compañía</b>
+            Distribución por <b className="text-primary">compañía</b>
           </p>
           <BarList
             items={(porCompania ?? []).map((c) => ({
@@ -148,9 +148,9 @@ export default function DashboardPage() {
             }))}
           />
         </div>
-        <div className="rounded-[3px] border border-line bg-panel p-5">
+        <div className="min-w-0 rounded-2xl border border-line bg-panel p-4 sm:p-5">
           <p className="mb-4 text-[11px] uppercase tracking-widest text-ink-dim">
-            Por <b className="text-amber">ramo</b>
+            Por <b className="text-primary">ramo</b>
           </p>
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -169,13 +169,13 @@ export default function DashboardPage() {
                     <Cell
                       key={i}
                       fill={CHART_COLORS[i % CHART_COLORS.length]}
-                      stroke="#221d18"
+                      stroke="var(--panel)"
                       className="cursor-pointer outline-none"
                     />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ background: '#2a241e', border: '1px solid #3a322a', fontSize: 11 }}
+                  contentStyle={{ background: 'var(--panel)', border: '1px solid var(--line)', fontSize: 11 }}
                   formatter={(value, _name, item) => [
                     `${formatNumber(Number(value))} pólizas · ${(item?.payload?.pct ?? 0).toFixed(1)}%`,
                     item?.payload?.ramo_nombre ?? '',
@@ -191,15 +191,15 @@ export default function DashboardPage() {
                 <button
                   type="button"
                   onClick={() => goToRamo(r.ramo_id)}
-                  className="flex w-full items-center gap-2 rounded-[3px] px-2 py-1 text-left text-xs text-ink-dim transition-colors hover:bg-bg2 hover:text-ink"
+                  className="flex w-full items-center gap-2 rounded-xl px-2 py-1 text-left text-xs text-ink-dim transition-colors hover:bg-bg2 hover:text-ink"
                 >
                   <span
-                    className="h-2.5 w-2.5 flex-shrink-0 rounded-[2px]"
+                    className="h-2.5 w-2.5 flex-shrink-0 rounded-lg"
                     style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
                   />
                   <span className="flex-1 truncate">{r.ramo_nombre}</span>
                   <span className="tabular-nums text-ink-faint">{formatNumber(Number(r.total_polizas))}</span>
-                  <span className="w-12 text-right tabular-nums text-amber">{r.pct.toFixed(1)}%</span>
+                  <span className="w-12 text-right tabular-nums text-primary">{r.pct.toFixed(1)}%</span>
                 </button>
               </li>
             ))}
@@ -208,38 +208,38 @@ export default function DashboardPage() {
       </div>
 
       <div className="mb-4 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-[3px] border border-line bg-panel p-5">
+        <div className="min-w-0 rounded-2xl border border-line bg-panel p-4 sm:p-5">
           <p className="mb-4 text-[11px] uppercase tracking-widest text-ink-dim">
-            Evolución <b className="text-amber">mensual</b>
+            Evolución <b className="text-primary">mensual</b>
           </p>
           <div className="h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={produccion ?? []}>
-                <CartesianGrid stroke="#3a322a" strokeDasharray="3 3" />
-                <XAxis dataKey="mes" tick={{ fill: '#6f6557', fontSize: 10 }} />
-                <YAxis tick={{ fill: '#6f6557', fontSize: 10 }} />
-                <Tooltip contentStyle={{ background: '#2a241e', border: '1px solid #3a322a' }} />
-                <Line type="monotone" dataKey="prima" name="Premio" stroke="#e8a13c" strokeWidth={2} dot={false} />
+                <CartesianGrid stroke="var(--line)" strokeDasharray="3 3" />
+                <XAxis dataKey="mes" tick={{ fill: 'var(--ink-dim)', fontSize: 10 }} />
+                <YAxis tick={{ fill: 'var(--ink-dim)', fontSize: 10 }} />
+                <Tooltip contentStyle={{ background: 'var(--panel)', border: '1px solid var(--line)' }} />
+                <Line type="monotone" dataKey="prima" name="Premio" stroke="var(--primary)" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="rounded-[3px] border border-line bg-panel p-5">
+        <div className="min-w-0 rounded-2xl border border-line bg-panel p-4 sm:p-5">
           <p className="mb-4 text-[11px] uppercase tracking-widest text-ink-dim">
-            Top <b className="text-amber">clientes</b>
+            Top <b className="text-primary">clientes</b>
           </p>
           <div className="h-[260px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={(topClientes ?? []).slice(0, 8)} layout="vertical">
-                <XAxis type="number" tick={{ fill: '#6f6557', fontSize: 10 }} />
+                <XAxis type="number" tick={{ fill: 'var(--ink-dim)', fontSize: 10 }} />
                 <YAxis
                   type="category"
                   dataKey="cliente_nombre"
                   width={120}
-                  tick={{ fill: '#a89c8c', fontSize: 9 }}
+                  tick={{ fill: 'var(--ink-dim)', fontSize: 9 }}
                 />
-                <Tooltip contentStyle={{ background: '#2a241e', border: '1px solid #3a322a' }} />
-                <Bar dataKey="total_polizas" fill="#c45a2e" radius={3} />
+                <Tooltip contentStyle={{ background: 'var(--panel)', border: '1px solid var(--line)' }} />
+                <Bar dataKey="total_polizas" fill="var(--navy)" radius={3} />
               </BarChart>
             </ResponsiveContainer>
           </div>

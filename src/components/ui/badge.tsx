@@ -10,7 +10,7 @@ const badgeVariants = cva(
         historica: 'border border-blue/25 bg-blue/12 text-blue',
         baja: 'border border-red/25 bg-red/12 text-red',
         default: 'border border-line bg-bg text-ink-dim',
-        amber: 'border border-amber/30 bg-amber/12 text-amber',
+        primary: 'border border-primary/30 bg-primary/12 text-primary',
       },
     },
     defaultVariants: { variant: 'default' },

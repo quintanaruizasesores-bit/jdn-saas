@@ -3,7 +3,10 @@
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
-import { siniestroSchema, type SiniestroFormData } from '@/validations/siniestro.schema';
+import {
+  siniestroSchema,
+  type SiniestroFormData,
+} from '@/validations/siniestro.schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,7 +23,11 @@ import { createClient } from '@/lib/supabase/client';
 import { fetchPolizasByCliente } from '@/services/polizas.service';
 
 const TIPOS = ['CHOQUE', 'ROBO', 'INCENDIO', 'GRANIZO', 'OTROS'] as const;
-const RESPONSABILIDADES = ['RESPONSABLE', 'NO_RESPONSABLE', 'INDETERMINADA'] as const;
+const RESPONSABILIDADES = [
+  'RESPONSABLE',
+  'NO_RESPONSABLE',
+  'INDETERMINADA',
+] as const;
 
 interface SiniestroFormProps {
   defaultValues?: Partial<SiniestroFormData>;
@@ -31,7 +38,7 @@ interface SiniestroFormProps {
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
-  return <p className="mt-1 text-xs text-red">{message}</p>;
+  return <p className="text-red mt-1 text-xs">{message}</p>;
 }
 
 export function SiniestroForm({
@@ -61,7 +68,10 @@ export function SiniestroForm({
     queryKey: ['polizas-cliente', clienteId],
     enabled: !!clienteId,
     queryFn: async () => {
-      const { data } = await fetchPolizasByCliente(createClient(), clienteId as string);
+      const { data } = await fetchPolizasByCliente(
+        createClient(),
+        clienteId as string
+      );
       return (data ?? []) as { id: string; detalle: string | null }[];
     },
   });
@@ -69,7 +79,7 @@ export function SiniestroForm({
   return (
     <form
       onSubmit={handleSubmit((d) => onSubmit(d))}
-      className="max-w-xl space-y-4 rounded-[3px] border border-line bg-panel p-6"
+      className="border-line bg-panel max-w-xl space-y-4 rounded-xl border p-6"
     >
       <div>
         <Label>Cliente</Label>
@@ -98,8 +108,14 @@ export function SiniestroForm({
               onValueChange={(v) => field.onChange(v === '__none__' ? null : v)}
               disabled={!clienteId}
             >
-              <SelectTrigger className="mt-1 border-line bg-bg">
-                <SelectValue placeholder={clienteId ? 'Sin póliza asociada' : 'Elegí un cliente primero'} />
+              <SelectTrigger className="border-line bg-bg mt-1">
+                <SelectValue
+                  placeholder={
+                    clienteId
+                      ? 'Sin póliza asociada'
+                      : 'Elegí un cliente primero'
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">Sin póliza asociada</SelectItem>
@@ -123,7 +139,7 @@ export function SiniestroForm({
             control={control}
             render={({ field }) => (
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="mt-1 border-line bg-bg">
+                <SelectTrigger className="border-line bg-bg mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -145,7 +161,7 @@ export function SiniestroForm({
             control={control}
             render={({ field }) => (
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="mt-1 border-line bg-bg">
+                <SelectTrigger className="border-line bg-bg mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -164,7 +180,11 @@ export function SiniestroForm({
 
       <div>
         <Label>Fecha</Label>
-        <Input type="date" {...register('fecha')} className="border-line bg-bg" />
+        <Input
+          type="date"
+          {...register('fecha')}
+          className="border-line bg-bg"
+        />
         <FieldError message={errors.fecha?.message} />
       </div>
 
@@ -185,7 +205,7 @@ export function SiniestroForm({
         <FieldError message={errors.descripcion?.message} />
       </div>
 
-      <Button type="submit" className="bg-amber text-[#1a1510]" disabled={loading}>
+      <Button type="submit" disabled={loading}>
         {loading ? 'Guardando...' : submitLabel}
       </Button>
     </form>

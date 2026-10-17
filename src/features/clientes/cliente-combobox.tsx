@@ -106,7 +106,7 @@ export function ClienteCombobox({ value, onChange, disabled, className }: Client
           disabled={disabled}
           aria-label="Buscar cliente"
           className={cn(
-            'flex h-auto min-h-10 w-full items-center justify-between gap-2 rounded-[3px] border border-line bg-bg2 px-3 py-2 text-left font-mono text-xs outline-none focus:border-amber disabled:cursor-not-allowed disabled:opacity-50',
+            'flex h-auto min-h-10 w-full items-center justify-between gap-2 rounded-xl border border-line bg-bg2 px-3 py-2 text-left font-body text-xs outline-none focus:border-primary disabled:cursor-not-allowed disabled:opacity-50',
             className
           )}
         >
@@ -124,7 +124,7 @@ export function ClienteCombobox({ value, onChange, disabled, className }: Client
             </span>
           )}
           {seleccionado ? (
-            <span className="shrink-0 text-[10px] uppercase tracking-wider text-amber">cambiar</span>
+            <span className="shrink-0 text-[10px] uppercase tracking-wider text-primary">cambiar</span>
           ) : (
             <ChevronsUpDown className="h-4 w-4 shrink-0 text-ink-faint" />
           )}
@@ -144,22 +144,22 @@ export function ClienteCombobox({ value, onChange, disabled, className }: Client
           />
           <CommandList>
             {tooShort ? (
-              <p className="px-3 py-6 text-center font-mono text-xs text-ink-faint">
+              <p className="px-3 py-6 text-center font-body text-xs text-ink-faint">
                 Escribí al menos {MIN_CHARS} caracteres para buscar un cliente.
               </p>
             ) : isError ? (
-              <p className="px-3 py-6 text-center font-mono text-xs text-red">
+              <p className="px-3 py-6 text-center font-body text-xs text-red">
                 Ocurrió un error al buscar clientes. Intentá de nuevo.
               </p>
             ) : mostrarCargandoVacio ? (
-              <p className="flex items-center justify-center gap-2 px-3 py-6 font-mono text-xs text-ink-faint">
+              <p className="flex items-center justify-center gap-2 px-3 py-6 font-body text-xs text-ink-faint">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Buscando...
               </p>
             ) : hayResultados ? (
               <>
                 {isFetching && (
-                  <p className="px-3 py-1 font-mono text-[10px] text-ink-faint">Actualizando...</p>
+                  <p className="px-3 py-1 font-body text-[10px] text-ink-faint">Actualizando...</p>
                 )}
                 {resultados!.map((c) => (
                   <CommandItem key={c.id} value={c.id} onSelect={() => handleSelect(c)}>
@@ -171,7 +171,7 @@ export function ClienteCombobox({ value, onChange, disabled, className }: Client
                 ))}
               </>
             ) : (
-              <p className="px-3 py-6 text-center font-mono text-xs text-ink-faint">
+              <p className="px-3 py-6 text-center font-body text-xs text-ink-faint">
                 No encontramos clientes con &quot;{term}&quot;.
               </p>
             )}

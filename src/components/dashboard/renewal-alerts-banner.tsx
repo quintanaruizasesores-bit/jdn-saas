@@ -22,14 +22,14 @@ export function RenewalAlertsBanner() {
   if (!data?.length) return null;
 
   return (
-    <div className="mb-4 rounded-[3px] border border-amber/40 bg-amber/8 px-4 py-3">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-amber">
+    <div className="mb-4 rounded-xl border border-primary/40 bg-primary/8 px-4 py-3">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-primary">
         Renovaciones próximas ({data.length})
       </p>
       <ul className="mt-2 space-y-1 text-xs text-ink-dim">
         {data.map((r) => (
           <li key={r.poliza_id}>
-            <Link href={`/polizas/${r.poliza_id}`} className="hover:text-amber">
+            <Link href={`/polizas/${r.poliza_id}`} className="hover:text-primary">
               {r.cliente_nombre}
               {r.compania_nombre ? ` · ${r.compania_nombre}` : ''} vence en {r.dias_restantes} días
             </Link>

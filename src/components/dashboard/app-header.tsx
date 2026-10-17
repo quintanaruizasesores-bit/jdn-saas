@@ -5,7 +5,13 @@ import { LogOut } from 'lucide-react';
 import { logoutAction } from '@/features/auth/actions';
 import { Button } from '@/components/ui/button';
 
-export function AppHeader({ title, subtitle }: { title?: React.ReactNode; subtitle?: string }) {
+export function AppHeader({
+  title,
+  subtitle,
+}: {
+  title?: React.ReactNode;
+  subtitle?: string;
+}) {
   const [clock, setClock] = useState('');
 
   useEffect(() => {
@@ -23,25 +29,25 @@ export function AppHeader({ title, subtitle }: { title?: React.ReactNode; subtit
   }, []);
 
   return (
-    <header className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-4">
+    <header className="border-line mb-6 flex flex-wrap items-end justify-between gap-4 border-b pb-4">
       <div>
         {title != null && (
-          <h1 className="font-serif text-[34px] font-normal leading-tight tracking-tight text-ink [&_em]:text-amber [&_em]:italic">
+          <h1 className="font-heading text-ink [&_em]:text-primary text-2xl leading-tight font-bold tracking-tight sm:text-[32px] [&_em]:not-italic">
             {title}
           </h1>
         )}
-        {subtitle && (
-          <p className="mt-1 text-[11px] tracking-wide text-ink-faint">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-ink-dim mt-1 text-sm">{subtitle}</p>}
       </div>
       <div className="flex items-center gap-3">
-        <span className="hidden text-[11px] text-ink-faint sm:inline">{clock}</span>
+        <span className="text-ink-faint hidden text-[11px] sm:inline">
+          {clock}
+        </span>
         <form action={logoutAction}>
           <Button
             type="submit"
             variant="outline"
             size="sm"
-            className="border-line text-ink-dim hover:border-amber hover:text-amber"
+            className="border-line text-ink-dim hover:border-primary hover:text-primary"
           >
             <LogOut className="mr-1 h-3 w-3" />
             Salir

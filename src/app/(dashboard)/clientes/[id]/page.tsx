@@ -102,11 +102,11 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
   return (
     <div>
       <div className="mb-4 flex items-center justify-between gap-4">
-        <Link href="/clientes" className="inline-flex items-center gap-2 text-sm text-ink-dim hover:text-amber">
+        <Link href="/clientes" className="inline-flex items-center gap-2 text-sm text-ink-dim hover:text-primary">
           <ArrowLeft className="h-4 w-4" /> Volver
         </Link>
         <div className="flex gap-2">
-          <Button asChild variant="outline" className="border-amber text-amber">
+          <Button asChild variant="outline" className="border-primary text-primary">
             <Link href={`/clientes/${id}/editar`}>Editar</Link>
           </Button>
           <ConfirmDialog
@@ -124,17 +124,17 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
         </div>
       </div>
 
-      <div className="mb-6 flex flex-wrap justify-between gap-4 rounded-[5px] border border-line bg-gradient-to-br from-panel2 to-panel p-7">
+      <div className="mb-6 flex flex-wrap justify-between gap-4 rounded-3xl border border-line bg-gradient-to-br from-panel2 to-panel p-7">
         <div>
-          <h2 className="font-serif text-3xl font-medium text-ink">{getClienteNombre(cliente)}</h2>
+          <h2 className="font-heading text-3xl font-medium text-ink">{getClienteNombre(cliente)}</h2>
           <div className="mt-3 flex flex-wrap gap-4 text-sm text-ink-dim">
             {cliente.email && (
-              <a href={`mailto:${cliente.email}`} className="text-blue hover:text-amber">
+              <a href={`mailto:${cliente.email}`} className="text-blue hover:text-primary">
                 {cliente.email}
               </a>
             )}
             {cliente.telefono && (
-              <a href={`tel:${cliente.telefono}`} className="text-blue hover:text-amber">
+              <a href={`tel:${cliente.telefono}`} className="text-blue hover:text-primary">
                 {cliente.telefono}
               </a>
             )}
@@ -150,7 +150,7 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
       </div>
 
       {riesgo.alertas.length > 0 && (
-        <div className="mb-4 rounded-[3px] border border-red/40 bg-red/7 p-4">
+        <div className="mb-4 rounded-xl border border-red/40 bg-red/7 p-4">
           <p className="text-[10px] font-bold uppercase text-red">Banderas de riesgo</p>
           <ul className="mt-2 space-y-1 text-sm">
             {riesgo.alertas.map((a, i) => (
@@ -178,16 +178,16 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
           {(polizas ?? []).map((p) => (
             <div
               key={p.id}
-              className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 rounded-[3px] border border-line bg-bg2 p-3 hover:border-amber"
+              className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 rounded-xl border border-line bg-bg2 p-3 hover:border-primary"
             >
-              <Link href={`/polizas/${p.id}`} className="text-sm text-ink hover:text-amber">
+              <Link href={`/polizas/${p.id}`} className="text-sm text-ink hover:text-primary">
                 {p.detalle || 'Sin detalle'}
               </Link>
               <span className="text-xs text-blue">{(p.compania as { nombre: string })?.nombre}</span>
               <EstadoBadge estado={p.estado as PolizaEstado} />
               <Link
                 href={`/siniestros/nuevo?cliente=${id}&poliza=${p.id}`}
-                className="inline-flex items-center gap-1 text-xs text-amber hover:underline"
+                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
               >
                 <Plus className="h-3 w-3" /> Siniestro
               </Link>
@@ -199,7 +199,7 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
             <Link
               key={s.id}
               href={`/siniestros/${s.id}`}
-              className="block rounded-[3px] border border-line bg-panel p-3 hover:border-amber"
+              className="block rounded-xl border border-line bg-panel p-3 hover:border-primary"
             >
               <p className="font-medium text-ink">
                 {SINIESTRO_TIPO_LABELS[s.tipo as keyof typeof SINIESTRO_TIPO_LABELS]} —{' '}
@@ -216,7 +216,7 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
         </TabsContent>
         <TabsContent value="tareas" className="mt-4 space-y-2">
           {(tareas ?? []).map((t) => (
-            <div key={t.id} className="rounded-[3px] border border-line bg-panel p-3">
+            <div key={t.id} className="rounded-xl border border-line bg-panel p-3">
               <p className="font-medium">{t.titulo}</p>
               <p className="text-xs text-ink-faint">{t.estado} · vence {formatDate(t.fecha_vencimiento)}</p>
             </div>
@@ -237,9 +237,9 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[3px] border border-line bg-panel p-4">
+    <div className="rounded-xl border border-line bg-panel p-4">
       <p className="text-[9px] uppercase tracking-widest text-ink-faint">{label}</p>
-      <p className="mt-1 font-serif text-2xl text-ink">{value}</p>
+      <p className="mt-1 font-heading text-2xl text-ink">{value}</p>
     </div>
   );
 }

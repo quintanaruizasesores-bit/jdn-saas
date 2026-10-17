@@ -26,7 +26,7 @@ export default function NuevoClientePage() {
   return (
     <div>
       <AppHeader title="Nuevo cliente" subtitle="Alta en cartera" />
-      <div className="max-w-2xl rounded-[3px] border border-line bg-panel p-6">
+      <div className="max-w-2xl rounded-xl border border-line bg-panel p-6">
         <ClienteForm
           onSubmit={async (d) => {
             await mutation.mutateAsync(d);

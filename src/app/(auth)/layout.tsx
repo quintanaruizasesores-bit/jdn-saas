@@ -1,16 +1,32 @@
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+import Image from 'next/image';
+
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
+    <div className="flex min-h-screen items-center justify-center px-4 py-10 sm:p-6">
       <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <h1 className="font-serif text-3xl font-semibold tracking-tight">
-            Cartera <em className="text-amber not-italic">JDN</em>
-          </h1>
-          <p className="mt-2 text-[11px] uppercase tracking-[0.2em] text-ink-faint">
+        <div className="mb-6 text-center">
+          <div className="mx-auto w-fit rounded-3xl bg-white px-6 py-3">
+            <Image
+              src="/brand/quintana-ruiz/logo.png"
+              alt="Quintana Ruiz Asesores de Seguros"
+              width={971}
+              height={550}
+              priority
+              unoptimized
+              className="h-auto w-[230px] max-w-full"
+            />
+          </div>
+          <p className="text-ink-dim mt-4 text-sm">
             Gestión de cartera de seguros
           </p>
         </div>
-        <div className="rounded-[5px] border border-line bg-panel p-8">{children}</div>
+        <div className="border-line bg-panel rounded-3xl border p-6 shadow-lg sm:p-8">
+          {children}
+        </div>
       </div>
     </div>
   );

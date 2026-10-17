@@ -6,7 +6,11 @@ import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
 import { AppHeader } from '@/components/dashboard/app-header';
 import { createClient } from '@/lib/supabase/client';
-import { fetchCompanias, upsertCompania, deleteCompania } from '@/services/companias.service';
+import {
+  fetchCompanias,
+  upsertCompania,
+  deleteCompania,
+} from '@/services/companias.service';
 import { fetchRamos, upsertRamo, deleteRamo } from '@/services/ramos.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +22,11 @@ import { BirthdayTemplateEditor } from '@/features/config/birthday-template-edit
 
 type ConfigTab = 'companias' | 'ramos' | 'cumpleanos';
 
-export function ConfigManager({ defaultTab = 'companias' }: { defaultTab?: ConfigTab }) {
+export function ConfigManager({
+  defaultTab = 'companias',
+}: {
+  defaultTab?: ConfigTab;
+}) {
   const qc = useQueryClient();
   const [nombreCia, setNombreCia] = useState('');
   const [nombreRamo, setNombreRamo] = useState('');
@@ -71,7 +79,9 @@ export function ConfigManager({ defaultTab = 'companias' }: { defaultTab?: Confi
 
   const addRamo = useMutation({
     mutationFn: async () => {
-      const { error } = await upsertRamo(createClient(), { nombre: nombreRamo.trim() });
+      const { error } = await upsertRamo(createClient(), {
+        nombre: nombreRamo.trim(),
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -96,10 +106,13 @@ export function ConfigManager({ defaultTab = 'companias' }: { defaultTab?: Confi
 
   return (
     <div>
-      <AppHeader title="Configuración" subtitle="Catálogos de compañías y ramos" />
+      <AppHeader
+        title="Configuración"
+        subtitle="Catálogos de compañías y ramos"
+      />
 
       <Tabs defaultValue={defaultTab}>
-        <TabsList className="border border-line bg-panel2">
+        <TabsList className="border-line bg-panel2 border">
           <TabsTrigger value="companias">Compañías</TabsTrigger>
           <TabsTrigger value="ramos">Ramos</TabsTrigger>
           <TabsTrigger value="cumpleanos">Cumpleaños</TabsTrigger>
@@ -111,13 +124,14 @@ export function ConfigManager({ defaultTab = 'companias' }: { defaultTab?: Confi
               placeholder="Nombre compañía"
               value={nombreCia}
               onChange={(e) => setNombreCia(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && nombreCia.trim() && addCia.mutate()}
-              className="max-w-xs border-line bg-bg2"
+              onKeyDown={(e) =>
+                e.key === 'Enter' && nombreCia.trim() && addCia.mutate()
+              }
+              className="border-line bg-bg2 max-w-xs"
             />
             <Button
               onClick={() => addCia.mutate()}
               disabled={!nombreCia.trim() || addCia.isPending}
-              className="bg-amber text-[#1a1510]"
             >
               Agregar
             </Button>
@@ -125,18 +139,26 @@ export function ConfigManager({ defaultTab = 'companias' }: { defaultTab?: Confi
           {companiasQuery.isError ? (
             <ErrorState onRetry={() => companiasQuery.refetch()} />
           ) : !companiasQuery.data?.length ? (
-            <EmptyState title="Sin compañías" description="Agregá la primera compañía arriba." />
+            <EmptyState
+              title="Sin compañías"
+              description="Agregá la primera compañía arriba."
+            />
           ) : (
             <ul className="space-y-2">
               {companiasQuery.data.map((c) => (
                 <li
                   key={c.id}
-                  className="flex items-center justify-between rounded-[3px] border border-line bg-panel px-4 py-3"
+                  className="border-line bg-panel flex items-center justify-between rounded-xl border px-4 py-3"
                 >
                   <span>{c.nombre}</span>
                   <ConfirmDialog
                     trigger={
-                      <Button variant="ghost" size="sm" className="text-red" aria-label="Eliminar compañía">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red"
+                        aria-label="Eliminar compañía"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     }
@@ -158,13 +180,14 @@ export function ConfigManager({ defaultTab = 'companias' }: { defaultTab?: Confi
               placeholder="Nombre ramo"
               value={nombreRamo}
               onChange={(e) => setNombreRamo(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && nombreRamo.trim() && addRamo.mutate()}
-              className="max-w-xs border-line bg-bg2"
+              onKeyDown={(e) =>
+                e.key === 'Enter' && nombreRamo.trim() && addRamo.mutate()
+              }
+              className="border-line bg-bg2 max-w-xs"
             />
             <Button
               onClick={() => addRamo.mutate()}
               disabled={!nombreRamo.trim() || addRamo.isPending}
-              className="bg-amber text-[#1a1510]"
             >
               Agregar
             </Button>
@@ -172,18 +195,26 @@ export function ConfigManager({ defaultTab = 'companias' }: { defaultTab?: Confi
           {ramosQuery.isError ? (
             <ErrorState onRetry={() => ramosQuery.refetch()} />
           ) : !ramosQuery.data?.length ? (
-            <EmptyState title="Sin ramos" description="Agregá el primer ramo arriba." />
+            <EmptyState
+              title="Sin ramos"
+              description="Agregá el primer ramo arriba."
+            />
           ) : (
             <ul className="space-y-2">
               {ramosQuery.data.map((r) => (
                 <li
                   key={r.id}
-                  className="flex items-center justify-between rounded-[3px] border border-line bg-panel px-4 py-3"
+                  className="border-line bg-panel flex items-center justify-between rounded-xl border px-4 py-3"
                 >
                   <span>{r.nombre}</span>
                   <ConfirmDialog
                     trigger={
-                      <Button variant="ghost" size="sm" className="text-red" aria-label="Eliminar ramo">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red"
+                        aria-label="Eliminar ramo"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     }

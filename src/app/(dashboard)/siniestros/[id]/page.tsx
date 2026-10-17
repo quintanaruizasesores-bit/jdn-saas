@@ -99,7 +99,7 @@ export default function SiniestroDetallePage({ params }: { params: Promise<{ id:
 
       <div className="mb-6 flex flex-wrap gap-2">
         {backButton}
-        <Button asChild variant="outline" className="border-amber text-amber">
+        <Button asChild variant="outline" className="border-primary text-primary">
           <Link href={`/siniestros/${id}/editar`}>
             <Pencil className="mr-1 h-4 w-4" /> Editar
           </Link>
@@ -118,10 +118,10 @@ export default function SiniestroDetallePage({ params }: { params: Promise<{ id:
         />
       </div>
 
-      <div className="grid max-w-2xl gap-px overflow-hidden rounded-[3px] border border-line bg-line text-sm">
+      <div className="grid max-w-2xl gap-px overflow-hidden rounded-xl border border-line bg-line text-sm">
         <Row label="Cliente">
           {cliente ? (
-            <Link href={`/clientes/${cliente.id}`} className="text-amber hover:underline">
+            <Link href={`/clientes/${cliente.id}`} className="text-primary hover:underline">
               {getClienteNombre(cliente)}
             </Link>
           ) : (
@@ -130,7 +130,7 @@ export default function SiniestroDetallePage({ params }: { params: Promise<{ id:
         </Row>
         <Row label="Póliza">
           {poliza ? (
-            <Link href={`/polizas/${poliza.id}`} className="text-amber hover:underline">
+            <Link href={`/polizas/${poliza.id}`} className="text-primary hover:underline">
               {poliza.detalle || 'Ver póliza'}
             </Link>
           ) : (

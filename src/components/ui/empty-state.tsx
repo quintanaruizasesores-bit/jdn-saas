@@ -9,7 +9,7 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <p className="font-serif text-xl italic text-ink-dim">{title}</p>
+      <p className="font-heading text-xl font-semibold text-ink-dim">{title}</p>
       {description && (
         <p className="mt-2 max-w-md text-sm text-ink-faint">{description}</p>
       )}

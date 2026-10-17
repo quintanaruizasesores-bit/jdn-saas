@@ -54,7 +54,7 @@ export default function EditarPolizaPage({ params }: { params: Promise<{ id: str
   return (
     <div>
       <AppHeader title="Editar póliza" />
-      <div className="mt-6 max-w-2xl rounded-[3px] border border-line bg-panel p-6">
+      <div className="mt-6 max-w-2xl rounded-xl border border-line bg-panel p-6">
         {isLoading ? (
           <Skeleton className="h-64 bg-panel2" />
         ) : poliza ? (

@@ -141,14 +141,14 @@ function PolizasListado() {
             <SelectItem value="BAJA">Baja</SelectItem>
           </SelectContent>
         </Select>
-        <Button asChild className="border border-amber bg-bg2 text-amber-bright hover:bg-amber hover:text-[#1a1510]">
+        <Button asChild variant="outline">
           <Link href="/polizas/nueva">
             <Plus className="mr-1 h-4 w-4" /> Nueva póliza
           </Link>
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-[3px] border border-line bg-panel">
+      <div className="overflow-hidden rounded-xl border border-line bg-panel">
         {isLoading ? (
           <p className="p-8 text-ink-faint">Cargando...</p>
         ) : !data?.data?.length ? (
@@ -177,7 +177,7 @@ function PolizasListado() {
                       onDoubleClick={() => window.location.href = `/polizas/${p.id}`}
                     >
                       <TableCell>
-                        <Link href={`/clientes/${p.cliente_id}`} className="font-medium text-ink hover:text-amber">
+                        <Link href={`/clientes/${p.cliente_id}`} className="font-medium text-ink hover:text-primary">
                           {c ? getClienteNombre(c) : '—'}
                         </Link>
                       </TableCell>
@@ -207,7 +207,7 @@ function PolizasListado() {
       </div>
       <div className="mt-2 flex items-center justify-between">
         <p className="text-xs text-ink-faint">
-          <b className="text-amber">{total}</b> pólizas
+          <b className="text-primary">{total}</b> pólizas
         </p>
         {pageCount > 1 && (
           <div className="flex items-center gap-2 text-xs text-ink-faint">

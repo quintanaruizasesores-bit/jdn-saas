@@ -25,21 +25,27 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-[3px] border border-line bg-gradient-to-br from-panel to-bg2 p-5',
+        'border-line bg-panel relative overflow-hidden rounded-2xl border p-5 shadow-sm',
+        'before:bg-primary before:absolute before:top-0 before:left-0 before:h-full before:w-[3px] before:content-[""]',
         variant === 'green' && 'before:bg-green',
         variant === 'blue' && 'before:bg-blue',
-        variant === 'rust' && 'before:bg-rust',
-        'before:absolute before:left-0 before:top-0 before:h-full before:w-[3px] before:bg-amber before:content-[""]'
+        variant === 'rust' && 'before:bg-rust'
       )}
     >
-      <div className="text-[9.5px] uppercase tracking-[0.18em] text-ink-faint">{label}</div>
-      <div className="mt-2 font-serif text-3xl font-medium tracking-tight text-ink">
+      <div className="text-ink-faint text-[9.5px] tracking-[0.18em] uppercase">
+        {label}
+      </div>
+      <div className="font-heading text-ink mt-2 text-2xl font-semibold sm:text-3xl tracking-tight">
         {isCurrency && typeof value === 'number' && (
-          <small className="mr-1 font-mono text-sm font-normal text-ink-dim">$</small>
+          <small className="font-body text-ink-dim mr-1 text-sm font-normal">
+            $
+          </small>
         )}
         {display}
       </div>
-      {subtitle && <div className="mt-1 text-[10.5px] text-ink-dim">{subtitle}</div>}
+      {subtitle && (
+        <div className="text-ink-dim mt-1 text-[10.5px]">{subtitle}</div>
+      )}
     </div>
   );
 }

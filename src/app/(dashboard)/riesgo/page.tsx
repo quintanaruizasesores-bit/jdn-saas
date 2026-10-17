@@ -25,7 +25,7 @@ import { calculateRiskScore } from '@/lib/riesgo/calculate-risk-score';
 import { getClienteNombre } from '@/lib/utils';
 import { SINIESTRO_TIPO_LABELS } from '@/lib/riesgo/calculate-risk-score';
 
-const COLORS = ['#cf6a5c', '#e8a13c', '#7fa86b', '#6b93a8', '#c45a2e'];
+const CHART_COLORS = ['#1E5BBF', '#1A2556', '#608BD0', '#154A9F', '#879EC7', '#354B88', '#ABC1E4'];
 
 export default function RiesgoPage() {
   const { data: clientesConRiesgo, isLoading } = useQuery({
@@ -105,39 +105,39 @@ export default function RiesgoPage() {
       </div>
 
       <div className="mb-6 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-[3px] border border-line bg-panel p-5">
+        <div className="min-w-0 rounded-2xl border border-line bg-panel p-4 sm:p-5">
           <p className="mb-4 text-[11px] uppercase tracking-widest text-ink-dim">Por tipo</p>
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={porTipo ?? []} layout="vertical">
-                <XAxis type="number" tick={{ fill: '#6f6557', fontSize: 10 }} />
-                <YAxis type="category" dataKey="name" width={100} tick={{ fill: '#a89c8c', fontSize: 9 }} />
-                <Tooltip contentStyle={{ background: '#2a241e', border: '1px solid #3a322a' }} />
-                <Bar dataKey="total" fill="#e8a13c" radius={3} />
+                <XAxis type="number" tick={{ fill: 'var(--ink-dim)', fontSize: 10 }} />
+                <YAxis type="category" dataKey="name" width={100} tick={{ fill: 'var(--ink-dim)', fontSize: 9 }} />
+                <Tooltip contentStyle={{ background: 'var(--panel)', border: '1px solid var(--line)' }} />
+                <Bar dataKey="total" fill="var(--primary)" radius={3} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="rounded-[3px] border border-line bg-panel p-5">
+        <div className="min-w-0 rounded-2xl border border-line bg-panel p-4 sm:p-5">
           <p className="mb-4 text-[11px] uppercase tracking-widest text-ink-dim">Responsabilidad (choques)</p>
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={porResp ?? []} dataKey="total" nameKey="responsabilidad" innerRadius={50} outerRadius={80}>
                   {(porResp ?? []).map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="#221d18" />
+                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="var(--panel)" />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ background: '#2a241e', border: '1px solid #3a322a' }} />
+                <Tooltip contentStyle={{ background: 'var(--panel)', border: '1px solid var(--line)' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      <div className="rounded-[3px] border border-line bg-panel p-5">
+      <div className="min-w-0 rounded-2xl border border-line bg-panel p-4 sm:p-5">
         <p className="mb-4 text-[11px] uppercase tracking-widest text-ink-dim">
-          Ranking de <b className="text-amber">riesgo</b>
+          Ranking de <b className="text-primary">riesgo</b>
         </p>
         {isLoading ? (
           <p className="text-ink-faint">Calculando scores...</p>
@@ -147,7 +147,7 @@ export default function RiesgoPage() {
               <Link
                 key={row.cliente.id}
                 href={`/clientes/${row.cliente.id}`}
-                className="grid grid-cols-[42px_1fr_auto] items-center gap-4 rounded-[3px] border border-line bg-bg2 p-4 transition-colors hover:border-amber"
+                className="grid grid-cols-[42px_1fr_auto] items-center gap-4 rounded-xl border border-line bg-bg2 p-4 transition-colors hover:border-primary"
               >
                 <RiskBadge score={row.riesgo.score} nivel={row.riesgo.nivel} />
                 <div>
@@ -159,7 +159,7 @@ export default function RiesgoPage() {
                         className={`rounded-full border px-2 py-0.5 text-[9px] ${
                           a.nivel === 'alto'
                             ? 'border-red/30 bg-red/15 text-red'
-                            : 'border-amber/25 bg-amber/12 text-amber'
+                            : 'border-primary/25 bg-primary/12 text-primary'
                         }`}
                       >
                         {a.txt}

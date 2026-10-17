@@ -42,7 +42,7 @@ export default function NuevaPolizaPage() {
   return (
     <div>
       <AppHeader title="Nueva póliza" />
-      <div className="max-w-2xl rounded-[3px] border border-line bg-panel p-6">
+      <div className="max-w-2xl rounded-xl border border-line bg-panel p-6">
         <PolizaForm
           companias={companias ?? []}
           ramos={ramos ?? []}
