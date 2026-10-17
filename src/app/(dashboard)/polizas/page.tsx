@@ -94,7 +94,7 @@ function PolizasListado() {
 
       <div className="mb-4 flex flex-wrap gap-2">
         <div className="relative min-w-[200px] flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+          <Search className="text-ink-faint absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Buscar cliente, detalle..."
             value={search}
@@ -105,8 +105,14 @@ function PolizasListado() {
             className="border-line bg-bg2 pl-9"
           />
         </div>
-        <Select value={companiaId || 'all'} onValueChange={(v) => { setCompaniaId(v === 'all' ? '' : v); resetToFirstPage(); }}>
-          <SelectTrigger className="w-[160px] border-line bg-bg2">
+        <Select
+          value={companiaId || 'all'}
+          onValueChange={(v) => {
+            setCompaniaId(v === 'all' ? '' : v);
+            resetToFirstPage();
+          }}
+        >
+          <SelectTrigger className="border-line bg-bg2 w-[160px]">
             <span className="min-w-0 flex-1 overflow-hidden text-left">
               <SelectValue placeholder="Compañía" />
             </span>
@@ -120,8 +126,14 @@ function PolizasListado() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={ramoId || 'all'} onValueChange={(v) => { setRamoId(v === 'all' ? '' : v); resetToFirstPage(); }}>
-          <SelectTrigger className="w-[140px] border-line bg-bg2">
+        <Select
+          value={ramoId || 'all'}
+          onValueChange={(v) => {
+            setRamoId(v === 'all' ? '' : v);
+            resetToFirstPage();
+          }}
+        >
+          <SelectTrigger className="border-line bg-bg2 w-[140px]">
             <SelectValue placeholder="Ramo" />
           </SelectTrigger>
           <SelectContent>
@@ -133,8 +145,14 @@ function PolizasListado() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={estado || 'all'} onValueChange={(v) => { setEstado(v === 'all' ? '' : v); resetToFirstPage(); }}>
-          <SelectTrigger className="w-[130px] border-line bg-bg2">
+        <Select
+          value={estado || 'all'}
+          onValueChange={(v) => {
+            setEstado(v === 'all' ? '' : v);
+            resetToFirstPage();
+          }}
+        >
+          <SelectTrigger className="border-line bg-bg2 w-[130px]">
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
@@ -151,9 +169,9 @@ function PolizasListado() {
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-line bg-panel">
+      <div className="border-line bg-panel overflow-hidden rounded-xl border">
         {isLoading ? (
-          <p className="p-8 text-ink-faint">Cargando...</p>
+          <p className="text-ink-faint p-8">Cargando...</p>
         ) : !data?.data?.length ? (
           <EmptyState title="Sin pólizas" />
         ) : (
@@ -166,21 +184,32 @@ function PolizasListado() {
                   <TableHead className="text-ink-faint">Compañía</TableHead>
                   <TableHead className="text-ink-faint">Detalle</TableHead>
                   <TableHead className="text-ink-faint">Vigencia</TableHead>
-                  <TableHead className="text-right text-ink-faint">Premio mensual</TableHead>
+                  <TableHead className="text-ink-faint text-right">
+                    Premio mensual
+                  </TableHead>
                   <TableHead className="text-ink-faint">Estado</TableHead>
+                  <TableHead className="text-ink-faint">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.data.map((p) => {
-                  const c = p.cliente as { nombre: string; apellido: string } | null;
+                  const c = p.cliente as {
+                    nombre: string;
+                    apellido: string;
+                  } | null;
                   return (
                     <TableRow
                       key={p.id}
-                      className="cursor-pointer border-line/50 hover:bg-panel2"
-                      onDoubleClick={() => window.location.href = `/polizas/${p.id}`}
+                      className="border-line/50 hover:bg-panel2 cursor-pointer"
+                      onDoubleClick={() =>
+                        (window.location.href = `/polizas/${p.id}`)
+                      }
                     >
                       <TableCell>
-                        <Link href={`/clientes/${p.cliente_id}`} className="font-medium text-ink hover:text-primary">
+                        <Link
+                          href={`/clientes/${p.cliente_id}`}
+                          className="text-ink hover:text-primary font-medium"
+                        >
                           {c ? getClienteNombre(c) : '—'}
                         </Link>
                       </TableCell>
@@ -188,17 +217,47 @@ function PolizasListado() {
                         {(p.ramo as { nombre: string })?.nombre ?? '—'}
                       </TableCell>
                       <TableCell>
-                        <CompaniaBadge nombre={(p.compania as { nombre: string; color?: string | null } | null)?.nombre} color={(p.compania as { color?: string | null } | null)?.color} />
+                        <CompaniaBadge
+                          nombre={
+                            (
+                              p.compania as {
+                                nombre: string;
+                                color?: string | null;
+                              } | null
+                            )?.nombre
+                          }
+                          color={
+                            (p.compania as { color?: string | null } | null)
+                              ?.color
+                          }
+                        />
                       </TableCell>
-                      <TableCell className="max-w-[200px] truncate text-xs">{p.detalle || '—'}</TableCell>
-                      <TableCell className="text-xs">{formatDate(p.fecha_inicio)}</TableCell>
+                      <TableCell className="max-w-[200px] truncate text-xs">
+                        {p.detalle || '—'}
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        {formatDate(p.fecha_inicio)}
+                      </TableCell>
                       <TableCell className="text-right font-medium tabular-nums">
-                        {Number(p.prima) > 0 ? formatCurrency(Number(p.prima)) : (
-                          <span className="italic text-ink-faint">sin cargar</span>
+                        {Number(p.prima) > 0 ? (
+                          formatCurrency(Number(p.prima))
+                        ) : (
+                          <span className="text-ink-faint italic">
+                            sin cargar
+                          </span>
                         )}
                       </TableCell>
                       <TableCell>
                         <EstadoBadge estado={p.estado as PolizaEstado} />
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          href={`/polizas/${p.id}/editar`}
+                          className="text-primary underline"
+                          aria-label={`Editar póliza de ${c ? getClienteNombre(c) : p.detalle || 'cliente'}`}
+                        >
+                          Editar
+                        </Link>
                       </TableCell>
                     </TableRow>
                   );
@@ -209,11 +268,11 @@ function PolizasListado() {
         )}
       </div>
       <div className="mt-2 flex items-center justify-between">
-        <p className="text-xs text-ink-faint">
+        <p className="text-ink-faint text-xs">
           <b className="text-primary">{total}</b> pólizas
         </p>
         {pageCount > 1 && (
-          <div className="flex items-center gap-2 text-xs text-ink-faint">
+          <div className="text-ink-faint flex items-center gap-2 text-xs">
             <Button
               variant="outline"
               size="sm"
@@ -244,7 +303,7 @@ function PolizasListado() {
 
 export default function PolizasPage() {
   return (
-    <Suspense fallback={<p className="p-8 text-ink-faint">Cargando...</p>}>
+    <Suspense fallback={<p className="text-ink-faint p-8">Cargando...</p>}>
       <PolizasListado />
     </Suspense>
   );

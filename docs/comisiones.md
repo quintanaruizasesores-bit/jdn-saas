@@ -137,3 +137,25 @@ la ventana y errores de páginas sin presentar totales parciales. Pruebas de UI:
 KPI superior y panel coherentes, tooltip y datos incompletos sin falsos ceros.
 Las pruebas SQL aisladas validan 007 sobre el esquema 001–006 con PostgreSQL
 embebido, sin conectarse a Supabase remoto.
+
+## Revisar y completar registros pendientes
+
+«Pendiente» significa que el aporte de una póliza no se puede calcular al corte
+actual. No es un saldo a cobrar ni una deuda. El motor devuelve los ids y motivos
+junto con la serie: premio mensual ausente, cero o inválido; fechas inconsistentes;
+periodicidad no identificada en una versión; o ausencia de versión acreditada hoy.
+No marca como pendientes los huecos de meses anteriores, una fecha de inicio vacía
+por sí sola ni las pólizas que ya se sabe que no aportan hoy.
+
+Desde **Dashboard → Revisar pólizas** se abre `/polizas/pendientes-comision` con
+únicamente esos registros, identificados por cliente, compañía y detalle. Cada uno
+muestra el motivo y un botón **Editar póliza**. Completar el **Premio mensual** real
+si falta, revisar las fechas si están señaladas y guardar con la fecha de efecto
+correcta. Al guardar se vuelve al listado pendiente y se invalidan las métricas;
+una póliza calculable desaparece de la lista y su aporte se incorpora desde la
+fecha efectiva. La cartera general también tiene un enlace visible **Editar**.
+
+Completar datos actuales no rellena automáticamente meses históricos sin respaldo.
+Una versión futura sin antecedente requiere revisar el historial, no adelantar su
+fecha para forzar un total. No hay nueva migración, actualización masiva ni cambios
+a datos reales como parte de esta mejora de navegación.

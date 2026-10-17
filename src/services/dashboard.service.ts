@@ -29,7 +29,11 @@ export async function fetchComisionMensual(
   supabase: SupabaseClient,
   now = new Date()
 ) {
-  const polizas: PolizaComision[] = [];
+  const polizas: (PolizaComision & {
+    detalle?: string | null;
+    cliente?: { nombre: string; apellido: string } | null;
+    compania?: { nombre: string; color?: string | null } | null;
+  })[] = [];
   const historial: HistorialComision[] = [];
   const pageSize = 1000;
 
@@ -37,7 +41,7 @@ export async function fetchComisionMensual(
   for (let offset = 0; ; offset += pageSize) {
     const { data, error } = await supabase
       .from('polizas')
-      .select('*')
+      .select('*, cliente:clientes(nombre, apellido), compania:companias(*)')
       .order('id', { ascending: true })
       .range(offset, offset + pageSize - 1);
     if (error) throw error;
@@ -57,7 +61,20 @@ export async function fetchComisionMensual(
     if (!data || data.length < pageSize) break;
   }
 
-  return calcularComisionMensual(polizas, now, historial);
+  const calculo = calcularComisionMensual(polizas, now, historial);
+  const porId = new Map(polizas.map((p) => [p.id, p]));
+  return {
+    ...calculo,
+    pendientes: calculo.pendientes.map((pendiente) => {
+      const poliza = porId.get(pendiente.polizaId)!;
+      return {
+        ...pendiente,
+        cliente: poliza.cliente ?? null,
+        compania: poliza.compania ?? null,
+        detalle: poliza.detalle ?? null,
+      };
+    }),
+  };
 }
 
 export async function fetchClientesTop(supabase: SupabaseClient) {

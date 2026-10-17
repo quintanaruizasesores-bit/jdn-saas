@@ -54,7 +54,36 @@ export interface ComisionMensual {
   enCurso: boolean;
 }
 
+export const MOTIVOS_COMISION_PENDIENTE = {
+  PREMIO: {
+    titulo: 'Premio mensual sin cargar',
+    ayuda: 'Cargá el importe mensual real y guardá la póliza.',
+  },
+  FECHAS: {
+    titulo: 'Fechas inválidas o inconsistentes',
+    ayuda: 'Revisá las fechas de vigencia y baja de la póliza.',
+  },
+  PERIODICIDAD: {
+    titulo: 'Periodicidad sin identificar',
+    ayuda:
+      'Requiere revisar el registro de origen; los premios de esta cartera son mensuales.',
+  },
+  VERSION: {
+    titulo: 'Sin versión acreditada para hoy',
+    ayuda:
+      'Revisá la fecha de efecto y el historial. No adelantes un cambio futuro para completar el cálculo.',
+  },
+} as const;
+
+export type MotivoComisionPendiente = keyof typeof MOTIVOS_COMISION_PENDIENTE;
+export interface ComisionPendiente {
+  polizaId: string;
+  motivo: MotivoComisionPendiente;
+}
+
 export interface ComisionDashboard {
+  /** Sólo los registros sin aporte calculable al corte actual, no huecos históricos. */
+  pendientes: ComisionPendiente[];
   serie: ComisionMensual[];
   resumen: {
     comisionActual: number | null;

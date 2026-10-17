@@ -162,9 +162,9 @@ describe('indicadores de comisión', () => {
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole('link', { name: 'Revisar pólizas' })
-    ).toHaveAttribute('href', '/polizas');
+    ).toHaveAttribute('href', '/polizas/pendientes-comision');
     expect(
-      screen.getByText(/1 pólizas con datos pendientes/)
+      screen.getByText(/1 póliza con datos pendientes/)
     ).toBeInTheDocument();
   });
 });

@@ -448,3 +448,45 @@ describe('periodicidad explícita', () => {
     }
   );
 });
+
+describe('registros pendientes de la estimación actual', () => {
+  it('identifica el motivo exacto sin marcar pólizas futuras o inactivas ni huecos históricos', () => {
+    const result = calcularComisionMensual(
+      [
+        poliza({ id: 'sin-premio', prima: 0 }),
+        poliza({ id: 'fecha-invalida', fecha_fin: '2025-01-01' }),
+        poliza({ id: 'sin-version', comision_desde: '2026-07-01' }),
+        poliza({ id: 'periodicidad', prima_periodicidad: null }),
+        poliza({ id: 'futura', fecha_inicio: '2026-07-01', prima: 0 }),
+        poliza({ id: 'baja', estado: 'BAJA', prima: 0 }),
+        poliza({ id: 'sin-inicio', fecha_inicio: null, comision_desde: null }),
+      ],
+      now
+    );
+    expect(result.pendientes).toEqual([
+      { polizaId: 'sin-premio', motivo: 'PREMIO' },
+      { polizaId: 'fecha-invalida', motivo: 'FECHAS' },
+      { polizaId: 'sin-version', motivo: 'VERSION' },
+      { polizaId: 'periodicidad', motivo: 'PERIODICIDAD' },
+    ]);
+    expect(result.resumen.sinDatos).toBe(result.pendientes.length);
+    expect(result.resumen.comisionActual).toBe(140);
+  });
+
+  it('completar el premio elimina el pendiente y suma su aporte desde la fecha efectiva, sin inventar el pasado', () => {
+    const antes = poliza({ prima: 0 });
+    const despues = poliza({ prima: 5000, comision_desde: '2026-06-17' });
+    expect(calcularComisionMensual([antes], now).pendientes).toHaveLength(1);
+    const result = calcularComisionMensual([despues], now, [
+      evento(antes, despues),
+    ]);
+    expect(result.pendientes).toEqual([]);
+    expect(result.resumen).toMatchObject({
+      comisionActual: 700,
+      sinDatos: 0,
+      polizas: 1,
+    });
+    expect(importe(result, '2026-05')).toBe(0);
+    expect(result.serie.find((p) => p.mes === '2026-05')?.sinDatos).toBe(1);
+  });
+});

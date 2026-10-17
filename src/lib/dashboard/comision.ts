@@ -2,6 +2,8 @@ import {
   COMISION_RATE,
   PERIODICIDAD_LEGACY_CONFIRMADA,
   type ComisionDashboard,
+  type ComisionPendiente,
+  type MotivoComisionPendiente,
   type ComisionMensual,
   type HistorialComision,
   type PolizaComision,
@@ -100,23 +102,32 @@ function version(
   };
 }
 
-function aporte(datos: PolizaComision, corte: string): number | null {
-  if (datos.fecha_baja && !esFecha(datos.fecha_baja)) return null;
+function aporte(
+  datos: PolizaComision,
+  corte: string
+): number | MotivoComisionPendiente {
+  if (datos.fecha_baja && !esFecha(datos.fecha_baja)) return 'FECHAS';
   if (datos.fecha_baja && corte >= datos.fecha_baja) return 0;
   // Un estado inactivo observado en una versión acreditada no aporta desde ella.
   if (datos.estado !== 'VIGENTE') return 0;
   // La versión VIGENTE acredita el aporte desde que fue observada, aunque falte
   // el inicio contractual. No acredita períodos anteriores a esa observación.
-  if (datos.fecha_inicio && !esFecha(datos.fecha_inicio)) return null;
+  if (datos.fecha_inicio && !esFecha(datos.fecha_inicio)) return 'FECHAS';
   if (esFecha(datos.fecha_inicio) && datos.fecha_inicio > corte) return 0;
   const finAmbiguo = datos.fechasVerificadas === false;
   if (!finAmbiguo && datos.fecha_fin) {
-    if (!esFecha(datos.fecha_fin)) return null;
-    if (datos.fecha_inicio && datos.fecha_fin < datos.fecha_inicio) return null;
+    if (!esFecha(datos.fecha_fin)) return 'FECHAS';
+    if (datos.fecha_inicio && datos.fecha_fin < datos.fecha_inicio)
+      return 'FECHAS';
     if (corte > datos.fecha_fin) return 0; // fin de vigencia inclusivo
   }
   const mensual = mensualizarPrima(datos.prima, datos.prima_periodicidad);
-  return mensual === null ? null : mensual * COMISION_RATE;
+  if (mensual === null) {
+    return mensualizarPrima(datos.prima, 'MENSUAL') === null
+      ? 'PREMIO'
+      : 'PERIODICIDAD';
+  }
+  return mensual * COMISION_RATE;
 }
 
 /**
@@ -195,6 +206,7 @@ export function calcularComisionMensual(
     );
 
   const serie: ComisionMensual[] = [];
+  const pendientes: ComisionPendiente[] = [];
   const cursor = new Date(`${desde}T12:00:00Z`);
   for (let i = 0; i < 12; i++) {
     const mes = cursor.toISOString().slice(0, 7);
@@ -211,7 +223,7 @@ export function calcularComisionMensual(
     for (const poliza of polizas) {
       const list = versiones.get(poliza.id) ?? [];
       const vigente = list.findLast((v) => v.desde <= corte);
-      let valor: number | null = null;
+      let valor: number | MotivoComisionPendiente = 'VERSION';
       if (vigente) valor = aporte(vigente.datos, corte);
       else if (
         list[0] &&
@@ -221,8 +233,10 @@ export function calcularComisionMensual(
       )
         valor = 0;
       else sinHistorial++;
-      if (valor === null) sinDatos++;
-      else {
+      if (typeof valor !== 'number') {
+        sinDatos++;
+        if (enCurso) pendientes.push({ polizaId: poliza.id, motivo: valor });
+      } else {
         comisionConocida += valor;
         if (valor > 0) cantidad++;
       }
@@ -260,6 +274,7 @@ export function calcularComisionMensual(
   const actual = serie[serie.length - 1];
   return {
     serie,
+    pendientes,
     totalPolizas: polizas.length,
     resumen: {
       comisionActual: actual.comision,

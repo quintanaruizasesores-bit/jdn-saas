@@ -114,3 +114,34 @@ describe('fetchComisionMensual', () => {
     );
   });
 });
+
+it('devuelve los datos para identificar y editar exactamente las pólizas pendientes del indicador', async () => {
+  const { client } = mockSupabase([
+    {
+      data: [
+        {
+          ...row,
+          id: 'pendiente',
+          prima: 0,
+          cliente: { nombre: 'Ana', apellido: 'Prueba' },
+          compania: { nombre: 'Sancor', color: '#800020' },
+          detalle: 'Auto de prueba',
+        },
+        row,
+        { ...row, id: 'inactiva', estado: 'BAJA', prima: 0 },
+      ],
+      error: null,
+    },
+  ]);
+  const result = await fetchComisionMensual(client, now);
+  expect(result.pendientes).toEqual([
+    {
+      polizaId: 'pendiente',
+      motivo: 'PREMIO',
+      cliente: { nombre: 'Ana', apellido: 'Prueba' },
+      compania: { nombre: 'Sancor', color: '#800020' },
+      detalle: 'Auto de prueba',
+    },
+  ]);
+  expect(result.pendientes.length).toBe(result.resumen.sinDatos);
+});

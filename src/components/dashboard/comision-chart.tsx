@@ -75,7 +75,7 @@ export function ComisionChart() {
         Comisión <b className="text-primary">mensual estimada</b>
       </h2>
       <p className="text-ink-dim mt-1 text-xs">
-        Cartera al cierre de cada mes · 14% del premio mensual
+        Evolución del total mensual de la cartera · 14% del premio mensual
       </p>
       {isLoading ? (
         <Skeleton className="mt-4 h-[340px]" aria-label="Cargando comisiones" />
@@ -211,9 +211,13 @@ export function ComisionChart() {
           )}
           {!!resumen?.sinDatos && (
             <p className="text-ink-dim mt-2 text-xs">
-              {formatNumber(resumen.sinDatos)} pólizas con datos pendientes; el
-              subtotal incluye los aportes calculables.{' '}
-              <Link href="/polizas" className="text-primary underline">
+              {formatNumber(resumen.sinDatos)}{' '}
+              {resumen.sinDatos === 1 ? 'póliza' : 'pólizas'} con datos
+              pendientes; el subtotal incluye los aportes calculables.{' '}
+              <Link
+                href="/polizas/pendientes-comision"
+                className="text-primary underline"
+              >
                 Revisar pólizas
               </Link>
             </p>
