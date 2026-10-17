@@ -115,7 +115,7 @@ function PolizasListado() {
             <SelectItem value="all">Todas</SelectItem>
             {(companias ?? []).map((c) => (
               <SelectItem key={c.id} value={c.id} textValue={c.nombre}>
-                <CompaniaBadge nombre={c.nombre} />
+                <CompaniaBadge nombre={c.nombre} color={c.color} />
               </SelectItem>
             ))}
           </SelectContent>
@@ -166,7 +166,7 @@ function PolizasListado() {
                   <TableHead className="text-ink-faint">Compañía</TableHead>
                   <TableHead className="text-ink-faint">Detalle</TableHead>
                   <TableHead className="text-ink-faint">Vigencia</TableHead>
-                  <TableHead className="text-right text-ink-faint">Prima</TableHead>
+                  <TableHead className="text-right text-ink-faint">Premio mensual</TableHead>
                   <TableHead className="text-ink-faint">Estado</TableHead>
                 </TableRow>
               </TableHeader>
@@ -188,7 +188,7 @@ function PolizasListado() {
                         {(p.ramo as { nombre: string })?.nombre ?? '—'}
                       </TableCell>
                       <TableCell>
-                        <CompaniaBadge nombre={(p.compania as { nombre: string } | null)?.nombre} />
+                        <CompaniaBadge nombre={(p.compania as { nombre: string; color?: string | null } | null)?.nombre} color={(p.compania as { color?: string | null } | null)?.color} />
                       </TableCell>
                       <TableCell className="max-w-[200px] truncate text-xs">{p.detalle || '—'}</TableCell>
                       <TableCell className="text-xs">{formatDate(p.fecha_inicio)}</TableCell>

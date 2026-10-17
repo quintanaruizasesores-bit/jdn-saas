@@ -1,8 +1,14 @@
 import { getCompaniaColor } from '@/lib/companias/colores';
 
-export function CompaniaBadge({ nombre }: { nombre?: string | null }) {
+export function CompaniaBadge({
+  nombre,
+  color: personalizado,
+}: {
+  nombre?: string | null;
+  color?: string | null;
+}) {
   if (!nombre) return <span className="text-ink-dim text-xs">—</span>;
-  const color = getCompaniaColor(nombre);
+  const color = getCompaniaColor(nombre, personalizado);
 
   return (
     <span

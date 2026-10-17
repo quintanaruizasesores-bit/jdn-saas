@@ -16,10 +16,12 @@ import {
 import { ClienteCombobox } from '@/features/clientes/cliente-combobox';
 import { CompaniaBadge } from '@/components/ui/compania-badge';
 import type { Poliza } from '@/types/database';
+import { periodoComision } from '@/lib/dashboard/comision';
 
 interface Catalogo {
   id: string;
   nombre: string;
+  color?: string | null;
 }
 
 export function PolizaForm({
@@ -49,6 +51,8 @@ export function PolizaForm({
       estado: defaultValues?.estado ?? 'VIGENTE',
       fecha_inicio: defaultValues?.fecha_inicio ?? '',
       fecha_fin: defaultValues?.fecha_fin ?? '',
+      fecha_baja: defaultValues?.fecha_baja ?? '',
+      comision_desde: defaultValues?.comision_desde && defaultValues.comision_desde > periodoComision().hoy ? defaultValues.comision_desde : periodoComision().hoy,
       prima: defaultValues?.prima ?? 0,
       detalle: defaultValues?.detalle ?? '',
     },
@@ -89,7 +93,7 @@ export function PolizaForm({
                 <SelectContent>
                   {companias.map((c) => (
                     <SelectItem key={c.id} value={c.id} textValue={c.nombre}>
-                      <CompaniaBadge nombre={c.nombre} />
+                      <CompaniaBadge nombre={c.nombre} color={c.color} />
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -138,7 +142,7 @@ export function PolizaForm({
           />
         </div>
         <div>
-          <Label>Prima</Label>
+          <Label>Premio mensual</Label>
           <Input
             type="number"
             step="0.01"
@@ -161,6 +165,17 @@ export function PolizaForm({
             {...register('fecha_fin')}
             className="border-line bg-bg mt-1"
           />
+        </div>
+        <div className="sm:col-span-2">
+          <Label htmlFor="comision-desde">Cambios con efecto desde</Label>
+          <Input id="comision-desde" type="date" {...register('comision_desde')} min={defaultValues?.comision_desde ?? undefined} className="border-line bg-bg mt-1" />
+          <p className="mt-1 text-xs text-ink-dim">Fecha desde la que rigen el importe, estado y vigencia registrados.</p>
+          {errors.comision_desde && <p className="text-red mt-1 text-xs">{errors.comision_desde.message}</p>}
+        </div>
+        <div>
+          <Label htmlFor="fecha-baja">Baja efectiva (si corresponde)</Label>
+          <Input id="fecha-baja" type="date" {...register('fecha_baja')} className="border-line bg-bg mt-1" />
+          {errors.fecha_baja && <p className="text-red mt-1 text-xs">{errors.fecha_baja.message}</p>}
         </div>
         <div className="sm:col-span-2">
           <Label>Detalle</Label>

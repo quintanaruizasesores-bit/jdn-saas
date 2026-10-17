@@ -1,8 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   calcularComisionMensual,
-  periodoComision,
   type PolizaComision,
+  type HistorialComision,
 } from '@/lib/dashboard/comision';
 
 export async function fetchDashboardKpis(supabase: SupabaseClient) {
@@ -24,22 +24,20 @@ export async function fetchProduccionMensual(supabase: SupabaseClient) {
     .order('mes', { ascending: true });
 }
 
-/** Consulta independiente de la vista legacy que recurre a created_at sin vigencia. */
+/** Se trae toda la cartera: una póliza anterior a la ventana puede seguir aportando. */
 export async function fetchComisionMensual(
   supabase: SupabaseClient,
   now = new Date()
 ) {
-  const { desde, hoy } = periodoComision(now);
   const polizas: PolizaComision[] = [];
+  const historial: HistorialComision[] = [];
   const pageSize = 1000;
 
   // Evita truncar el cálculo al límite por defecto de Supabase.
   for (let offset = 0; ; offset += pageSize) {
     const { data, error } = await supabase
       .from('polizas')
-      .select('fecha_inicio, prima')
-      .gte('fecha_inicio', desde)
-      .lte('fecha_inicio', hoy)
+      .select('*')
       .order('id', { ascending: true })
       .range(offset, offset + pageSize - 1);
     if (error) throw error;
@@ -47,7 +45,19 @@ export async function fetchComisionMensual(
     if (!data || data.length < pageSize) break;
   }
 
-  return calcularComisionMensual(polizas, now);
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await supabase
+      .from('poliza_historial')
+      .select('*')
+      .lte('created_at', now.toISOString())
+      .order('id', { ascending: true })
+      .range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    historial.push(...(data ?? []));
+    if (!data || data.length < pageSize) break;
+  }
+
+  return calcularComisionMensual(polizas, now, historial);
 }
 
 export async function fetchClientesTop(supabase: SupabaseClient) {

@@ -17,7 +17,7 @@ import { AppHeader } from '@/components/dashboard/app-header';
 import { KpiCard } from '@/components/dashboard/kpi-card';
 import { BarList } from '@/components/dashboard/bar-list';
 import { ComisionChart } from '@/components/dashboard/comision-chart';
-import { COMISION_RATE } from '@/lib/dashboard/comision';
+import { useComisionDashboard } from '@/features/dashboard/use-comision-dashboard';
 import { getCompaniaColor } from '@/lib/companias/colores';
 import { createClient } from '@/lib/supabase/client';
 import {
@@ -33,6 +33,7 @@ const CHART_COLORS = ['#1E5BBF', '#1A2556', '#608BD0', '#154A9F', '#879EC7', '#3
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { data: comisiones } = useComisionDashboard();
 
   const { data: kpis, isLoading } = useQuery({
     queryKey: ['dashboard-kpis'],
@@ -110,9 +111,9 @@ export default function DashboardPage() {
         <KpiCard label="Pólizas" value={formatNumber(kpis?.total_polizas ?? 0)} />
         <KpiCard label="Premio" value={formatCurrency(Number(kpis?.prima_total ?? 0))} variant="green" />
         <KpiCard
-          label="Comisión aproximada"
-          value={formatCurrency(Number(kpis?.prima_total ?? 0) * COMISION_RATE)}
-          subtitle="14% del premio"
+          label="Comisión mensual estimada"
+          value={comisiones?.resumen.comisionActual != null ? formatCurrency(comisiones.resumen.comisionActual) : '—'}
+          subtitle="14% del premio mensual · cartera al día"
           variant="green"
         />
         <KpiCard label="Siniestros (90d)" value={formatNumber(kpis?.siniestros_recientes ?? 0)} variant="rust" />
@@ -128,7 +129,7 @@ export default function DashboardPage() {
             items={(porCompania ?? []).map((c) => ({
               label: c.compania_nombre,
               value: c.total_polizas,
-              color: getCompaniaColor(c.compania_nombre).accent,
+              color: getCompaniaColor(c.compania_nombre, c.color).accent,
             }))}
           />
         </div>

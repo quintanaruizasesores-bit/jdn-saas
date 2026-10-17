@@ -19,6 +19,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BirthdayTemplateEditor } from '@/features/config/birthday-template-editor';
+import { CompaniaColorEditor } from '@/features/config/compania-color-editor';
 
 type ConfigTab = 'companias' | 'ramos' | 'cumpleanos';
 
@@ -119,6 +120,7 @@ export function ConfigManager({
         </TabsList>
 
         <TabsContent value="companias" className="mt-4">
+          <p className="mb-3 text-sm text-ink-dim">Elegí el color de cada compañía para identificarla en pólizas y en el dashboard.</p>
           <div className="mb-4 flex gap-2">
             <Input
               placeholder="Nombre compañía"
@@ -148,9 +150,9 @@ export function ConfigManager({
               {companiasQuery.data.map((c) => (
                 <li
                   key={c.id}
-                  className="border-line bg-panel flex items-center justify-between rounded-xl border px-4 py-3"
+                  className="border-line bg-panel flex items-start justify-between gap-3 rounded-xl border px-4 py-3"
                 >
-                  <span>{c.nombre}</span>
+                  <CompaniaColorEditor compania={c} />
                   <ConfirmDialog
                     trigger={
                       <Button

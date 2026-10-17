@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { invalidarMetricasPolizas } from '@/features/dashboard/use-comision-dashboard';
 import { toast } from 'sonner';
 import { AppHeader } from '@/components/dashboard/app-header';
 import { PolizaForm } from '@/features/polizas/poliza-form';
@@ -13,12 +14,13 @@ import type { PolizaFormData } from '@/validations/poliza.schema';
 
 export default function NuevaPolizaPage() {
   const router = useRouter();
+  const qc = useQueryClient();
 
   const { data: companias } = useQuery({
     queryKey: ['companias'],
     queryFn: async () => {
       const { data } = await fetchCompanias(createClient());
-      return (data ?? []).map((c) => ({ id: c.id, nombre: c.nombre }));
+      return (data ?? []).map((c) => ({ id: c.id, nombre: c.nombre, color: c.color }));
     },
   });
 
@@ -32,7 +34,8 @@ export default function NuevaPolizaPage() {
 
   const mutation = useMutation({
     mutationFn: async (data: PolizaFormData) => createPoliza(createClient(), data),
-    onSuccess: (row) => {
+    onSuccess: async (row) => {
+      await invalidarMetricasPolizas(qc);
       toast.success('Póliza creada');
       router.push(`/polizas/${row.id}`);
     },

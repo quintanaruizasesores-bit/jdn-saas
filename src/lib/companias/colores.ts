@@ -80,16 +80,42 @@ const DEFAULT_COLOR: CompaniaColor = {
   border: '#E2E8F0',
 };
 
-export function getCompaniaColor(nombre?: string | null): CompaniaColor {
+export function getCompaniaColor(
+  nombre?: string | null,
+  personalizado?: string | null
+): CompaniaColor {
   const normalized = (nombre ?? '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
-  return (
+  const inicial =
     COMPANIA_COLORS.find(({ nombre }) =>
       ` ${normalized} `.includes(` ${nombre} `)
-    )?.color ?? DEFAULT_COLOR
+    )?.color ?? DEFAULT_COLOR;
+  if (
+    !personalizado ||
+    !/^#[0-9a-f]{6}$/i.test(personalizado) ||
+    personalizado.toUpperCase() === inicial.accent
+  )
+    return inicial;
+  const rgb = [1, 3, 5].map((offset) =>
+    parseInt(personalizado.slice(offset, offset + 2), 16)
   );
+  const mezclar = (base: number, proporcion: number) =>
+    '#' +
+    rgb
+      .map((v) =>
+        Math.round(v * (1 - proporcion) + base * proporcion)
+          .toString(16)
+          .padStart(2, '0')
+      )
+      .join('');
+  return {
+    accent: personalizado.toUpperCase(),
+    foreground: mezclar(0, 0.65),
+    background: mezclar(255, 0.94),
+    border: mezclar(255, 0.7),
+  };
 }

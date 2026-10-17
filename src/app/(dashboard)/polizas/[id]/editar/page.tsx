@@ -2,7 +2,8 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { invalidarMetricasPolizas } from '@/features/dashboard/use-comision-dashboard';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import { fetchPolizaById, updatePoliza } from '@/services/polizas.service';
@@ -16,6 +17,7 @@ import type { PolizaFormData } from '@/validations/poliza.schema';
 export default function EditarPolizaPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const qc = useQueryClient();
 
   const { data: poliza, isLoading } = useQuery({
     queryKey: ['poliza', id],
@@ -30,7 +32,7 @@ export default function EditarPolizaPage({ params }: { params: Promise<{ id: str
     queryKey: ['companias'],
     queryFn: async () => {
       const { data } = await fetchCompanias(createClient());
-      return (data ?? []).map((c) => ({ id: c.id, nombre: c.nombre }));
+      return (data ?? []).map((c) => ({ id: c.id, nombre: c.nombre, color: c.color }));
     },
   });
 
@@ -44,7 +46,8 @@ export default function EditarPolizaPage({ params }: { params: Promise<{ id: str
 
   const mutation = useMutation({
     mutationFn: (data: PolizaFormData) => updatePoliza(createClient(), id, data),
-    onSuccess: () => {
+    onSuccess: async () => {
+      await invalidarMetricasPolizas(qc);
       toast.success('Póliza actualizada');
       router.push(`/polizas/${id}`);
     },
