@@ -51,9 +51,18 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
 });
-const configure = (value = data) =>
+const configure = (
+  value = data,
+  topClientes: {
+    cliente_id: string;
+    cliente_nombre: string;
+    total_polizas: number;
+    prima_total: number;
+    comision_aproximada: number;
+  }[] = []
+) =>
   vi.mocked(useComisionDashboard).mockReturnValue({
-    data: value,
+    data: { ...value, topClientes },
     isLoading: false,
     isError: false,
     refetch: vi.fn(),
@@ -61,7 +70,15 @@ const configure = (value = data) =>
 
 describe('indicadores de comisión', () => {
   it('el KPI superior y el panel utilizan el mismo resultado que el gráfico', () => {
-    configure();
+    configure(data, [
+      {
+        cliente_id: 'c1',
+        cliente_nombre: 'Cliente de alto premio',
+        total_polizas: 2,
+        prima_total: 3000,
+        comision_aproximada: 420,
+      },
+    ]);
     const client = new QueryClient({
       defaultOptions: { queries: { staleTime: Infinity, retry: false } },
     });
@@ -82,13 +99,26 @@ describe('indicadores de comisión', () => {
       /\s/g,
       ' '
     );
-    expect(screen.getAllByText(amount, { exact: true })).toHaveLength(2);
+    expect(screen.getAllByText(amount, { exact: true })).toHaveLength(3);
     expect(
       screen.getByText('Pólizas con aporte conocido').nextElementSibling
     ).toHaveTextContent('2');
     expect(
       screen.getByText('Variación vs. mes anterior').nextElementSibling
     ).toHaveTextContent('280');
+    expect(screen.getByText('10 clientes por premio')).toBeInTheDocument();
+    const clienteTop = screen.getByText('Cliente de alto premio');
+    const filaCliente = clienteTop.closest('li')!;
+    expect(
+      within(filaCliente).getByText(formatCurrency(3000).replace(/\s/g, ' '), {
+        exact: true,
+      })
+    ).toBeInTheDocument();
+    expect(
+      within(filaCliente).getByText(formatCurrency(420).replace(/\s/g, ' '), {
+        exact: true,
+      })
+    ).toBeInTheDocument();
     expect(
       screen.getByText('Equivalente anual del valor actual').nextElementSibling
     ).toHaveTextContent('5.040');

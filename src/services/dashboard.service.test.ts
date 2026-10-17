@@ -36,6 +36,35 @@ const row: PolizaComision = {
 };
 
 describe('fetchComisionMensual', () => {
+  it('incluye el ranking de diez clientes por premio mensual y comisión aproximada', async () => {
+    const { client } = mockSupabase([
+      {
+        data: [
+          {
+            ...row,
+            cliente_id: 'c1',
+            cliente: {
+              id: 'c1',
+              nombre: 'Ana',
+              apellido: 'Pérez',
+              deleted_at: null,
+            },
+          },
+        ],
+        error: null,
+      },
+    ]);
+    const result = await fetchComisionMensual(client, now);
+    expect(result.topClientes).toEqual([
+      {
+        cliente_id: 'c1',
+        cliente_nombre: 'Ana Pérez',
+        total_polizas: 1,
+        prima_total: 100,
+        comision_aproximada: 14,
+      },
+    ]);
+  });
   it('trae más de 1000 pólizas y conserva pólizas anteriores a la ventana de 12 meses', async () => {
     const { client, p, from } = mockSupabase([
       {
