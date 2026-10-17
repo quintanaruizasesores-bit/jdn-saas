@@ -233,7 +233,7 @@ export function calcularComisionMensual(
   };
 }
 
-/** Índice compartido con otros módulos; conserva las reglas del dashboard. */
+/** Índice compartido con Reportes; conserva las reglas financieras del dashboard. */
 export function construirVersionesComision(
   polizas: readonly PolizaComision[],
   now = new Date(),
@@ -259,6 +259,8 @@ export function construirVersionesComision(
       event.poliza_id,
       version(event.datos_anteriores, `${orden}:0:${event.id}`)
     );
+    // La foto completa de 007 acredita el estado observado desde su registro,
+    // aunque no tenga fecha contractual de inicio o fecha de efecto anterior.
     add(
       event.poliza_id,
       version(
@@ -271,6 +273,7 @@ export function construirVersionesComision(
     );
   }
   for (const poliza of polizas) {
+    // Compatibilidad sin migración: sólo se conoce la foto actual, no el pasado.
     const actual: PolizaComision = {
       ...poliza,
       prima_periodicidad:
@@ -299,6 +302,7 @@ export function construirVersionesComision(
     list.sort(
       (a, b) => a.desde.localeCompare(b.desde) || a.orden.localeCompare(b.orden)
     );
+
   return versiones;
 }
 
