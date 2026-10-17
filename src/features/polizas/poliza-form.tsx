@@ -14,11 +14,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ClienteCombobox } from '@/features/clientes/cliente-combobox';
+import { CompaniaBadge } from '@/components/ui/compania-badge';
 import type { Poliza } from '@/types/database';
+import { periodoComision } from '@/lib/dashboard/comision';
 
 interface Catalogo {
   id: string;
   nombre: string;
+  color?: string | null;
 }
 
 export function PolizaForm({
@@ -48,6 +51,12 @@ export function PolizaForm({
       estado: defaultValues?.estado ?? 'VIGENTE',
       fecha_inicio: defaultValues?.fecha_inicio ?? '',
       fecha_fin: defaultValues?.fecha_fin ?? '',
+      fecha_baja: defaultValues?.fecha_baja ?? '',
+      comision_desde:
+        defaultValues?.comision_desde &&
+        defaultValues.comision_desde > periodoComision().hoy
+          ? defaultValues.comision_desde
+          : periodoComision().hoy,
       prima: defaultValues?.prima ?? 0,
       detalle: defaultValues?.detalle ?? '',
     },
@@ -81,12 +90,14 @@ export function PolizaForm({
             render={({ field }) => (
               <Select value={field.value ?? ''} onValueChange={field.onChange}>
                 <SelectTrigger className="border-line bg-bg mt-1">
-                  <SelectValue placeholder="—" />
+                  <span className="min-w-0 flex-1 overflow-hidden text-left">
+                    <SelectValue placeholder="—" />
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
                   {companias.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.nombre}
+                    <SelectItem key={c.id} value={c.id} textValue={c.nombre}>
+                      <CompaniaBadge nombre={c.nombre} color={c.color} />
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -135,29 +146,72 @@ export function PolizaForm({
           />
         </div>
         <div>
-          <Label>Prima</Label>
+          <Label htmlFor="premio-mensual">Premio mensual</Label>
           <Input
+            id="premio-mensual"
             type="number"
+            min="0"
             step="0.01"
             {...register('prima', { valueAsNumber: true })}
             className="border-line bg-bg mt-1"
           />
+          <p className="text-ink-dim mt-1 text-xs">
+            Con importe cero, queda pendiente en la estimación de comisión.
+          </p>
+          {errors.prima && (
+            <p className="text-red mt-1 text-xs">{errors.prima.message}</p>
+          )}
         </div>
         <div>
-          <Label>Inicio vigencia</Label>
+          <Label htmlFor="fecha-inicio">Inicio vigencia</Label>
           <Input
+            id="fecha-inicio"
             type="date"
             {...register('fecha_inicio')}
             className="border-line bg-bg mt-1"
           />
         </div>
         <div>
-          <Label>Fin vigencia (opcional)</Label>
+          <Label htmlFor="fecha-fin">Fin vigencia (opcional)</Label>
           <Input
+            id="fecha-fin"
             type="date"
             {...register('fecha_fin')}
             className="border-line bg-bg mt-1"
           />
+          {errors.fecha_fin && (
+            <p className="text-red mt-1 text-xs">{errors.fecha_fin.message}</p>
+          )}
+        </div>
+        <div className="sm:col-span-2">
+          <Label htmlFor="comision-desde">Cambios con efecto desde</Label>
+          <Input
+            id="comision-desde"
+            type="date"
+            {...register('comision_desde')}
+            min={defaultValues?.comision_desde ?? undefined}
+            className="border-line bg-bg mt-1"
+          />
+          <p className="text-ink-dim mt-1 text-xs">
+            Fecha desde la que rigen el importe, estado y vigencia registrados.
+          </p>
+          {errors.comision_desde && (
+            <p className="text-red mt-1 text-xs">
+              {errors.comision_desde.message}
+            </p>
+          )}
+        </div>
+        <div>
+          <Label htmlFor="fecha-baja">Baja efectiva (si corresponde)</Label>
+          <Input
+            id="fecha-baja"
+            type="date"
+            {...register('fecha_baja')}
+            className="border-line bg-bg mt-1"
+          />
+          {errors.fecha_baja && (
+            <p className="text-red mt-1 text-xs">{errors.fecha_baja.message}</p>
+          )}
         </div>
         <div className="sm:col-span-2">
           <Label>Detalle</Label>

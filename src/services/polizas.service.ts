@@ -2,7 +2,11 @@ import type { Poliza } from '@/types/database';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { PolizaFormData } from '@/validations/poliza.schema';
 import { logActividad } from './actividad.service';
-import { buildClienteSearchFilters, sanitizeSearchTerm } from '@/lib/clientes/search';
+import {
+  buildClienteSearchFilters,
+  sanitizeSearchTerm,
+} from '@/lib/clientes/search';
+import { periodoComision } from '@/lib/dashboard/comision';
 
 /** Tope de clientes que resuelve la búsqueda por nombre antes de filtrar pólizas. */
 const SEARCH_CLIENTE_LIMIT = 500;
@@ -17,8 +21,19 @@ export interface PolizasFilters {
   pageSize?: number;
 }
 
-export async function fetchPolizas(supabase: SupabaseClient, filters: PolizasFilters = {}) {
-  const { search, compania_id, ramo_id, estado, con_prima, page = 0, pageSize = 50 } = filters;
+export async function fetchPolizas(
+  supabase: SupabaseClient,
+  filters: PolizasFilters = {}
+) {
+  const {
+    search,
+    compania_id,
+    ramo_id,
+    estado,
+    con_prima,
+    page = 0,
+    pageSize = 50,
+  } = filters;
 
   // Búsqueda server-side: el nombre vive en la tabla `clientes` (join), así que
   // primero resolvemos los cliente_id que matchean el término y después filtramos
@@ -28,16 +43,24 @@ export async function fetchPolizas(supabase: SupabaseClient, filters: PolizasFil
   let clienteIds: string[] = [];
   if (cleanSearch) {
     let cq = supabase.from('clientes').select('id');
-    for (const filter of buildClienteSearchFilters(cleanSearch)) cq = cq.or(filter);
+    for (const filter of buildClienteSearchFilters(cleanSearch))
+      cq = cq.or(filter);
     const { data: cRows, error: cErr } = await cq.limit(SEARCH_CLIENTE_LIMIT);
-    if (cErr) return { data: null, error: cErr, count: null, status: 0, statusText: '' };
+    if (cErr)
+      return {
+        data: null,
+        error: cErr,
+        count: null,
+        status: 0,
+        statusText: '',
+      };
     clienteIds = (cRows ?? []).map((c) => c.id as string);
   }
 
   let query = supabase
     .from('polizas')
     .select(
-      `*, cliente:clientes(id, nombre, apellido, email, telefono), compania:companias(id, nombre), ramo:ramos(id, nombre)`,
+      `*, cliente:clientes(id, nombre, apellido, email, telefono), compania:companias(*), ramo:ramos(id, nombre)`,
       { count: 'exact' }
     )
     .order('created_at', { ascending: false });
@@ -50,7 +73,8 @@ export async function fetchPolizas(supabase: SupabaseClient, filters: PolizasFil
 
   if (cleanSearch) {
     const orParts = [`detalle.ilike.%${cleanSearch}%`];
-    if (clienteIds.length) orParts.push(`cliente_id.in.(${clienteIds.join(',')})`);
+    if (clienteIds.length)
+      orParts.push(`cliente_id.in.(${clienteIds.join(',')})`);
     query = query.or(orParts.join(','));
   }
 
@@ -65,7 +89,10 @@ export async function fetchPolizaById(supabase: SupabaseClient, id: string) {
     .single();
 }
 
-export async function fetchPolizasByCliente(supabase: SupabaseClient, clienteId: string) {
+export async function fetchPolizasByCliente(
+  supabase: SupabaseClient,
+  clienteId: string
+) {
   return supabase
     .from('polizas')
     .select(`*, compania:companias(nombre), ramo:ramos(nombre)`)
@@ -73,7 +100,10 @@ export async function fetchPolizasByCliente(supabase: SupabaseClient, clienteId:
     .order('fecha_inicio', { ascending: false });
 }
 
-export async function fetchPolizaHistorial(supabase: SupabaseClient, polizaId: string) {
+export async function fetchPolizaHistorial(
+  supabase: SupabaseClient,
+  polizaId: string
+) {
   return supabase
     .from('poliza_historial')
     .select('*')
@@ -86,14 +116,21 @@ export async function fetchPolizaHistorial(supabase: SupabaseClient, polizaId: s
  * Postgres. Convertimos '' (o undefined) a null, pero SOLO en las claves presentes,
  * para no pisar fechas existentes en updates parciales (p. ej. dar de baja).
  */
-function normalizePolizaDates(data: Partial<PolizaFormData>): Partial<PolizaFormData> {
+function normalizePolizaDates(
+  data: Partial<PolizaFormData>
+): Partial<PolizaFormData> {
   const out: Partial<PolizaFormData> = { ...data };
   if ('fecha_inicio' in out && !out.fecha_inicio) out.fecha_inicio = null;
   if ('fecha_fin' in out && !out.fecha_fin) out.fecha_fin = null;
+  if ('fecha_baja' in out && !out.fecha_baja) out.fecha_baja = null;
+  if ('comision_desde' in out && !out.comision_desde) out.comision_desde = null;
   return out;
 }
 
-export async function createPoliza(supabase: SupabaseClient, data: PolizaFormData) {
+export async function createPoliza(
+  supabase: SupabaseClient,
+  data: PolizaFormData
+) {
   const { data: row, error } = await supabase
     .from('polizas')
     .insert(normalizePolizaDates(data))
@@ -104,7 +141,11 @@ export async function createPoliza(supabase: SupabaseClient, data: PolizaFormDat
   return row as Poliza;
 }
 
-export async function updatePoliza(supabase: SupabaseClient, id: string, data: Partial<PolizaFormData>) {
+export async function updatePoliza(
+  supabase: SupabaseClient,
+  id: string,
+  data: Partial<PolizaFormData>
+) {
   const { data: row, error } = await supabase
     .from('polizas')
     .update(normalizePolizaDates(data))
@@ -124,9 +165,19 @@ export async function renovarPoliza(
   return updatePoliza(supabase, id, {
     ...data,
     estado: 'VIGENTE',
+    fecha_baja: null,
+    comision_desde: data.fecha_inicio,
   });
 }
 
-export async function darBajaPoliza(supabase: SupabaseClient, id: string) {
-  return updatePoliza(supabase, id, { estado: 'BAJA' });
+export async function darBajaPoliza(
+  supabase: SupabaseClient,
+  id: string,
+  fechaBaja = periodoComision().hoy
+) {
+  return updatePoliza(supabase, id, {
+    estado: 'BAJA',
+    fecha_baja: fechaBaja,
+    comision_desde: fechaBaja,
+  });
 }

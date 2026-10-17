@@ -12,31 +12,28 @@ import {
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
-  CartesianGrid,
 } from 'recharts';
 import { AppHeader } from '@/components/dashboard/app-header';
 import { KpiCard } from '@/components/dashboard/kpi-card';
 import { BarList } from '@/components/dashboard/bar-list';
+import { ComisionChart } from '@/components/dashboard/comision-chart';
+import { useComisionDashboard } from '@/features/dashboard/use-comision-dashboard';
+import { getCompaniaColor } from '@/lib/companias/colores';
 import { createClient } from '@/lib/supabase/client';
 import {
   fetchClientesTop,
   fetchDashboardKpis,
   fetchPolizasPorCompania,
   fetchPolizasPorRamo,
-  fetchProduccionMensual,
 } from '@/services/dashboard.service';
 import { formatCurrency, formatNumber } from '@/lib/utils/format';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const CHART_COLORS = ['#1E5BBF', '#1A2556', '#608BD0', '#154A9F', '#879EC7', '#354B88', '#ABC1E4'];
 
-/** Comisión aproximada del corredor sobre el premio. */
-const COMISION_RATE = 0.14;
-
 export default function DashboardPage() {
   const router = useRouter();
+  const { data: comisiones } = useComisionDashboard();
 
   const { data: kpis, isLoading } = useQuery({
     queryKey: ['dashboard-kpis'],
@@ -63,19 +60,6 @@ export default function DashboardPage() {
       const supabase = createClient();
       const { data } = await fetchPolizasPorRamo(supabase);
       return data ?? [];
-    },
-  });
-
-  const { data: produccion } = useQuery({
-    queryKey: ['dashboard-produccion'],
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data } = await fetchProduccionMensual(supabase);
-      return (data ?? []).map((r) => ({
-        mes: new Date(r.mes).toLocaleDateString('es-AR', { month: 'short', year: '2-digit' }),
-        prima: Number(r.prima_total),
-        polizas: r.polizas_count,
-      }));
     },
   });
 
@@ -127,9 +111,9 @@ export default function DashboardPage() {
         <KpiCard label="Pólizas" value={formatNumber(kpis?.total_polizas ?? 0)} />
         <KpiCard label="Premio" value={formatCurrency(Number(kpis?.prima_total ?? 0))} variant="green" />
         <KpiCard
-          label="Comisión aproximada"
-          value={formatCurrency(Number(kpis?.prima_total ?? 0) * COMISION_RATE)}
-          subtitle="14% del premio"
+          label={comisiones?.resumen.sinDatos ? 'Comisión mensual · importes cargados' : 'Comisión mensual estimada'}
+          value={comisiones?.resumen.comisionActual != null ? formatCurrency(comisiones.resumen.comisionActual) : '—'}
+          subtitle={comisiones?.resumen.sinDatos ? `14% del premio mensual · ${comisiones.resumen.sinDatos} pólizas pendientes` : '14% del premio mensual · cartera al día'}
           variant="green"
         />
         <KpiCard label="Siniestros (90d)" value={formatNumber(kpis?.siniestros_recientes ?? 0)} variant="rust" />
@@ -145,6 +129,7 @@ export default function DashboardPage() {
             items={(porCompania ?? []).map((c) => ({
               label: c.compania_nombre,
               value: c.total_polizas,
+              color: getCompaniaColor(c.compania_nombre, c.color).accent,
             }))}
           />
         </div>
@@ -208,22 +193,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="mb-4 grid gap-4 lg:grid-cols-2">
-        <div className="min-w-0 rounded-2xl border border-line bg-panel p-4 sm:p-5">
-          <p className="mb-4 text-[11px] uppercase tracking-widest text-ink-dim">
-            Evolución <b className="text-primary">mensual</b>
-          </p>
-          <div className="h-[260px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={produccion ?? []}>
-                <CartesianGrid stroke="var(--line)" strokeDasharray="3 3" />
-                <XAxis dataKey="mes" tick={{ fill: 'var(--ink-dim)', fontSize: 10 }} />
-                <YAxis tick={{ fill: 'var(--ink-dim)', fontSize: 10 }} />
-                <Tooltip contentStyle={{ background: 'var(--panel)', border: '1px solid var(--line)' }} />
-                <Line type="monotone" dataKey="prima" name="Premio" stroke="var(--primary)" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        <ComisionChart />
         <div className="min-w-0 rounded-2xl border border-line bg-panel p-4 sm:p-5">
           <p className="mb-4 text-[11px] uppercase tracking-widest text-ink-dim">
             Top <b className="text-primary">clientes</b>

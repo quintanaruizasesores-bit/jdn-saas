@@ -1,5 +1,6 @@
 export type UserRole = 'ADMIN' | 'PRODUCTOR' | 'OPERADOR';
 export type PolizaEstado = 'VIGENTE' | 'HISTORICA' | 'BAJA';
+export type PrimaPeriodicidad = 'MENSUAL' | 'BIMESTRAL' | 'TRIMESTRAL' | 'CUATRIMESTRAL' | 'SEMESTRAL' | 'ANUAL' | 'UNICA';
 export type SiniestroTipo = 'CHOQUE' | 'ROBO' | 'INCENDIO' | 'GRANIZO' | 'OTROS';
 export type Responsabilidad = 'RESPONSABLE' | 'NO_RESPONSABLE' | 'INDETERMINADA';
 export type TareaEstado = 'PENDIENTE' | 'EN_PROCESO' | 'FINALIZADA';
@@ -37,6 +38,7 @@ export interface Cliente {
 export interface Compania {
   id: string;
   nombre: string;
+  color?: string | null;
   codigo: string | null;
   estado: CompaniaEstado;
   created_at: string;
@@ -58,6 +60,8 @@ export interface Poliza {
   fecha_inicio: string | null;
   fecha_fin: string | null;
   prima: number;
+  fecha_baja?: string | null;
+  comision_desde?: string | null;
   detalle: string | null;
   legacy_id: number | null;
   created_at: string;
@@ -76,6 +80,9 @@ export interface PolizaHistorial {
   datos_nuevos: Record<string, unknown> | null;
   nota: string | null;
   created_at: string;
+  fecha_efecto?: string | null;
+  completo?: boolean;
+  version_orden?: number;
 }
 
 export interface Siniestro {
@@ -218,7 +225,7 @@ export interface Database {
     Views: {
       v_dashboard_kpis: { Row: DashboardKpis; Relationships: [] };
       v_polizas_por_compania: {
-        Row: { compania_id: string; compania_nombre: string; total_polizas: number; prima_total: number };
+        Row: { compania_id: string; compania_nombre: string; total_polizas: number; prima_total: number; color?: string | null };
         Relationships: [];
       };
       v_polizas_por_ramo: {

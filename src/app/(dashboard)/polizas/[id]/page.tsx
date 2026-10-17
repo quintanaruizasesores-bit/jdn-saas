@@ -33,6 +33,8 @@ import { formatCurrency, formatDate, getClienteNombre } from '@/lib/utils';
 import type { PolizaEstado, SiniestroTipo } from '@/types/database';
 import type { PolizaFormData } from '@/validations/poliza.schema';
 import { Plus } from 'lucide-react';
+import { invalidarMetricasPolizas } from '@/features/dashboard/use-comision-dashboard';
+import { periodoComision } from '@/lib/dashboard/comision';
 
 export default function PolizaDetallePage({
   params,
@@ -44,6 +46,8 @@ export default function PolizaDetallePage({
   const [renovFechaInicio, setRenovFechaInicio] = useState('');
   const [renovFechaFin, setRenovFechaFin] = useState('');
   const [renovPrima, setRenovPrima] = useState('');
+  const [fechaBaja, setFechaBaja] = useState(periodoComision().hoy);
+  const [bajaOpen, setBajaOpen] = useState(false);
 
   const { data: poliza, isLoading } = useQuery({
     queryKey: ['poliza', id],
@@ -79,7 +83,7 @@ export default function PolizaDetallePage({
     queryKey: ['companias'],
     queryFn: async () => {
       const { data } = await fetchCompanias(createClient());
-      return (data ?? []).map((c) => ({ id: c.id, nombre: c.nombre }));
+      return (data ?? []).map((c) => ({ id: c.id, nombre: c.nombre, color: c.color }));
     },
   });
 
@@ -94,7 +98,8 @@ export default function PolizaDetallePage({
   const updateMutation = useMutation({
     mutationFn: (data: PolizaFormData) =>
       updatePoliza(createClient(), id, data),
-    onSuccess: () => {
+    onSuccess: async () => {
+      await invalidarMetricasPolizas(qc);
       toast.success('Póliza actualizada');
       qc.invalidateQueries({ queryKey: ['poliza', id] });
     },
@@ -102,11 +107,14 @@ export default function PolizaDetallePage({
   });
 
   const bajaMutation = useMutation({
-    mutationFn: () => darBajaPoliza(createClient(), id),
-    onSuccess: () => {
+    mutationFn: () => darBajaPoliza(createClient(), id, fechaBaja),
+    onSuccess: async () => {
+      await invalidarMetricasPolizas(qc);
+      setBajaOpen(false);
       toast.success('Póliza dada de baja');
       qc.invalidateQueries({ queryKey: ['poliza', id] });
     },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const renovMutation = useMutation({
@@ -116,10 +124,12 @@ export default function PolizaDetallePage({
         fecha_fin: renovFechaFin,
         prima: Number(renovPrima),
       }),
-    onSuccess: () => {
+    onSuccess: async () => {
+      await invalidarMetricasPolizas(qc);
       toast.success('Póliza renovada');
       qc.invalidateQueries({ queryKey: ['poliza', id] });
     },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   if (isLoading || !poliza)
@@ -150,7 +160,7 @@ export default function PolizaDetallePage({
           </Link>
         </span>
         <span className="text-ink-dim">
-          Prima: {formatCurrency(Number(poliza.prima))}
+          Premio mensual: {formatCurrency(Number(poliza.prima))}
         </span>
         <span className="text-ink-dim">
           Vigencia: {formatDate(poliza.fecha_inicio)} —{' '}
@@ -187,7 +197,7 @@ export default function PolizaDetallePage({
                 />
               </div>
               <div>
-                <Label>Prima</Label>
+                <Label>Premio mensual</Label>
                 <Input
                   type="number"
                   value={renovPrima}
@@ -203,13 +213,15 @@ export default function PolizaDetallePage({
         </Dialog>
 
         {poliza.estado !== 'BAJA' && (
-          <Button
-            variant="outline"
-            className="border-red text-red"
-            onClick={() => bajaMutation.mutate()}
-          >
-            Dar de baja
-          </Button>
+          <Dialog open={bajaOpen} onOpenChange={setBajaOpen}>
+            <DialogTrigger asChild><Button variant="outline" className="border-red text-red">Dar de baja</Button></DialogTrigger>
+            <DialogContent className="border-line bg-panel2" aria-describedby={undefined}>
+              <DialogHeader><DialogTitle>Dar de baja la póliza</DialogTitle></DialogHeader>
+              <Label htmlFor="baja-efectiva">Deja de aportar desde</Label>
+              <Input id="baja-efectiva" type="date" value={fechaBaja} onChange={(e) => setFechaBaja(e.target.value)} min={poliza.comision_desde ?? undefined} />
+              <Button disabled={!fechaBaja || bajaMutation.isPending} onClick={() => bajaMutation.mutate()}>Confirmar baja</Button>
+            </DialogContent>
+          </Dialog>
         )}
       </div>
 

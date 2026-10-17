@@ -1,8 +1,9 @@
 'use client';
 
 import { use } from 'react';
-import { useRouter } from 'next/navigation';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { invalidarMetricasPolizas } from '@/features/dashboard/use-comision-dashboard';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import { fetchPolizaById, updatePoliza } from '@/services/polizas.service';
@@ -13,9 +14,16 @@ import { PolizaForm } from '@/features/polizas/poliza-form';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { PolizaFormData } from '@/validations/poliza.schema';
 
-export default function EditarPolizaPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditarPolizaPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const router = useRouter();
+  const qc = useQueryClient();
+  const volverAPendientes =
+    useSearchParams().get('volver') === 'pendientes-comision';
 
   const { data: poliza, isLoading } = useQuery({
     queryKey: ['poliza', id],
@@ -30,7 +38,11 @@ export default function EditarPolizaPage({ params }: { params: Promise<{ id: str
     queryKey: ['companias'],
     queryFn: async () => {
       const { data } = await fetchCompanias(createClient());
-      return (data ?? []).map((c) => ({ id: c.id, nombre: c.nombre }));
+      return (data ?? []).map((c) => ({
+        id: c.id,
+        nombre: c.nombre,
+        color: c.color,
+      }));
     },
   });
 
@@ -43,10 +55,14 @@ export default function EditarPolizaPage({ params }: { params: Promise<{ id: str
   });
 
   const mutation = useMutation({
-    mutationFn: (data: PolizaFormData) => updatePoliza(createClient(), id, data),
-    onSuccess: () => {
+    mutationFn: (data: PolizaFormData) =>
+      updatePoliza(createClient(), id, data),
+    onSuccess: async () => {
+      await invalidarMetricasPolizas(qc);
       toast.success('Póliza actualizada');
-      router.push(`/polizas/${id}`);
+      router.push(
+        volverAPendientes ? '/polizas/pendientes-comision' : `/polizas/${id}`
+      );
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -54,9 +70,9 @@ export default function EditarPolizaPage({ params }: { params: Promise<{ id: str
   return (
     <div>
       <AppHeader title="Editar póliza" />
-      <div className="mt-6 max-w-2xl rounded-xl border border-line bg-panel p-6">
+      <div className="border-line bg-panel mt-6 max-w-2xl rounded-xl border p-6">
         {isLoading ? (
-          <Skeleton className="h-64 bg-panel2" />
+          <Skeleton className="bg-panel2 h-64" />
         ) : poliza ? (
           <PolizaForm
             defaultValues={poliza}
