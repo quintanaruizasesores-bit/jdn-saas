@@ -42,7 +42,7 @@ export default function EditarClientePage({ params }: { params: Promise<{ id: st
   return (
     <div>
       <AppHeader title="Editar cliente" />
-      <div className="max-w-2xl rounded-[3px] border border-line bg-panel p-6">
+      <div className="max-w-2xl rounded-xl border border-line bg-panel p-6">
         <ClienteForm
           defaultValues={cliente ?? undefined}
           onSubmit={async (d) => {

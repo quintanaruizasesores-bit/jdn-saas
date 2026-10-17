@@ -5,7 +5,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { AppHeader } from '@/components/dashboard/app-header';
 import { createClient } from '@/lib/supabase/client';
-import { fetchTareas, createTarea, updateTarea, deleteTarea } from '@/services/tareas.service';
+import {
+  fetchTareas,
+  createTarea,
+  updateTarea,
+  deleteTarea,
+} from '@/services/tareas.service';
 import { formatDate, getClienteNombre } from '@/lib/utils';
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -52,8 +57,13 @@ export default function TareasPage() {
   });
 
   const updateMut = useMutation({
-    mutationFn: ({ id, estado }: { id: string; estado: 'PENDIENTE' | 'EN_PROCESO' | 'FINALIZADA' }) =>
-      updateTarea(createClient(), id, { estado }),
+    mutationFn: ({
+      id,
+      estado,
+    }: {
+      id: string;
+      estado: 'PENDIENTE' | 'EN_PROCESO' | 'FINALIZADA';
+    }) => updateTarea(createClient(), id, { estado }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['tareas'] }),
   });
 
@@ -75,13 +85,16 @@ export default function TareasPage() {
           placeholder="Nueva tarea..."
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
-          className="max-w-xs border-line bg-bg2"
+          className="border-line bg-bg2 max-w-xs"
         />
-        <Button onClick={() => createMut.mutate()} disabled={!titulo} className="bg-amber text-[#1a1510]">
+        <Button onClick={() => createMut.mutate()} disabled={!titulo}>
           Agregar
         </Button>
-        <Select value={filtroEstado || 'all'} onValueChange={(v) => setFiltroEstado(v === 'all' ? '' : v)}>
-          <SelectTrigger className="w-[160px] border-line bg-bg2">
+        <Select
+          value={filtroEstado || 'all'}
+          onValueChange={(v) => setFiltroEstado(v === 'all' ? '' : v)}
+        >
+          <SelectTrigger className="border-line bg-bg2 w-[160px]">
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
@@ -98,20 +111,29 @@ export default function TareasPage() {
           <p className="text-ink-faint">Cargando...</p>
         ) : (
           (tareas ?? []).map((t) => {
-            const c = t.cliente as { nombre: string; apellido: string; id: string } | null;
+            const c = t.cliente as {
+              nombre: string;
+              apellido: string;
+              id: string;
+            } | null;
             return (
               <div
                 key={t.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-[3px] border border-line bg-panel p-4"
+                className="border-line bg-panel flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"
               >
                 <div>
-                  <p className="font-medium text-ink">{t.titulo}</p>
+                  <p className="text-ink font-medium">{t.titulo}</p>
                   {c && (
-                    <Link href={`/clientes/${c.id}`} className="text-xs text-blue hover:text-amber">
+                    <Link
+                      href={`/clientes/${c.id}`}
+                      className="text-blue hover:text-primary text-xs"
+                    >
                       {getClienteNombre(c)}
                     </Link>
                   )}
-                  <p className="text-xs text-ink-faint">Vence: {formatDate(t.fecha_vencimiento)}</p>
+                  <p className="text-ink-faint text-xs">
+                    Vence: {formatDate(t.fecha_vencimiento)}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Select
@@ -123,7 +145,7 @@ export default function TareasPage() {
                       })
                     }
                   >
-                    <SelectTrigger className="w-[140px] border-line bg-bg2">
+                    <SelectTrigger className="border-line bg-bg2 w-[140px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -134,7 +156,12 @@ export default function TareasPage() {
                   </Select>
                   <ConfirmDialog
                     trigger={
-                      <Button variant="ghost" size="sm" className="text-red" aria-label="Eliminar tarea">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red"
+                        aria-label="Eliminar tarea"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     }

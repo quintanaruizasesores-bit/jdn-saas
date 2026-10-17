@@ -59,7 +59,10 @@ export function CumpleanosPage() {
   const [rango, setRango] = useState<RangoCumple>('hoy');
   const [search, setSearch] = useState('');
   const [debounced, setDebounced] = useState('');
-  const [preview, setPreview] = useState<{ data: WhatsappPreviewData; id: string } | null>(null);
+  const [preview, setPreview] = useState<{
+    data: WhatsappPreviewData;
+    id: string;
+  } | null>(null);
 
   // "Hoy" en la zona de la app, estable durante la sesión de la página.
   const today = useMemo(() => getTodayInTimezone(), []);
@@ -167,16 +170,16 @@ export function CumpleanosPage() {
 
       {/* Filtros + buscador */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <div className="flex flex-wrap gap-1 rounded-[3px] border border-line bg-panel2 p-1">
+        <div className="border-line bg-panel2 flex flex-wrap gap-1 rounded-xl border p-1">
           {RANGOS.map((r) => (
             <button
               key={r.value}
               type="button"
               onClick={() => setRango(r.value)}
               className={cn(
-                'rounded-[2px] px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide transition-colors',
+                'rounded-lg px-3 py-1.5 text-[11px] font-medium tracking-wide uppercase transition-colors',
                 rango === r.value
-                  ? 'bg-amber text-[#1a1510]'
+                  ? 'bg-primary text-white'
                   : 'text-ink-dim hover:text-ink'
               )}
             >
@@ -185,7 +188,7 @@ export function CumpleanosPage() {
           ))}
         </div>
         <div className="relative min-w-[220px] flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+          <Search className="text-ink-faint absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Buscar nombre, apellido o teléfono..."
             value={search}
@@ -204,14 +207,14 @@ export function CumpleanosPage() {
           }}
         />
       ) : isLoading ? (
-        <div className="space-y-2 rounded-[3px] border border-line bg-panel p-6">
+        <div className="border-line bg-panel space-y-2 rounded-xl border p-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 bg-panel2" />
+            <Skeleton key={i} className="bg-panel2 h-10" />
           ))}
         </div>
       ) : rows.length === 0 ? (
         rango === 'hoy' ? (
-          <div className="rounded-[3px] border border-line bg-panel">
+          <div className="border-line bg-panel rounded-xl border">
             <EmptyState
               title="🎂 No hay cumpleaños hoy"
               description="Revisá los próximos cumpleaños para encontrar a quién contactar."
@@ -227,7 +230,7 @@ export function CumpleanosPage() {
             />
           </div>
         ) : (
-          <div className="rounded-[3px] border border-line bg-panel">
+          <div className="border-line bg-panel rounded-xl border">
             <EmptyState
               title="Sin resultados"
               description="No hay clientes con cumpleaños en este rango o búsqueda."
@@ -237,7 +240,7 @@ export function CumpleanosPage() {
       ) : (
         <>
           {/* Tabla (desktop) */}
-          <div className="hidden overflow-hidden rounded-[3px] border border-line bg-panel md:block">
+          <div className="border-line bg-panel hidden overflow-hidden rounded-xl border md:block">
             <Table>
               <TableHeader>
                 <TableRow className="border-line hover:bg-panel2">
@@ -250,19 +253,27 @@ export function CumpleanosPage() {
               </TableHeader>
               <TableBody>
                 {rows.map((row) => (
-                  <TableRow key={row.view.id} className="border-line/50 hover:bg-panel2">
-                    <TableCell className="font-medium text-ink">
+                  <TableRow
+                    key={row.view.id}
+                    className="border-line/50 hover:bg-panel2"
+                  >
+                    <TableCell className="text-ink font-medium">
                       <span className="flex items-center gap-2">
                         {row.view.nombreCompleto}
                         {row.view.esHoy && <HoyBadge />}
                       </span>
                     </TableCell>
-                    <TableCell className="text-ink-dim">{row.view.cumpleLabel}</TableCell>
+                    <TableCell className="text-ink-dim">
+                      {row.view.cumpleLabel}
+                    </TableCell>
                     <TableCell className="text-ink-dim">
                       {row.view.edad != null ? `${row.view.edad} años` : '—'}
                     </TableCell>
                     <TableCell>
-                      <TelefonoCell status={row.phoneStatus} telefono={row.view.telefono} />
+                      <TelefonoCell
+                        status={row.phoneStatus}
+                        telefono={row.view.telefono}
+                      />
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end">
@@ -284,19 +295,22 @@ export function CumpleanosPage() {
             {rows.map((row) => (
               <div
                 key={row.view.id}
-                className="rounded-[3px] border border-line bg-panel p-4"
+                className="border-line bg-panel rounded-xl border p-4"
               >
-                <div className="flex items-center gap-2 font-medium text-ink">
-                  <Cake className="h-4 w-4 text-amber" />
+                <div className="text-ink flex items-center gap-2 font-medium">
+                  <Cake className="text-primary h-4 w-4" />
                   {row.view.nombreCompleto}
                   {row.view.esHoy && <HoyBadge />}
                 </div>
-                <div className="mt-1 text-sm text-ink-dim">
+                <div className="text-ink-dim mt-1 text-sm">
                   {row.view.cumpleLabel}
                   {row.view.edad != null && <> · {row.view.edad} años</>}
                 </div>
                 <div className="mt-2 text-xs">
-                  <TelefonoCell status={row.phoneStatus} telefono={row.view.telefono} />
+                  <TelefonoCell
+                    status={row.phoneStatus}
+                    telefono={row.view.telefono}
+                  />
                 </div>
                 <div className="mt-3">
                   <WhatsappAction
@@ -340,14 +354,14 @@ function ResumenCard({
       type="button"
       onClick={onClick}
       className={cn(
-        'rounded-[3px] border bg-gradient-to-br from-panel to-bg2 p-5 text-left transition-colors',
-        active ? 'border-amber' : 'border-line hover:border-ink-faint'
+        'from-panel to-bg2 rounded-xl border bg-gradient-to-br p-5 text-left transition-colors',
+        active ? 'border-primary' : 'border-line hover:border-ink-faint'
       )}
     >
-      <div className="text-[9.5px] uppercase tracking-[0.18em] text-ink-faint">
+      <div className="text-ink-faint text-[9.5px] tracking-[0.18em] uppercase">
         {emoji} {label}
       </div>
-      <div className="mt-2 font-serif text-3xl font-medium tracking-tight text-ink">
+      <div className="font-heading text-ink mt-2 text-3xl font-medium tracking-tight">
         {value}
       </div>
     </button>
@@ -356,7 +370,7 @@ function ResumenCard({
 
 function HoyBadge() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-amber/50 bg-amber/10 px-2 py-0.5 text-[10px] font-medium text-amber-bright">
+    <span className="border-primary/50 bg-primary/10 text-primary inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium">
       <PartyPopper className="h-3 w-3" /> Hoy
     </span>
   );
@@ -369,7 +383,8 @@ function TelefonoCell({
   status: 'ok' | 'invalid' | 'empty';
   telefono: string | null;
 }) {
-  if (status === 'empty') return <span className="text-ink-faint">Sin teléfono</span>;
+  if (status === 'empty')
+    return <span className="text-ink-faint">Sin teléfono</span>;
   if (status === 'invalid')
     return <span className="text-red">⚠️ Teléfono inválido</span>;
   return <span className="text-ink-dim">{telefono}</span>;
@@ -389,12 +404,17 @@ function WhatsappAction({
   if (row.phoneStatus === 'empty') return null;
 
   return (
-    <div className={cn('flex items-center gap-2', full && 'flex-col items-stretch')}>
+    <div
+      className={cn(
+        'flex items-center gap-2',
+        full && 'flex-col items-stretch'
+      )}
+    >
       <Button
         onClick={onClick}
         disabled={!row.link}
         className={cn(
-          'bg-green text-[#10140d] hover:opacity-90',
+          'bg-whatsapp text-navy hover:bg-whatsapp-dark',
           full && 'w-full'
         )}
         size="sm"
@@ -403,7 +423,9 @@ function WhatsappAction({
         Enviar WhatsApp
       </Button>
       {contactado && (
-        <span className="whitespace-nowrap text-[10px] text-green">✓ WhatsApp preparado</span>
+        <span className="text-green text-[10px] whitespace-nowrap">
+          ✓ WhatsApp preparado
+        </span>
       )}
     </div>
   );

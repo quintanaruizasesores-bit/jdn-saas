@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -37,35 +38,59 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        'sticky top-0 flex h-screen flex-col border-r border-line bg-bg2 transition-all',
-        sidebarCollapsed ? 'w-16' : 'w-56'
+        'border-line bg-panel sticky top-0 flex h-screen w-16 shrink-0 flex-col border-r transition-[width] duration-200',
+        sidebarCollapsed ? 'md:w-16' : 'md:w-64'
       )}
     >
-      <div className="flex h-[62px] items-center gap-2 border-b border-line px-4">
-        {!sidebarCollapsed && (
-          <Link href="/dashboard" className="flex flex-col">
-            <span className="font-serif text-xl font-semibold tracking-tight text-ink">
-              Cartera <em className="text-amber not-italic">JDN</em>
-            </span>
-            <span className="text-[9px] uppercase tracking-[0.28em] text-ink-faint">
-              Gestión de pólizas
-            </span>
-          </Link>
-        )}
+      <div className="border-line relative flex h-32 shrink-0 items-center justify-center border-b px-2">
+        <Link
+          href="/dashboard"
+          aria-label="Quintana Ruiz · Ir al tablero"
+          className="rounded-lg"
+        >
+          <Image
+            src="/brand/quintana-ruiz/favicon.png"
+            alt=""
+            width={64}
+            height={55}
+            unoptimized
+            className={cn('h-auto w-9', !sidebarCollapsed && 'md:hidden')}
+          />
+          {!sidebarCollapsed && (
+            <Image
+              src="/brand/quintana-ruiz/logo.png"
+              alt="Quintana Ruiz Asesores de Seguros"
+              width={971}
+              height={550}
+              priority
+              unoptimized
+              className="hidden h-auto w-44 md:block"
+            />
+          )}
+        </Link>
         <button
           type="button"
           onClick={toggleSidebar}
-          className={cn(
-            'ml-auto text-ink-faint hover:text-amber',
-            sidebarCollapsed && 'mx-auto'
-          )}
-          aria-label="Toggle sidebar"
+          className="text-ink-dim hover:bg-bg2 hover:text-primary absolute top-2 right-2 hidden h-7 w-7 items-center justify-center rounded-lg md:flex"
+          aria-label={
+            sidebarCollapsed ? 'Expandir navegación' : 'Contraer navegación'
+          }
+          aria-expanded={!sidebarCollapsed}
+          aria-controls="app-navigation"
         >
-          {sidebarCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          {sidebarCollapsed ? (
+            <PanelLeft className="h-4 w-4" />
+          ) : (
+            <PanelLeftClose className="h-4 w-4" />
+          )}
         </button>
       </div>
 
-      <nav className="flex-1 space-y-1 p-2">
+      <nav
+        id="app-navigation"
+        aria-label="Navegación principal"
+        className="flex-1 space-y-1 p-2 md:p-3"
+      >
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
@@ -73,19 +98,28 @@ export function AppSidebar() {
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-3 rounded-[3px] px-3 py-2 text-[11px] font-medium uppercase tracking-wide transition-colors',
+                'flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-medium transition-colors',
                 active
-                  ? 'bg-panel text-amber-bright'
-                  : 'text-ink-dim hover:bg-panel hover:text-ink'
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-ink-dim hover:bg-bg2 hover:text-primary'
               )}
-              title={sidebarCollapsed ? label : undefined}
+              title={label}
+              aria-label={label}
+              aria-current={active ? 'page' : undefined}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              {!sidebarCollapsed && <span>{label}</span>}
+              {!sidebarCollapsed && (
+                <span className="hidden md:inline">{label}</span>
+              )}
             </Link>
           );
         })}
       </nav>
+      {!sidebarCollapsed && (
+        <p className="border-line text-ink-dim hidden border-t px-5 py-4 text-xs md:block">
+          Gestión de cartera de seguros
+        </p>
+      )}
     </aside>
   );
 }

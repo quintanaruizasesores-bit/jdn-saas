@@ -1,22 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400&family=JetBrains+Mono:wght@400;500;700&display=swap');
-@import "tailwindcss";
+@import 'tailwindcss';
 
+/* Quintana Ruiz: azul/blanco para la app, según la adaptación solicitada.
+   El dorado del CTA comercial no se usa como acción principal del panel. */
 :root {
-  --bg: #161310;
-  --bg2: #1e1a16;
-  --panel: #221d18;
-  --panel2: #2a241e;
-  --line: #3a322a;
-  --ink: #f0e9df;
-  --ink-dim: #a89c8c;
-  --ink-faint: #6f6557;
-  --amber: #e8a13c;
-  --amber-bright: #ffc870;
-  --amber-dark: #d4902f;
-  --rust: #c45a2e;
-  --green: #7fa86b;
-  --red: #cf6a5c;
-  --blue: #6b93a8;
+  color-scheme: light;
+  --bg: #f5f8fd;
+  --bg2: #f0f4fa;
+  --panel: #ffffff;
+  --panel2: #f0f4fa;
+  --line: #e4e8f0;
+  --ink: #1a2556;
+  --ink-dim: #5a6784;
+  --ink-faint: #5a6784;
+  --primary: #1e5bbf;
+  --primary-dark: #154a9f;
+  --navy: #1a2556;
+  --navy-dark: #121a3e;
+  /* Estados adaptados a superficies claras; no son nuevas tintas de marca. */
+  --green: #14532d;
+  --red: #b91c1c;
+  --rust: #b91c1c;
+  --blue: #1e5bbf;
 }
 
 @theme inline {
@@ -28,19 +32,51 @@
   --color-ink: var(--ink);
   --color-ink-dim: var(--ink-dim);
   --color-ink-faint: var(--ink-faint);
-  --color-amber: var(--amber);
-  --color-amber-bright: var(--amber-bright);
-  --color-amber-dark: var(--amber-dark);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-navy: var(--navy);
+  --color-navy-dark: var(--navy-dark);
   --color-rust: var(--rust);
   --color-green: var(--green);
   --color-red: var(--red);
   --color-blue: var(--blue);
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-serif: 'Fraunces', serif;
+  --color-whatsapp: #25d366;
+  --color-whatsapp-dark: #1da851;
+  /* Roles compartidos por los componentes de la biblioteca. */
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-card: var(--panel);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--panel);
+  --color-popover-foreground: var(--ink);
+  --color-primary-foreground: #ffffff;
+  --color-muted: var(--bg2);
+  --color-muted-foreground: var(--ink-dim);
+  --color-accent: var(--bg2);
+  --color-accent-foreground: var(--primary);
+  --color-secondary: var(--bg2);
+  --color-secondary-foreground: var(--ink);
+  --color-border: var(--line);
+  --color-input: var(--line);
+  --color-ring: var(--primary);
+  --color-destructive: var(--red);
+  --font-body:
+    var(--font-inter), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans:
+    var(--font-inter), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-heading:
+    var(--font-poppins), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --shadow-sm: 0 1px 2px rgb(26 37 86 / 6%);
+  --shadow-md: 0 4px 16px rgb(26 37 86 / 8%);
+  --shadow-lg: 0 10px 40px rgb(26 37 86 / 10%);
+  --shadow-xl: 0 20px 60px rgb(26 37 86 / 14%);
 }
 
-* {
-  box-sizing: border-box;
+@layer base {
+  * {
+    box-sizing: border-box;
+    border-color: var(--line);
+  }
 }
 
 html {
@@ -50,25 +86,30 @@ html {
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  background-image:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(232, 161, 60, 0.07), transparent),
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.012) 2px,
-      rgba(0, 0, 0, 0.012) 3px
-    );
   min-height: 100vh;
 }
 
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
 ::selection {
-  background: var(--amber);
-  color: #161310;
+  background: var(--primary);
+  color: #ffffff;
+}
+
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
 }
 
 ::-webkit-scrollbar {
@@ -79,15 +120,20 @@ body {
   background: var(--bg2);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--line);
+  background: #b7c5df;
   border-radius: 6px;
   border: 3px solid var(--bg2);
 }
 
-.font-serif {
-  font-family: var(--font-serif);
-}
-
-.font-mono {
-  font-family: var(--font-mono);
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

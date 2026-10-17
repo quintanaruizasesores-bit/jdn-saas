@@ -26,7 +26,7 @@ export default function RecuperarPage() {
 
   return (
     <>
-      <h2 className="mb-6 font-serif text-xl">Recuperar contraseña</h2>
+      <h2 className="mb-6 font-heading text-xl">Recuperar contraseña</h2>
       {success ? (
         <p className="text-sm text-green">
           Revisá tu email para restablecer la contraseña.
@@ -43,7 +43,7 @@ export default function RecuperarPage() {
           </Button>
         </form>
       )}
-      <Link href="/login" className="mt-4 block text-center text-xs text-ink-faint hover:text-amber">
+      <Link href="/login" className="mt-4 block text-center text-xs text-ink-faint hover:text-primary">
         Volver al login
       </Link>
     </>

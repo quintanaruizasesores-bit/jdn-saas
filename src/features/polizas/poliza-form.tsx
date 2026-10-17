@@ -34,7 +34,12 @@ export function PolizaForm({
   onSubmit: (data: PolizaFormData) => Promise<void>;
   loading?: boolean;
 }) {
-  const { register, handleSubmit, control, formState: { errors } } = useForm<PolizaFormData>({
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<PolizaFormData>({
     resolver: zodResolver(polizaSchema),
     defaultValues: {
       cliente_id: defaultValues?.cliente_id ?? '',
@@ -64,7 +69,9 @@ export function PolizaForm({
               />
             )}
           />
-          {errors.cliente_id && <p className="mt-1 text-xs text-red">{errors.cliente_id.message}</p>}
+          {errors.cliente_id && (
+            <p className="text-red mt-1 text-xs">{errors.cliente_id.message}</p>
+          )}
         </div>
         <div>
           <Label>Compañía</Label>
@@ -73,7 +80,7 @@ export function PolizaForm({
             control={control}
             render={({ field }) => (
               <Select value={field.value ?? ''} onValueChange={field.onChange}>
-                <SelectTrigger className="mt-1 border-line bg-bg">
+                <SelectTrigger className="border-line bg-bg mt-1">
                   <SelectValue placeholder="—" />
                 </SelectTrigger>
                 <SelectContent>
@@ -94,7 +101,7 @@ export function PolizaForm({
             control={control}
             render={({ field }) => (
               <Select value={field.value ?? ''} onValueChange={field.onChange}>
-                <SelectTrigger className="mt-1 border-line bg-bg">
+                <SelectTrigger className="border-line bg-bg mt-1">
                   <SelectValue placeholder="—" />
                 </SelectTrigger>
                 <SelectContent>
@@ -115,7 +122,7 @@ export function PolizaForm({
             control={control}
             render={({ field }) => (
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="mt-1 border-line bg-bg">
+                <SelectTrigger className="border-line bg-bg mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -129,22 +136,35 @@ export function PolizaForm({
         </div>
         <div>
           <Label>Prima</Label>
-          <Input type="number" step="0.01" {...register('prima', { valueAsNumber: true })} className="mt-1 border-line bg-bg" />
+          <Input
+            type="number"
+            step="0.01"
+            {...register('prima', { valueAsNumber: true })}
+            className="border-line bg-bg mt-1"
+          />
         </div>
         <div>
           <Label>Inicio vigencia</Label>
-          <Input type="date" {...register('fecha_inicio')} className="mt-1 border-line bg-bg" />
+          <Input
+            type="date"
+            {...register('fecha_inicio')}
+            className="border-line bg-bg mt-1"
+          />
         </div>
         <div>
           <Label>Fin vigencia (opcional)</Label>
-          <Input type="date" {...register('fecha_fin')} className="mt-1 border-line bg-bg" />
+          <Input
+            type="date"
+            {...register('fecha_fin')}
+            className="border-line bg-bg mt-1"
+          />
         </div>
         <div className="sm:col-span-2">
           <Label>Detalle</Label>
-          <Input {...register('detalle')} className="mt-1 border-line bg-bg" />
+          <Input {...register('detalle')} className="border-line bg-bg mt-1" />
         </div>
       </div>
-      <Button type="submit" disabled={loading} className="bg-amber text-[#1a1510]">
+      <Button type="submit" disabled={loading}>
         Guardar
       </Button>
     </form>

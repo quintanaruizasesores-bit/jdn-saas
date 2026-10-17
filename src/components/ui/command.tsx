@@ -26,7 +26,7 @@ const CommandInput = React.forwardRef<
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        'flex h-10 w-full bg-transparent py-2 font-mono text-xs text-ink outline-none placeholder:text-ink-faint disabled:cursor-not-allowed disabled:opacity-50',
+        'flex h-10 w-full bg-transparent py-2 font-body text-xs text-ink outline-none placeholder:text-ink-faint disabled:cursor-not-allowed disabled:opacity-50',
         className
       )}
       {...props}
@@ -53,7 +53,7 @@ const CommandEmpty = React.forwardRef<
 >((props, ref) => (
   <CommandPrimitive.Empty
     ref={ref}
-    className="px-3 py-6 text-center font-mono text-xs text-ink-faint"
+    className="px-3 py-6 text-center font-body text-xs text-ink-faint"
     {...props}
   />
 ));
@@ -66,7 +66,7 @@ const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex cursor-pointer select-none flex-col gap-0.5 rounded-[2px] px-3 py-2 font-mono text-xs text-ink-dim outline-none data-[selected=true]:bg-panel data-[selected=true]:text-amber data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50',
+      'relative flex cursor-pointer select-none flex-col gap-0.5 rounded-lg px-3 py-2 font-body text-xs text-ink-dim outline-none data-[selected=true]:bg-panel data-[selected=true]:text-primary data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50',
       className
     )}
     {...props}

@@ -27,12 +27,12 @@ export function BarList({ items, maxItems = 10 }: { items: BarListItem[]; maxIte
       {sorted.map((item) => (
         <div
           key={item.label}
-          className="grid grid-cols-[120px_1fr_60px] items-center gap-3 text-[11.5px]"
+          className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_auto] sm:grid-cols-[120px_1fr_60px] items-center gap-3 text-[11.5px]"
         >
-          <span className="truncate text-ink-dim">{item.label}</span>
+          <span title={item.label} className="truncate text-ink-dim">{item.label}</span>
           <div className="h-2 overflow-hidden rounded-full bg-bg">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-rust to-amber transition-all duration-1000 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-primary to-navy transition-all duration-1000 ease-out"
               style={{ width: animated ? `${(item.value / max) * 100}%` : '0%' }}
             />
           </div>

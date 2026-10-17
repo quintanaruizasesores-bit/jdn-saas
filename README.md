@@ -134,3 +134,24 @@ que debe planificarse como bloque propio antes de exponer la app a múltiples or
 ## Licencia
 
 Privado — Cartera JDN
+
+### Identidad visual — Quintana Ruiz
+
+La interfaz adopta el brandbook de Quintana Ruiz facilitado el 17/10/2026.
+Los tokens están en `src/app/globals.css`: azul `#1E5BBF`, navy `#1A2556`,
+blanco, fondos `#F5F8FD`/`#F0F4FA` y bordes `#E4E8F0`. Poppins se usa en
+encabezados y cifras; Inter en lectura y controles. Ambas se sirven localmente
+mediante `next/font/local`; sus licencias OFL se incluyen en `public/fonts`.
+
+La adaptación solicitada para el panel usa **acciones azules con texto blanco**,
+en lugar del dorado comercial del sitio público. Los estados de éxito y error
+conservan su función con verdes/rojos legibles sobre fondo claro. La escala azul
+de las series de gráficos y los estados de foco/disabled son adaptaciones de la
+app, no variantes oficiales adicionales del brandbook.
+
+El PNG original (sin recolorear ni deformar) y el monograma provienen de
+`gonbenedetto1/quintanaseguros`, commit
+`b5878efd652a41bf26918152e56b9cae28d818f8`, rutas `assets/img/logo.png` y
+`assets/img/favicon-64.png`. Se guardan en `public/brand/quintana-ruiz/`.
+El favicon ICO agrega un lienzo cuadrado blanco conservando la proporción del
+monograma original. No se usa el SVG divergente.

@@ -21,14 +21,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       {children}
       <Toaster
-        theme="dark"
+        theme="light"
         position="bottom-center"
         toastOptions={{
           style: {
-            background: 'var(--panel2)',
-            border: '1px solid var(--amber)',
+            background: 'var(--panel)',
+            border: '1px solid var(--line)',
             color: 'var(--ink)',
-            fontFamily: 'var(--font-mono)',
+            fontFamily: 'var(--font-body)',
           },
         }}
       />

@@ -23,7 +23,7 @@ export default function RegisterPage() {
 
   return (
     <>
-      <h2 className="mb-6 font-serif text-xl">Crear cuenta</h2>
+      <h2 className="mb-6 font-heading text-xl">Crear cuenta</h2>
       <form action={handleSubmit} className="space-y-4">
         {error && <p className="text-sm text-red">{error}</p>}
         <div className="space-y-2">
@@ -41,7 +41,7 @@ export default function RegisterPage() {
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? 'Creando…' : 'Registrarse'}
         </Button>
-        <Link href="/login" className="block text-center text-xs text-ink-faint hover:text-amber">
+        <Link href="/login" className="block text-center text-xs text-ink-faint hover:text-primary">
           Ya tengo cuenta
         </Link>
       </form>

@@ -47,13 +47,13 @@ export default function SiniestrosPage() {
     <div>
       <AppHeader title="Siniestros" subtitle="Registro y seguimiento de siniestros" />
       <div className="mb-4">
-        <Button asChild className="border border-amber bg-bg2 text-amber-bright">
+        <Button asChild variant="outline">
           <Link href="/siniestros/nuevo">
             <Plus className="mr-1 h-4 w-4" /> Nuevo siniestro
           </Link>
         </Button>
       </div>
-      <div className="overflow-hidden rounded-[3px] border border-line bg-panel">
+      <div className="overflow-hidden rounded-xl border border-line bg-panel">
         {isLoading ? (
           <p className="p-8 text-ink-faint">Cargando...</p>
         ) : isError ? (
@@ -78,7 +78,7 @@ export default function SiniestrosPage() {
                 return (
                   <TableRow key={s.id} className="border-line/50 hover:bg-panel2">
                     <TableCell>
-                      <Link href={`/clientes/${s.cliente_id}`} className="hover:text-amber">
+                      <Link href={`/clientes/${s.cliente_id}`} className="hover:text-primary">
                         {c ? getClienteNombre(c) : '—'}
                       </Link>
                     </TableCell>
