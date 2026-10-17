@@ -20,8 +20,9 @@ import { ErrorState } from '@/components/ui/error-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BirthdayTemplateEditor } from '@/features/config/birthday-template-editor';
 import { CompaniaColorEditor } from '@/features/config/compania-color-editor';
+import { RespaldoPanel } from '@/features/config/respaldo-panel';
 
-type ConfigTab = 'companias' | 'ramos' | 'cumpleanos';
+type ConfigTab = 'companias' | 'ramos' | 'cumpleanos' | 'respaldo';
 
 export function ConfigManager({
   defaultTab = 'companias',
@@ -109,18 +110,22 @@ export function ConfigManager({
     <div>
       <AppHeader
         title="Configuración"
-        subtitle="Catálogos de compañías y ramos"
+        subtitle="Catálogos, comunicaciones y datos de la aplicación"
       />
 
       <Tabs defaultValue={defaultTab}>
-        <TabsList className="border-line bg-panel2 border">
+        <TabsList className="border-line bg-panel2 h-auto flex-wrap justify-start border">
           <TabsTrigger value="companias">Compañías</TabsTrigger>
           <TabsTrigger value="ramos">Ramos</TabsTrigger>
           <TabsTrigger value="cumpleanos">Cumpleaños</TabsTrigger>
+          <TabsTrigger value="respaldo">Respaldo y exportación</TabsTrigger>
         </TabsList>
 
         <TabsContent value="companias" className="mt-4">
-          <p className="mb-3 text-sm text-ink-dim">Elegí el color de cada compañía para identificarla en pólizas y en el dashboard.</p>
+          <p className="text-ink-dim mb-3 text-sm">
+            Elegí el color de cada compañía para identificarla en pólizas y en
+            el dashboard.
+          </p>
           <div className="mb-4 flex gap-2">
             <Input
               placeholder="Nombre compañía"
@@ -234,6 +239,9 @@ export function ConfigManager({
 
         <TabsContent value="cumpleanos" className="mt-4">
           <BirthdayTemplateEditor />
+        </TabsContent>
+        <TabsContent value="respaldo" className="mt-4">
+          <RespaldoPanel />
         </TabsContent>
       </Tabs>
     </div>

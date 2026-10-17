@@ -11,7 +11,7 @@ import {
   Shield,
   CheckSquare,
   Cake,
-  Download,
+  ChartNoAxesCombined,
   Settings,
   PanelLeftClose,
   PanelLeft,
@@ -27,7 +27,7 @@ const navItems = [
   { href: '/riesgo', label: 'Riesgo', icon: Shield },
   { href: '/tareas', label: 'Tareas', icon: CheckSquare },
   { href: '/cumpleanos', label: 'Cumpleaños', icon: Cake },
-  { href: '/reportes', label: 'Reportes', icon: Download },
+  { href: '/reportes', label: 'Reportes', icon: ChartNoAxesCombined },
   { href: '/config', label: 'Configuración', icon: Settings },
 ];
 
