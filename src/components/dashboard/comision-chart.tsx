@@ -41,6 +41,12 @@ export function ComisionTooltip({ punto }: { punto: ComisionMensual }) {
       <p className="text-ink-dim mt-1">
         Variación: {formatVariacion(punto.variacion)}
       </p>
+      {punto.comision !== null && punto.sinDatos > 0 && (
+        <p className="text-ink-dim mt-1">
+          Subtotal de importes cargados · {formatNumber(punto.sinDatos)}{' '}
+          pendientes
+        </p>
+      )}
       <p className="text-ink-dim">
         {formatNumber(punto.polizas)} pólizas con aporte conocido
       </p>
@@ -92,7 +98,9 @@ export function ComisionChart() {
           <dl className="my-4 grid grid-cols-2 gap-3">
             <div className="bg-bg2 min-w-0 rounded-xl p-3">
               <dt className="text-ink-dim text-[11px]">
-                Mensual actual · en curso
+                {resumen?.sinDatos
+                  ? 'Subtotal mensual · importes cargados'
+                  : 'Mensual actual · en curso'}
               </dt>
               <dd className="text-primary mt-1 text-lg font-semibold break-words tabular-nums">
                 {dinero(resumen?.comisionActual)}
@@ -203,7 +211,8 @@ export function ComisionChart() {
           )}
           {!!resumen?.sinDatos && (
             <p className="text-ink-dim mt-2 text-xs">
-              {formatNumber(resumen.sinDatos)} pólizas con datos pendientes.{' '}
+              {formatNumber(resumen.sinDatos)} pólizas con datos pendientes; el
+              subtotal incluye los aportes calculables.{' '}
               <Link href="/polizas" className="text-primary underline">
                 Revisar pólizas
               </Link>

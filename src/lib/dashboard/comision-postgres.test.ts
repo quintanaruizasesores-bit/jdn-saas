@@ -53,7 +53,7 @@ beforeAll(async () => {
   originalId = await crearPoliza();
   ambiguaId = (
     await db.query<{ id: string }>(
-      `INSERT INTO polizas(cliente_id,estado,fecha_inicio,fecha_fin,prima,legacy_id) VALUES ($1,'VIGENTE','2020-01-01','2099-01-01',2000,3) RETURNING id`,
+      `INSERT INTO polizas(cliente_id,estado,fecha_inicio,fecha_fin,prima,legacy_id) VALUES ($1,'VIGENTE','2020-01-01','2025-01-01',2000,3) RETURNING id`,
       [clienteId]
     )
   ).rows[0].id;
@@ -108,6 +108,20 @@ describe('migración 007 y auditoría financiera en PostgreSQL', () => {
         ])
       ).rows[0]
     ).toEqual({ comision_desde: null });
+    const cartera = (
+      await db.query<{ snapshot: PolizaComision }>(
+        'SELECT to_jsonb(p) AS snapshot FROM polizas p'
+      )
+    ).rows.map((r) => r.snapshot);
+    const fotos = (
+      await db.query<{ snapshot: HistorialComision }>(
+        'SELECT to_jsonb(h) AS snapshot FROM poliza_historial h'
+      )
+    ).rows.map((r) => r.snapshot);
+    // Una fecha legacy pendiente de revisar no debe borrar el total actual.
+    expect(
+      calcularComisionMensual(cartera, new Date(), fotos).resumen.comisionActual
+    ).toBe(420);
   });
 
   it('audita una renovación VIGENTE a VIGENTE con igual premio, una sola póliza y ambas vigencias', async () => {
@@ -238,7 +252,11 @@ describe('migración 007 y auditoría financiera en PostgreSQL', () => {
       id,
     ]);
     const before = (
-      await db.query<{ total_polizas: number; prima_total: string; color: string | null }>(
+      await db.query<{
+        total_polizas: number;
+        prima_total: string;
+        color: string | null;
+      }>(
         'SELECT total_polizas,prima_total,color FROM v_polizas_por_compania WHERE compania_id=$1',
         [id]
       )

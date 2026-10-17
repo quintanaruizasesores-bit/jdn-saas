@@ -39,6 +39,122 @@ const importe = (
 ) => data.serie.find((p) => p.mes === mes)!.comision;
 
 describe('stock mensual recurrente', () => {
+  it('la foto inicial de 007 mantiene el stock mensual futuro aun con inicio ausente, fecha legacy ambigua e importe pendiente', () => {
+    const vigentes = [
+      poliza({
+        id: 'sin-inicio',
+        fecha_inicio: null,
+        prima: 100000,
+        comision_desde: '2026-04-15',
+      }),
+      poliza({
+        id: 'legacy',
+        legacy_id: 1,
+        fecha_fin: '2025-01-01',
+        prima: 50000,
+        comision_desde: null,
+      }),
+      poliza({ id: 'sin-importe', prima: 0, comision_desde: '2026-04-15' }),
+    ];
+    const hist: HistorialComision[] = vigentes.map((p, i) => ({
+      id: `baseline${i}`,
+      poliza_id: p.id,
+      completo: true,
+      datos_anteriores: null,
+      datos_nuevos: { ...p },
+      fecha_efecto: p.comision_desde,
+      created_at: '2026-04-15T12:00:00Z',
+    }));
+    const result = calcularComisionMensual(vigentes, now, hist);
+    expect(importe(result, '2026-03')).toBeNull();
+    expect(importe(result, '2026-04')).toBe(21000);
+    expect(importe(result, '2026-05')).toBe(21000);
+    expect(result.resumen).toMatchObject({
+      comisionActual: 21000,
+      polizas: 2,
+      sinDatos: 1,
+      variacion: null,
+    });
+  });
+  it('calcula la cartera actual sin fecha de inicio ni historial, porque los importes y el estado vigente sí se conocen', () => {
+    const data = calcularComisionMensual(
+      [
+        poliza({
+          id: 'sin-inicio',
+          fecha_inicio: null,
+          comision_desde: null,
+          prima: 100000,
+        }),
+        poliza({ id: 'otra-vigente', comision_desde: null, prima: 50000 }),
+      ],
+      now
+    );
+    expect(data.resumen).toMatchObject({
+      comisionActual: 21000,
+      polizas: 2,
+      sinDatos: 0,
+    });
+    expect(data.serie.at(-1)?.comision).toBe(21000);
+    expect(data.serie.slice(0, -1).every((p) => p.comision === null)).toBe(
+      true
+    );
+  });
+
+  it('reproduce una cartera importada después de 007 sin desaparecer por pólizas sin prima o fechas legacy', () => {
+    const data = calcularComisionMensual(
+      [
+        poliza({ id: 'normal', prima: 100000, comision_desde: '2026-06-17' }),
+        poliza({
+          id: 'sin-inicio',
+          prima: 50000,
+          fecha_inicio: null,
+          comision_desde: '2026-06-17',
+        }),
+        poliza({
+          id: 'legacy',
+          prima: 25000,
+          legacy_id: 3,
+          fecha_fin: '2025-01-01',
+          comision_desde: null,
+        }),
+        poliza({ id: 'sin-importe', prima: 0, comision_desde: '2026-06-17' }),
+      ],
+      now
+    );
+    expect(data.resumen).toMatchObject({
+      comisionActual: 24500,
+      polizas: 3,
+      sinDatos: 1,
+      variacion: null,
+      anualizada: null,
+    });
+  });
+
+  it('el total mensual actual aumenta con otra póliza vigente y baja al darla de baja, sin sumar meses', () => {
+    const inicial = poliza({
+      prima: 100000,
+      fecha_inicio: null,
+      comision_desde: null,
+    });
+    const nueva = poliza({
+      id: 'nueva',
+      prima: 20000,
+      comision_desde: '2026-06-17',
+    });
+    expect(calcularComisionMensual([inicial], now).resumen.comisionActual).toBe(
+      14000
+    );
+    expect(
+      calcularComisionMensual([inicial, nueva], now).resumen.comisionActual
+    ).toBe(16800);
+    expect(
+      calcularComisionMensual(
+        [inicial, { ...nueva, estado: 'BAJA', fecha_baja: '2026-06-17' }],
+        now
+      ).resumen.comisionActual
+    ).toBe(14000);
+  });
+
   it('una póliza anterior a la ventana sigue aportando en los doce meses sin altas', () => {
     const data = calcularComisionMensual(
       [poliza({ fecha_inicio: '2020-01-01', comision_desde: '2020-01-01' })],
@@ -227,13 +343,13 @@ describe('stock mensual recurrente', () => {
     expect(importe(data, '2026-05')).toBe(140);
   });
 
-  it('no presenta un subtotal conocido como total completo ni anualiza datos incompletos', () => {
+  it('mantiene visible el subtotal mensual y señala pólizas sin importe sin anualizar ni comparar datos incompletos', () => {
     const data = calcularComisionMensual(
       [poliza(), poliza({ id: 'sin-prima', prima: 0 })],
       now
     );
     expect(data.resumen).toMatchObject({
-      comisionActual: null,
+      comisionActual: 140,
       sinDatos: 1,
       polizas: 1,
       anualizada: null,
@@ -242,12 +358,15 @@ describe('stock mensual recurrente', () => {
     expect(data.serie.at(-1)?.comisionConocida).toBe(140);
   });
 
-  it('marca las fechas legacy ambiguas sin modificarlas ni inferir fecha de baja', () => {
+  it('una fecha legacy ambigua no oculta el aporte mensual de una póliza que sigue VIGENTE hoy', () => {
     const data = calcularComisionMensual(
       [poliza({ legacy_id: 3, fecha_fin: '2026-12-01', comision_desde: null })],
       now
     );
-    expect(data.resumen.comisionActual).toBeNull();
+    expect(data.resumen.comisionActual).toBe(140);
+    expect(data.serie.slice(0, -1).every((p) => p.comision === null)).toBe(
+      true
+    );
   });
 
   it('calcula variación y todos los indicadores desde el último punto de la misma serie', () => {
@@ -319,7 +438,8 @@ describe('periodicidad explícita', () => {
       [poliza({ prima_periodicidad: null })],
       now
     );
-    expect(data.resumen.comisionActual).toBeNull();
+    expect(data.resumen.comisionActual).toBe(0);
+    expect(data.resumen.sinDatos).toBe(1);
   });
   it.each([null, 0, -100, NaN, Infinity, 'incorrecto'])(
     'importe inválido %s no fabrica un cero',

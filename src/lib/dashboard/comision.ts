@@ -69,9 +69,12 @@ type Version = { datos: PolizaComision; desde: string; orden: string };
 /** Los diffs legacy no permiten reconstruir versiones financieras completas. */
 function version(
   datos: Record<string, unknown> | PolizaComision | null,
-  orden: string
+  orden: string,
+  observadoDesde?: string
 ): Version | null {
-  if (!datos || !esFecha(datos.comision_desde)) return null;
+  if (!datos) return null;
+  const desde = datos.comision_desde ?? observadoDesde;
+  if (!esFecha(desde)) return null;
   if (!['VIGENTE', 'BAJA', 'HISTORICA'].includes(String(datos.estado)))
     return null;
   if (
@@ -85,8 +88,14 @@ function version(
   )
     return null;
   return {
-    datos: datos as unknown as PolizaComision,
-    desde: datos.comision_desde,
+    datos: {
+      ...datos,
+      comision_desde: desde,
+      fechasVerificadas:
+        datos.fechasVerificadas ??
+        !(datos.legacy_id != null && datos.fecha_fin && !datos.comision_desde),
+    } as unknown as PolizaComision,
+    desde,
     orden,
   };
 }
@@ -96,12 +105,16 @@ function aporte(datos: PolizaComision, corte: string): number | null {
   if (datos.fecha_baja && corte >= datos.fecha_baja) return 0;
   // Un estado inactivo observado en una versión acreditada no aporta desde ella.
   if (datos.estado !== 'VIGENTE') return 0;
-  if (datos.fechasVerificadas === false) return null;
-  if (!esFecha(datos.fecha_inicio)) return null;
-  if (datos.fecha_inicio > corte) return 0;
-  if (datos.fecha_fin && !esFecha(datos.fecha_fin)) return null;
-  if (datos.fecha_fin && datos.fecha_fin < datos.fecha_inicio) return null;
-  if (datos.fecha_fin && corte > datos.fecha_fin) return 0; // fin de vigencia inclusivo
+  // La versión VIGENTE acredita el aporte desde que fue observada, aunque falte
+  // el inicio contractual. No acredita períodos anteriores a esa observación.
+  if (datos.fecha_inicio && !esFecha(datos.fecha_inicio)) return null;
+  if (esFecha(datos.fecha_inicio) && datos.fecha_inicio > corte) return 0;
+  const finAmbiguo = datos.fechasVerificadas === false;
+  if (!finAmbiguo && datos.fecha_fin) {
+    if (!esFecha(datos.fecha_fin)) return null;
+    if (datos.fecha_inicio && datos.fecha_fin < datos.fecha_inicio) return null;
+    if (corte > datos.fecha_fin) return 0; // fin de vigencia inclusivo
+  }
   const mensual = mensualizarPrima(datos.prima, datos.prima_periodicidad);
   return mensual === null ? null : mensual * COMISION_RATE;
 }
@@ -109,7 +122,8 @@ function aporte(datos: PolizaComision, corte: string): number | null {
 /**
  * Stock al cierre del mes; hoy para el mes en curso. Sin prorrateo, cobros ni
  * proyecciones. Una versión por id evita duplicar renovaciones en la misma fila.
- * Los cortes sin cobertura completa son null, nunca falsos ceros o subtotales.
+ * El mes actual suma los importes cargados; los faltantes se informan aparte.
+ * Los meses cerrados sin cobertura histórica suficiente siguen siendo null.
  */
 export function calcularComisionMensual(
   polizas: readonly PolizaComision[],
@@ -125,14 +139,29 @@ export function calcularComisionMensual(
     versiones.set(id, list);
   };
   for (const event of historial) {
-    if (!event.completo || Date.parse(event.created_at) > now.getTime())
+    if (
+      !event.completo ||
+      !Number.isFinite(Date.parse(event.created_at)) ||
+      Date.parse(event.created_at) > now.getTime()
+    )
       continue;
     const orden = `${Date.parse(event.created_at).toString().padStart(16, '0')}:${String(event.version_orden ?? 0).padStart(20, '0')}`;
     add(
       event.poliza_id,
       version(event.datos_anteriores, `${orden}:0:${event.id}`)
     );
-    add(event.poliza_id, version(event.datos_nuevos, `${orden}:1:${event.id}`));
+    // La foto completa de 007 acredita el estado observado desde su registro,
+    // aunque no tenga fecha contractual de inicio o fecha de efecto anterior.
+    add(
+      event.poliza_id,
+      version(
+        event.datos_nuevos,
+        `${orden}:1:${event.id}`,
+        !event.fecha_efecto && !event.datos_nuevos?.comision_desde
+          ? periodoComision(new Date(event.created_at)).hoy
+          : undefined
+      )
+    );
   }
   for (const poliza of polizas) {
     // Compatibilidad sin migración: sólo se conoce la foto actual, no el pasado.
@@ -178,6 +207,7 @@ export function calcularComisionMensual(
     let comisionConocida = 0;
     let cantidad = 0;
     let sinDatos = 0;
+    let sinHistorial = 0;
     for (const poliza of polizas) {
       const list = versiones.get(poliza.id) ?? [];
       const vigente = list.findLast((v) => v.desde <= corte);
@@ -190,16 +220,21 @@ export function calcularComisionMensual(
         corte < list[0].datos.fecha_inicio
       )
         valor = 0;
+      else sinHistorial++;
       if (valor === null) sinDatos++;
       else {
         comisionConocida += valor;
         if (valor > 0) cantidad++;
       }
     }
-    const comision = sinDatos ? null : redondear(comisionConocida);
-    const previo = serie.at(-1)?.comision;
+    const comision =
+      !enCurso && sinHistorial ? null : redondear(comisionConocida);
+    const puntoPrevio = serie.at(-1);
+    const previo = puntoPrevio?.comision;
     const variacion =
-      comision !== null && previo != null ? redondear(comision - previo) : null;
+      !sinDatos && !puntoPrevio?.sinDatos && comision !== null && previo != null
+        ? redondear(comision - previo)
+        : null;
     serie.push({
       mes,
       corte,
@@ -213,6 +248,7 @@ export function calcularComisionMensual(
       comisionConocida: redondear(comisionConocida),
       polizas: cantidad,
       sinDatos,
+      sinHistorial,
       variacion,
       variacionPorcentual:
         variacion !== null && previo != null && previo > 0
@@ -232,7 +268,9 @@ export function calcularComisionMensual(
       polizas: actual.polizas,
       sinDatos: actual.sinDatos,
       anualizada:
-        actual.comision === null ? null : redondear(actual.comision * 12),
+        actual.sinDatos || actual.comision === null
+          ? null
+          : redondear(actual.comision * 12),
     },
   };
 }

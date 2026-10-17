@@ -30,9 +30,13 @@ Los formularios y el listado ahora identifican el importe como «Premio mensual�
   de inicio. No se suman simultáneamente dos versiones del mismo contrato.
 - Una renovación o baja futura no reemplaza la versión anterior antes de su
   fecha de efecto. No se generan puntos para meses futuros.
-- Premio cero («sin cargar» en la app), fechas ausentes/inválidas o cobertura
-  histórica insuficiente producen un dato desconocido. Un total incompleto es
-  `null`, nunca cero ni un subtotal presentado como total de cartera.
+- El total actual suma los premios mensuales de las pólizas que aportan hoy,
+  aunque falte su fecha de inicio o la historia previa. Un registro sin importe
+  no oculta los aportes de las demás pólizas: se muestra el subtotal de importes
+  cargados y la cantidad de registros pendientes, sin anualizarlo ni compararlo.
+- Una foto completa VIGENTE acredita aporte desde su observación aunque falte
+  el comienzo contractual. Antes de esa observación el histórico es desconocido.
+  Los cortes sin cobertura de historial siguen siendo `null`, nunca ceros ficticios.
 - Variación absoluta: punto actual menos anterior, sólo si ambos son completos.
   La variación porcentual no se calcula sobre una base cero.
 - El equivalente anual es el valor mensual actual por 12, sólo con información
@@ -60,9 +64,13 @@ se conservan; no se fabrican renovaciones, bajas ni premios históricos.
 
 Además, el importador copiaba `fechaBaja` a `fecha_fin`. Una póliza importada que
 sigue VIGENTE y tiene ese campo requiere revisar si es un vencimiento o una baja.
-No se reclasifica automáticamente. Hasta revisar sus fechas, esa póliza deja el
-total como incompleto. No se alteran el importe, el estado ni las fechas reales
-para resolver el gráfico.
+No se reclasifica automáticamente. El estado VIGENTE observado acredita su
+aporte mensual; esa fecha legacy ambigua no se utiliza como vencimiento. Se
+conserva la foto completa de 007 desde el día observado, incluso si su fecha de
+efecto quedó vacía. No se alteran el importe, el estado ni las fechas reales.
+
+La corrección de este comportamiento es de código: no requiere volver a aplicar
+007/008 ni ejecutar nuevas migraciones.
 
 Para recuperar meses anteriores hacen falta versiones acreditadas con premio
 mensual, estado, vigencia y fecha de efecto de cada cambio. Si una renovación

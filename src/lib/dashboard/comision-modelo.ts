@@ -48,6 +48,7 @@ export interface ComisionMensual {
   comisionConocida: number;
   polizas: number;
   sinDatos: number;
+  sinHistorial: number;
   variacion: number | null;
   variacionPorcentual: number | null;
   enCurso: boolean;

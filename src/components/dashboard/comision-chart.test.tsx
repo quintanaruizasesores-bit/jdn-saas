@@ -52,14 +52,12 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 const configure = (value = data) =>
-  vi
-    .mocked(useComisionDashboard)
-    .mockReturnValue({
-      data: value,
-      isLoading: false,
-      isError: false,
-      refetch: vi.fn(),
-    } as unknown as ReturnType<typeof useComisionDashboard>);
+  vi.mocked(useComisionDashboard).mockReturnValue({
+    data: value,
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+  } as unknown as ReturnType<typeof useComisionDashboard>);
 
 describe('indicadores de comisión', () => {
   it('el KPI superior y el panel utilizan el mismo resultado que el gráfico', () => {
@@ -80,7 +78,10 @@ describe('indicadores de comisión', () => {
         <DashboardPage />
       </QueryClientProvider>
     );
-    const amount = formatCurrency(data.serie.at(-1)!.comision!).replace(/\s/g, ' ');
+    const amount = formatCurrency(data.serie.at(-1)!.comision!).replace(
+      /\s/g,
+      ' '
+    );
     expect(screen.getAllByText(amount, { exact: true })).toHaveLength(2);
     expect(
       screen.getByText('Pólizas con aporte conocido').nextElementSibling
@@ -101,7 +102,7 @@ describe('indicadores de comisión', () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Variación:.*280/)).toBeInTheDocument();
   });
-  it('un corte incompleto no muestra un cero, una variación falsa ni un anualizado', () => {
+  it('una fecha de inicio ausente no oculta la comisión mensual actual', () => {
     const incompleto = calcularComisionMensual(
       [
         {
@@ -121,15 +122,49 @@ describe('indicadores de comisión', () => {
     });
     expect(
       within(region).getByText('Mensual actual · en curso').nextElementSibling
-    ).toHaveTextContent('—');
+    ).toHaveTextContent('140');
+    expect(
+      screen.queryByText('Equivalente anual del valor actual')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/meses sin historial suficiente/)
+    ).toBeInTheDocument();
+  });
+  it('una póliza sin importe no reemplaza el subtotal por un guion y se indica aparte', () => {
+    configure(
+      calcularComisionMensual(
+        [
+          {
+            id: 'cargada',
+            estado: 'VIGENTE',
+            fecha_inicio: null,
+            fecha_fin: null,
+            prima: 1000,
+          },
+          {
+            id: 'sin-importe',
+            estado: 'VIGENTE',
+            fecha_inicio: null,
+            fecha_fin: null,
+            prima: 0,
+          },
+        ],
+        new Date('2026-06-17T15:00:00Z')
+      )
+    );
+    render(<ComisionChart />);
+    expect(
+      screen.getByText('Subtotal mensual · importes cargados')
+        .nextElementSibling
+    ).toHaveTextContent('140');
     expect(
       screen.queryByText('Equivalente anual del valor actual')
     ).not.toBeInTheDocument();
     expect(
-      screen.getByText(/meses sin historial suficiente/)
-    ).toBeInTheDocument();
-    expect(
       screen.getByRole('link', { name: 'Revisar pólizas' })
     ).toHaveAttribute('href', '/polizas');
+    expect(
+      screen.getByText(/1 pólizas con datos pendientes/)
+    ).toBeInTheDocument();
   });
 });
