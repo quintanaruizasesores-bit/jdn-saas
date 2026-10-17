@@ -12,28 +12,23 @@ import {
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
-  CartesianGrid,
 } from 'recharts';
 import { AppHeader } from '@/components/dashboard/app-header';
 import { KpiCard } from '@/components/dashboard/kpi-card';
 import { BarList } from '@/components/dashboard/bar-list';
+import { ComisionChart } from '@/components/dashboard/comision-chart';
+import { COMISION_RATE } from '@/lib/dashboard/comision';
 import { createClient } from '@/lib/supabase/client';
 import {
   fetchClientesTop,
   fetchDashboardKpis,
   fetchPolizasPorCompania,
   fetchPolizasPorRamo,
-  fetchProduccionMensual,
 } from '@/services/dashboard.service';
 import { formatCurrency, formatNumber } from '@/lib/utils/format';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const CHART_COLORS = ['#1E5BBF', '#1A2556', '#608BD0', '#154A9F', '#879EC7', '#354B88', '#ABC1E4'];
-
-/** Comisión aproximada del corredor sobre el premio. */
-const COMISION_RATE = 0.14;
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -63,19 +58,6 @@ export default function DashboardPage() {
       const supabase = createClient();
       const { data } = await fetchPolizasPorRamo(supabase);
       return data ?? [];
-    },
-  });
-
-  const { data: produccion } = useQuery({
-    queryKey: ['dashboard-produccion'],
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data } = await fetchProduccionMensual(supabase);
-      return (data ?? []).map((r) => ({
-        mes: new Date(r.mes).toLocaleDateString('es-AR', { month: 'short', year: '2-digit' }),
-        prima: Number(r.prima_total),
-        polizas: r.polizas_count,
-      }));
     },
   });
 
@@ -208,22 +190,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="mb-4 grid gap-4 lg:grid-cols-2">
-        <div className="min-w-0 rounded-2xl border border-line bg-panel p-4 sm:p-5">
-          <p className="mb-4 text-[11px] uppercase tracking-widest text-ink-dim">
-            Evolución <b className="text-primary">mensual</b>
-          </p>
-          <div className="h-[260px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={produccion ?? []}>
-                <CartesianGrid stroke="var(--line)" strokeDasharray="3 3" />
-                <XAxis dataKey="mes" tick={{ fill: 'var(--ink-dim)', fontSize: 10 }} />
-                <YAxis tick={{ fill: 'var(--ink-dim)', fontSize: 10 }} />
-                <Tooltip contentStyle={{ background: 'var(--panel)', border: '1px solid var(--line)' }} />
-                <Line type="monotone" dataKey="prima" name="Premio" stroke="var(--primary)" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        <ComisionChart />
         <div className="min-w-0 rounded-2xl border border-line bg-panel p-4 sm:p-5">
           <p className="mb-4 text-[11px] uppercase tracking-widest text-ink-dim">
             Top <b className="text-primary">clientes</b>
