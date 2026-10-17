@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Plus, Search } from 'lucide-react';
 import { AppHeader } from '@/components/dashboard/app-header';
 import { EstadoBadge } from '@/components/ui/estado-badge';
+import { CompaniaBadge } from '@/components/ui/compania-badge';
 import { createClient } from '@/lib/supabase/client';
 import { fetchPolizas } from '@/services/polizas.service';
 import { fetchCompanias } from '@/services/companias.service';
@@ -106,13 +107,15 @@ function PolizasListado() {
         </div>
         <Select value={companiaId || 'all'} onValueChange={(v) => { setCompaniaId(v === 'all' ? '' : v); resetToFirstPage(); }}>
           <SelectTrigger className="w-[160px] border-line bg-bg2">
-            <SelectValue placeholder="Compañía" />
+            <span className="min-w-0 flex-1 overflow-hidden text-left">
+              <SelectValue placeholder="Compañía" />
+            </span>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas</SelectItem>
             {(companias ?? []).map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.nombre}
+              <SelectItem key={c.id} value={c.id} textValue={c.nombre}>
+                <CompaniaBadge nombre={c.nombre} />
               </SelectItem>
             ))}
           </SelectContent>
@@ -184,8 +187,8 @@ function PolizasListado() {
                       <TableCell className="text-ink-dim">
                         {(p.ramo as { nombre: string })?.nombre ?? '—'}
                       </TableCell>
-                      <TableCell className="text-blue text-xs">
-                        {(p.compania as { nombre: string })?.nombre ?? '—'}
+                      <TableCell>
+                        <CompaniaBadge nombre={(p.compania as { nombre: string } | null)?.nombre} />
                       </TableCell>
                       <TableCell className="max-w-[200px] truncate text-xs">{p.detalle || '—'}</TableCell>
                       <TableCell className="text-xs">{formatDate(p.fecha_inicio)}</TableCell>

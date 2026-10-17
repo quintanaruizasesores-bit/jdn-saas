@@ -18,6 +18,7 @@ import { KpiCard } from '@/components/dashboard/kpi-card';
 import { BarList } from '@/components/dashboard/bar-list';
 import { ComisionChart } from '@/components/dashboard/comision-chart';
 import { COMISION_RATE } from '@/lib/dashboard/comision';
+import { getCompaniaColor } from '@/lib/companias/colores';
 import { createClient } from '@/lib/supabase/client';
 import {
   fetchClientesTop,
@@ -127,6 +128,7 @@ export default function DashboardPage() {
             items={(porCompania ?? []).map((c) => ({
               label: c.compania_nombre,
               value: c.total_polizas,
+              color: getCompaniaColor(c.compania_nombre).accent,
             }))}
           />
         </div>

@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ClienteCombobox } from '@/features/clientes/cliente-combobox';
+import { CompaniaBadge } from '@/components/ui/compania-badge';
 import type { Poliza } from '@/types/database';
 
 interface Catalogo {
@@ -81,12 +82,14 @@ export function PolizaForm({
             render={({ field }) => (
               <Select value={field.value ?? ''} onValueChange={field.onChange}>
                 <SelectTrigger className="border-line bg-bg mt-1">
-                  <SelectValue placeholder="—" />
+                  <span className="min-w-0 flex-1 overflow-hidden text-left">
+                    <SelectValue placeholder="—" />
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
                   {companias.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.nombre}
+                    <SelectItem key={c.id} value={c.id} textValue={c.nombre}>
+                      <CompaniaBadge nombre={c.nombre} />
                     </SelectItem>
                   ))}
                 </SelectContent>
