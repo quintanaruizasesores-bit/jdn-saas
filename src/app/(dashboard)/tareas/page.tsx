@@ -11,7 +11,7 @@ import {
   updateTarea,
   deleteTarea,
 } from '@/services/tareas.service';
-import { formatDate, getClienteNombre } from '@/lib/utils';
+import { getClienteNombre } from '@/lib/utils';
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -24,10 +24,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Link from 'next/link';
+import type { TareaEstado } from '@/types/database';
 
 export default function TareasPage() {
   const qc = useQueryClient();
   const [titulo, setTitulo] = useState('');
+  const [fechaVencimiento, setFechaVencimiento] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('');
 
   const { data: tareas, isLoading } = useQuery({
@@ -47,24 +49,35 @@ export default function TareasPage() {
         estado: 'PENDIENTE',
         cliente_id: null,
         descripcion: null,
-        fecha_vencimiento: null,
+        fecha_vencimiento: fechaVencimiento || null,
       }),
     onSuccess: () => {
       toast.success('Tarea creada');
       setTitulo('');
+      setFechaVencimiento('');
       qc.invalidateQueries({ queryKey: ['tareas'] });
     },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const updateMut = useMutation({
     mutationFn: ({
       id,
-      estado,
-    }: {
-      id: string;
-      estado: 'PENDIENTE' | 'EN_PROCESO' | 'FINALIZADA';
-    }) => updateTarea(createClient(), id, { estado }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['tareas'] }),
+      ...cambios
+    }: { id: string } & Partial<{
+      estado: TareaEstado;
+      fecha_vencimiento: string | null;
+    }>) => updateTarea(createClient(), id, cambios),
+    onSuccess: (_, variables) => {
+      if ('fecha_vencimiento' in variables)
+        toast.success(
+          variables.fecha_vencimiento
+            ? 'Vencimiento actualizado'
+            : 'Vencimiento quitado'
+        );
+      qc.invalidateQueries({ queryKey: ['tareas'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const deleteMut = useMutation({
@@ -80,14 +93,33 @@ export default function TareasPage() {
     <div>
       <AppHeader title="Tareas" subtitle="Seguimiento comercial" />
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        <Input
-          placeholder="Nueva tarea..."
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
-          className="border-line bg-bg2 max-w-xs"
-        />
-        <Button onClick={() => createMut.mutate()} disabled={!titulo}>
+      <div className="mb-4 flex flex-wrap items-end gap-2">
+        <label className="text-ink-dim min-w-48 flex-1 text-xs sm:flex-none">
+          <span className="mb-1 block">Nueva tarea</span>
+          <Input
+            placeholder="Escribí una tarea..."
+            value={titulo}
+            onChange={(e) => setTitulo(e.target.value)}
+            className="border-line bg-bg2"
+          />
+        </label>
+        <label
+          htmlFor="nueva-tarea-vencimiento"
+          className="text-ink-dim w-full text-xs sm:w-48"
+        >
+          <span className="mb-1 block">Vencimiento (opcional)</span>
+          <Input
+            id="nueva-tarea-vencimiento"
+            type="date"
+            value={fechaVencimiento}
+            onChange={(e) => setFechaVencimiento(e.target.value)}
+            className="border-line bg-bg2"
+          />
+        </label>
+        <Button
+          onClick={() => createMut.mutate()}
+          disabled={!titulo.trim() || createMut.isPending}
+        >
           Agregar
         </Button>
         <Select
@@ -131,11 +163,24 @@ export default function TareasPage() {
                       {getClienteNombre(c)}
                     </Link>
                   )}
-                  <p className="text-ink-faint text-xs">
-                    Vence: {formatDate(t.fecha_vencimiento)}
-                  </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+                  <label className="text-ink-dim flex min-w-0 items-center gap-2 text-xs">
+                    <span>Vence</span>
+                    <Input
+                      type="date"
+                      aria-label={`Vencimiento de ${t.titulo}`}
+                      value={t.fecha_vencimiento ?? ''}
+                      onChange={(e) =>
+                        updateMut.mutate({
+                          id: t.id,
+                          fecha_vencimiento: e.target.value || null,
+                        })
+                      }
+                      disabled={updateMut.isPending}
+                      className="border-line bg-bg2 h-9 w-36 px-2"
+                    />
+                  </label>
                   <Select
                     value={t.estado}
                     onValueChange={(v) =>
