@@ -4,6 +4,7 @@ import {
   type PolizaComision,
   type HistorialComision,
 } from '@/lib/dashboard/comision';
+import { calcularClientesTop } from '@/lib/dashboard/clientes-top';
 
 export async function fetchDashboardKpis(supabase: SupabaseClient) {
   return supabase.from('v_dashboard_kpis').select('*').single();
@@ -30,8 +31,14 @@ export async function fetchComisionMensual(
   now = new Date()
 ) {
   const polizas: (PolizaComision & {
+    cliente_id: string;
     detalle?: string | null;
-    cliente?: { nombre: string; apellido: string } | null;
+    cliente?: {
+      id: string;
+      nombre: string | null;
+      apellido: string | null;
+      deleted_at: string | null;
+    } | null;
     compania?: { nombre: string; color?: string | null } | null;
   })[] = [];
   const historial: HistorialComision[] = [];
@@ -41,7 +48,9 @@ export async function fetchComisionMensual(
   for (let offset = 0; ; offset += pageSize) {
     const { data, error } = await supabase
       .from('polizas')
-      .select('*, cliente:clientes(nombre, apellido), compania:companias(*)')
+      .select(
+        '*, cliente:clientes(id, nombre, apellido, deleted_at), compania:companias(*)'
+      )
       .order('id', { ascending: true })
       .range(offset, offset + pageSize - 1);
     if (error) throw error;
@@ -62,14 +71,21 @@ export async function fetchComisionMensual(
   }
 
   const calculo = calcularComisionMensual(polizas, now, historial);
+  const topClientes = calcularClientesTop(polizas, historial, now, 10);
   const porId = new Map(polizas.map((p) => [p.id, p]));
   return {
     ...calculo,
+    topClientes,
     pendientes: calculo.pendientes.map((pendiente) => {
       const poliza = porId.get(pendiente.polizaId)!;
       return {
         ...pendiente,
-        cliente: poliza.cliente ?? null,
+        cliente: poliza.cliente
+          ? {
+              nombre: poliza.cliente.nombre ?? '',
+              apellido: poliza.cliente.apellido ?? '',
+            }
+          : null,
         compania: poliza.compania ?? null,
         detalle: poliza.detalle ?? null,
       };
