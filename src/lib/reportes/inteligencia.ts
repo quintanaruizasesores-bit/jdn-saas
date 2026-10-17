@@ -61,9 +61,9 @@ export function validarFiltros(f: FiltrosInteligencia, hoy: string) {
       Number(f.hasta.slice(5, 7)) -
       Number(f.desde.slice(0, 4)) * 12 -
       Number(f.desde.slice(5, 7)) >
-    35
+    119
   )
-    throw new Error('Elegí hasta 36 meses por consulta.');
+    throw new Error('Elegí hasta 120 meses por consulta.');
 }
 const redondear = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 const fechaRegistro = (s: string) => periodoComision(new Date(s)).hoy;
@@ -160,6 +160,11 @@ export function analizarCartera(
     let desconocidas = 0,
       sinImporte = 0,
       comision = 0;
+    const pendientesComision = {
+      premio: 0,
+      periodicidad: 0,
+      fechas: 0,
+    };
     for (const p of polizas) {
       if (!esCliente(p, corte)) continue;
       const v = versionEn(p, corte);
@@ -174,8 +179,12 @@ export function analizarCartera(
       }
       if (!activa) continue;
       const aporte = aporteComision(v, corte);
-      if (typeof aporte !== 'number') sinImporte++;
-      else comision += aporte;
+      if (typeof aporte !== 'number') {
+        sinImporte++;
+        if (aporte === 'PREMIO') pendientesComision.premio++;
+        if (aporte === 'PERIODICIDAD') pendientesComision.periodicidad++;
+        if (aporte === 'FECHAS') pendientesComision.fechas++;
+      } else comision += aporte;
       activas.push({
         poliza: p,
         version: v,
@@ -188,6 +197,7 @@ export function analizarCartera(
       activas,
       desconocidas,
       sinImporte,
+      pendientesComision,
       asegurados: desconocidas ? null : asegurados,
       polizas: desconocidas ? null : activas.length,
       comision: desconocidas || sinImporte ? null : redondear(comision),
@@ -471,6 +481,9 @@ export function analizarCartera(
     calidad: {
       sinHistoria: foto.desconocidas,
       sinImporte: foto.sinImporte,
+      comisionPendiente: foto.pendientesComision,
+      mesesSinComisionDisponible: puntos.filter((p) => p.comision === null)
+        .length,
       finLegacyAmbiguo: foto.activas.filter(
         (p) => p.version.fechasVerificadas === false
       ).length,

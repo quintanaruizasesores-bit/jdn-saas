@@ -237,6 +237,8 @@ describe('inteligencia de cartera con evidencia', () => {
     expect(r.metricas.asegurados).toBe(1);
     expect(r.metricas.comision).toBeNull();
     expect(r.metricas.acumulado).toBeNull();
+    expect(r.calidad.comisionPendiente.premio).toBe(1);
+    expect(r.calidad.mesesSinComisionDisponible).toBeGreaterThan(0);
     const vacio = analizarCartera(datos([]), filtro, now);
     expect(vacio.metricas).toMatchObject({
       asegurados: 0,
@@ -287,13 +289,18 @@ describe('inteligencia de cartera con evidencia', () => {
     expect(r.serie.map((s) => s.altas)).toEqual([0, 0]);
     expect(r.serie.map((s) => s.bajas)).toEqual([0, 1]);
   });
-  it('rechaza rangos inválidos, futuros y mayores a 36 meses', () => {
+  it('rechaza rangos inválidos, futuros y mayores a 120 meses', () => {
     for (const f of [
       { desde: '2026-02-30', hasta: '2026-10-17' },
       { desde: '2026-10-18', hasta: '2026-10-18' },
-      { desde: '2020-01-01', hasta: '2026-10-17' },
+      { desde: '2016-10-01', hasta: '2026-10-17' },
     ])
       expect(() => validarFiltros(f, '2026-10-17')).toThrow();
+  });
+  it('permite consultar rangos de varios años hasta diez años inclusive', () => {
+    expect(() =>
+      validarFiltros({ desde: '2022-01-01', hasta: '2026-10-17' }, '2026-10-17')
+    ).not.toThrow();
   });
   it('una renovación sin interrupción mantiene una sola póliza y no genera altas ni bajas', () => {
     const p = poliza('p1', 'c1', {

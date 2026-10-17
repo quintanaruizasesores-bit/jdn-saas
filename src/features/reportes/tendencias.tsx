@@ -64,7 +64,12 @@ export function Tendencias({ datos }: { datos: ResultadoInteligencia }) {
           role="img"
           aria-label="Evolución de pólizas vigentes, altas, bajas y neto. Los valores están disponibles debajo."
         >
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            minWidth={0}
+            initialDimension={{ width: 320, height: 288 }}
+          >
             <ComposedChart
               data={cartera}
               margin={{ left: -20, right: 8, top: 8, bottom: 0 }}
@@ -163,7 +168,12 @@ export function Tendencias({ datos }: { datos: ResultadoInteligencia }) {
           role="img"
           aria-label="Comisión mensual y acumulada en pesos argentinos. Los valores están disponibles debajo."
         >
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            minWidth={0}
+            initialDimension={{ width: 320, height: 288 }}
+          >
             <LineChart
               data={datos.serie}
               margin={{ left: -10, right: 5, top: 8, bottom: 0 }}

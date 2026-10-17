@@ -44,6 +44,12 @@ describe('endpoint analítico con RLS de la sesión', () => {
       expect((await GET(request(query))).status).toBe(400);
     expect(m.cargar).not.toHaveBeenCalled();
   });
+  it('acepta rangos históricos de varios años dentro del límite documentado', async () => {
+    expect(
+      (await GET(request('desde=2022-01-01&hasta=2026-10-17'))).status
+    ).toBe(200);
+    expect(m.cargar).toHaveBeenCalledTimes(1);
+  });
   it('usa el cliente de la sesión, no cachea y no devuelve una cartera falsa si falla la lectura', async () => {
     const response = await GET(request());
     expect(response.status).toBe(200);

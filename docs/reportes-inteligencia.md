@@ -212,7 +212,7 @@ Nuevos y pérdidas usan pólizas aún presentes en la base y su evidencia dispon
 
 El análisis se calcula en servidor con índices en memoria y sin consultas N+1;
 cada filtro requiere lectura de cinco tablas por lotes. La consulta admite hasta
-36 meses y hasta 60 segundos; una cartera muy grande requerirá agregación SQL y
+120 meses y hasta 60 segundos; una cartera muy grande requerirá agregación SQL y
 un proceso de tareas con límites y observabilidad. La descarga permite hasta 300
 segundos si el plan de hosting lo admite; su configuración efectiva debe verificarse.
 El servidor escribe por streaming; el navegador mantiene el archivo antes de

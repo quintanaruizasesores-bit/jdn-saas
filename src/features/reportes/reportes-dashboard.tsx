@@ -283,6 +283,12 @@ export function ReportesDashboard() {
                   `${numero(datos.calidad.sinHistoria)} pólizas sin historia suficiente al corte. `}
                 {datos.calidad.sinImporte > 0 &&
                   `${numero(datos.calidad.sinImporte)} pólizas sin comisión calculable. `}
+                {datos.calidad.comisionPendiente.premio > 0 &&
+                  `${numero(datos.calidad.comisionPendiente.premio)} sin premio cargado. `}
+                {datos.calidad.comisionPendiente.periodicidad > 0 &&
+                  `${numero(datos.calidad.comisionPendiente.periodicidad)} sin periodicidad válida. `}
+                {datos.calidad.comisionPendiente.fechas > 0 &&
+                  `${numero(datos.calidad.comisionPendiente.fechas)} con fechas inválidas. `}
                 {datos.calidad.finLegacyAmbiguo > 0 &&
                   `${numero(datos.calidad.finLegacyAmbiguo)} pólizas importadas con fecha final sin confirmar; se conserva su vigencia observada y no se incluyen entre próximos vencimientos.`}
               </div>
@@ -294,6 +300,12 @@ export function ReportesDashboard() {
                 const comparar =
                   valor !== null && previo !== null && previo > 0;
                 const monetario = key === 'comision' || key === 'acumulado';
+                const causaComision =
+                  key === 'comision' && valor === null
+                    ? `${numero(datos.calidad.sinHistoria)} sin versión al corte · ${numero(datos.calidad.sinImporte)} con importe no calculable`
+                    : key === 'acumulado' && valor === null
+                      ? `${numero(datos.calidad.mesesSinComisionDisponible)} meses del rango sin comisión verificable`
+                      : null;
                 return (
                   <article
                     key={key}
@@ -314,6 +326,11 @@ export function ReportesDashboard() {
                         ? dinero(valor)
                         : numero(valor, key === 'promedio' ? 2 : 0)}
                     </p>
+                    {causaComision && (
+                      <p className="text-ink-dim mt-2 text-xs leading-relaxed">
+                        {causaComision}
+                      </p>
+                    )}
                     <p className="text-ink-dim mt-2 text-xs">
                       {comparar
                         ? `${(((valor - previo) / previo) * 100).toLocaleString('es-AR', { maximumFractionDigits: 1, signDisplay: 'exceptZero' })}% respecto del período anterior`
