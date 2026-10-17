@@ -66,7 +66,12 @@ function esFecha(value: unknown): value is string {
   );
 }
 
-type Version = { datos: PolizaComision; desde: string; orden: string };
+export type VersionComision = {
+  datos: PolizaComision;
+  desde: string;
+  orden: string;
+};
+type Version = VersionComision;
 
 /** Los diffs legacy no permiten reconstruir versiones financieras completas. */
 function version(
@@ -102,7 +107,7 @@ function version(
   };
 }
 
-function aporte(
+export function aporteComision(
   datos: PolizaComision,
   corte: string
 ): number | MotivoComisionPendiente {
@@ -142,69 +147,7 @@ export function calcularComisionMensual(
   historial: readonly HistorialComision[] = []
 ): ComisionDashboard {
   const { desde, hoy, mesActual } = periodoComision(now);
-  const versiones = new Map<string, Version[]>();
-  const add = (id: string, item: Version | null) => {
-    if (!item) return;
-    const list = versiones.get(id) ?? [];
-    list.push(item);
-    versiones.set(id, list);
-  };
-  for (const event of historial) {
-    if (
-      !event.completo ||
-      !Number.isFinite(Date.parse(event.created_at)) ||
-      Date.parse(event.created_at) > now.getTime()
-    )
-      continue;
-    const orden = `${Date.parse(event.created_at).toString().padStart(16, '0')}:${String(event.version_orden ?? 0).padStart(20, '0')}`;
-    add(
-      event.poliza_id,
-      version(event.datos_anteriores, `${orden}:0:${event.id}`)
-    );
-    // La foto completa de 007 acredita el estado observado desde su registro,
-    // aunque no tenga fecha contractual de inicio o fecha de efecto anterior.
-    add(
-      event.poliza_id,
-      version(
-        event.datos_nuevos,
-        `${orden}:1:${event.id}`,
-        !event.fecha_efecto && !event.datos_nuevos?.comision_desde
-          ? periodoComision(new Date(event.created_at)).hoy
-          : undefined
-      )
-    );
-  }
-  for (const poliza of polizas) {
-    // Compatibilidad sin migración: sólo se conoce la foto actual, no el pasado.
-    const actual: PolizaComision = {
-      ...poliza,
-      prima_periodicidad:
-        'prima_periodicidad' in poliza
-          ? poliza.prima_periodicidad
-          : PERIODICIDAD_LEGACY_CONFIRMADA,
-      fecha_baja: poliza.fecha_baja ?? null,
-      comision_desde: poliza.comision_desde ?? hoy,
-      fechasVerificadas: !(
-        poliza.legacy_id != null &&
-        poliza.fecha_fin &&
-        !poliza.comision_desde
-      ),
-    };
-    add(
-      poliza.id,
-      version(
-        actual,
-        `${Date.parse(poliza.updated_at ?? now.toISOString())
-          .toString()
-          .padStart(16, '0')}:${'9'.repeat(20)}:2`
-      )
-    );
-  }
-  for (const list of versiones.values())
-    list.sort(
-      (a, b) => a.desde.localeCompare(b.desde) || a.orden.localeCompare(b.orden)
-    );
-
+  const versiones = construirVersionesComision(polizas, now, historial);
   const serie: ComisionMensual[] = [];
   const pendientes: ComisionPendiente[] = [];
   const cursor = new Date(`${desde}T12:00:00Z`);
@@ -224,7 +167,7 @@ export function calcularComisionMensual(
       const list = versiones.get(poliza.id) ?? [];
       const vigente = list.findLast((v) => v.desde <= corte);
       let valor: number | MotivoComisionPendiente = 'VERSION';
-      if (vigente) valor = aporte(vigente.datos, corte);
+      if (vigente) valor = aporteComision(vigente.datos, corte);
       else if (
         list[0] &&
         esFecha(list[0].datos.fecha_inicio) &&
@@ -288,6 +231,79 @@ export function calcularComisionMensual(
           : redondear(actual.comision * 12),
     },
   };
+}
+
+/** Índice compartido con Reportes; conserva las reglas financieras del dashboard. */
+export function construirVersionesComision(
+  polizas: readonly PolizaComision[],
+  now = new Date(),
+  historial: readonly HistorialComision[] = []
+) {
+  const { hoy } = periodoComision(now);
+  const versiones = new Map<string, Version[]>();
+  const add = (id: string, item: Version | null) => {
+    if (!item) return;
+    const list = versiones.get(id) ?? [];
+    list.push(item);
+    versiones.set(id, list);
+  };
+  for (const event of historial) {
+    if (
+      !event.completo ||
+      !Number.isFinite(Date.parse(event.created_at)) ||
+      Date.parse(event.created_at) > now.getTime()
+    )
+      continue;
+    const orden = `${Date.parse(event.created_at).toString().padStart(16, '0')}:${String(event.version_orden ?? 0).padStart(20, '0')}`;
+    add(
+      event.poliza_id,
+      version(event.datos_anteriores, `${orden}:0:${event.id}`)
+    );
+    // La foto completa de 007 acredita el estado observado desde su registro,
+    // aunque no tenga fecha contractual de inicio o fecha de efecto anterior.
+    add(
+      event.poliza_id,
+      version(
+        event.datos_nuevos,
+        `${orden}:1:${event.id}`,
+        !event.fecha_efecto && !event.datos_nuevos?.comision_desde
+          ? periodoComision(new Date(event.created_at)).hoy
+          : undefined
+      )
+    );
+  }
+  for (const poliza of polizas) {
+    // Compatibilidad sin migración: sólo se conoce la foto actual, no el pasado.
+    const actual: PolizaComision = {
+      ...poliza,
+      prima_periodicidad:
+        'prima_periodicidad' in poliza
+          ? poliza.prima_periodicidad
+          : PERIODICIDAD_LEGACY_CONFIRMADA,
+      fecha_baja: poliza.fecha_baja ?? null,
+      comision_desde: poliza.comision_desde ?? hoy,
+      fechasVerificadas: !(
+        poliza.legacy_id != null &&
+        poliza.fecha_fin &&
+        !poliza.comision_desde
+      ),
+    };
+    add(
+      poliza.id,
+      version(
+        actual,
+        `${Date.parse(poliza.updated_at ?? now.toISOString())
+          .toString()
+          .padStart(16, '0')}:${'9'.repeat(20)}:2`
+      )
+    );
+  }
+  for (const list of versiones.values())
+    list.sort(
+      (a, b) => a.desde.localeCompare(b.desde) || a.orden.localeCompare(b.orden)
+    );
+
+  return versiones;
 }
 
 function redondear(value: number) {

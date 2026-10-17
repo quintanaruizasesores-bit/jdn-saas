@@ -13,7 +13,9 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
@@ -36,6 +38,19 @@ export async function updateSession(request: NextRequest) {
   const isPublicRoute = isAuthRoute || request.nextUrl.pathname === '/';
 
   if (!user && !isPublicRoute) {
+    if (request.nextUrl.pathname.startsWith('/api/')) {
+      const response = NextResponse.json(
+        { error: 'Tu sesión venció. Iniciá sesión para continuar.' },
+        {
+          status: 401,
+          headers: { 'Cache-Control': 'private, no-store', Vary: 'Cookie' },
+        }
+      );
+      supabaseResponse.cookies
+        .getAll()
+        .forEach((cookie) => response.cookies.set(cookie));
+      return response;
+    }
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('redirect', request.nextUrl.pathname);
