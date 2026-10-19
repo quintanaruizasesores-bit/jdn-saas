@@ -65,9 +65,14 @@ fotografías mensuales comprendidas, sin prorrateo de días.
 2. Pólizas vigentes: estado acreditado VIGENTE, inicio no posterior, fin inclusivo
    y baja efectiva posterior al corte, siguiendo la evidencia del motor.
 3. Comisión mensual: aporte recurrente al corte del mes de referencia, usando el
-   motor compartido. Un total incompleto se muestra como no disponible.
-4. Acumulada: suma de los cortes mensuales del rango. Un mes sin evidencia o con
-   importes pendientes invalida el total; no se rellena ni extrapola.
+   motor compartido. Se muestra el subtotal de las pólizas con importe
+   calculable; las pólizas vigentes sin importe se excluyen del subtotal y se
+   informan aparte (sin premio / sin periodicidad / fechas inválidas). Sólo
+   queda como no disponible cuando falta evidencia para saber qué pólizas están
+   vigentes al corte (historia desconocida).
+4. Acumulada: suma de los cortes mensuales del rango. Un mes con historia
+   desconocida invalida el total; los meses con pólizas sin importe suman su
+   subtotal y se señalan como parciales. No se rellena ni extrapola.
 5. Próximas a vencer: pólizas vigentes con fin confirmado entre corte y corte+30,
    ambos incluidos. Excluye fecha_fin legacy ambigua.
 6. Nuevos asegurados registrados: primera creación de póliza del cliente dentro

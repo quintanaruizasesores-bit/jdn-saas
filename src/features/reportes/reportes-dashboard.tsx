@@ -305,7 +305,12 @@ export function ReportesDashboard() {
                     ? `${numero(datos.calidad.sinHistoria)} sin versión al corte · ${numero(datos.calidad.sinImporte)} con importe no calculable`
                     : key === 'acumulado' && valor === null
                       ? `${numero(datos.calidad.mesesSinComisionDisponible)} meses del rango sin comisión verificable`
-                      : null;
+                      : key === 'comision' && datos.calidad.sinImporte > 0
+                        ? `Subtotal · ${numero(datos.calidad.sinImporte)} pólizas sin importe no incluidas`
+                        : key === 'acumulado' &&
+                            datos.calidad.mesesComisionParcial > 0
+                          ? `Subtotal · ${numero(datos.calidad.mesesComisionParcial)} meses con pólizas pendientes`
+                          : null;
                 return (
                   <article
                     key={key}
@@ -444,10 +449,13 @@ export function ReportesDashboard() {
                 </p>
                 <p>
                   Las bajas e importes históricos requieren versiones completas.
-                  Un hueco se muestra como «No disponible», nunca se rellena con
-                  cero. La evolución neta cuenta transiciones de vigencia; una
-                  baja lógica de cliente puede cambiar el stock sin ser una baja
-                  de póliza.
+                  Las comisiones muestran el subtotal de las pólizas con importe
+                  calculable; las pólizas sin importe se informan aparte y no se
+                  rellenan con cero. Un mes queda en «No disponible» sólo cuando
+                  falta evidencia para saber qué pólizas están vigentes al corte.
+                  La evolución neta cuenta transiciones de vigencia; una baja
+                  lógica de cliente puede cambiar el stock sin ser una baja de
+                  póliza.
                 </p>
                 <p>
                   Los nuevos asegurados se miden por la primera póliza
