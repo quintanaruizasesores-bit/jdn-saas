@@ -200,7 +200,11 @@ export function analizarCartera(
       pendientesComision,
       asegurados: desconocidas ? null : asegurados,
       polizas: desconocidas ? null : activas.length,
-      comision: desconocidas || sinImporte ? null : redondear(comision),
+      // Sólo la historia desconocida anula el total: no se puede armar un
+      // subtotal honesto si no se sabe qué pólizas están activas. Las pólizas
+      // vigentes sin importe calculable se excluyen del subtotal y se informan
+      // aparte (sinImporte), sin ocultar el aporte de las demás.
+      comision: desconocidas ? null : redondear(comision),
     };
   }
   function movimientos(desde: string, hasta: string) {
@@ -299,6 +303,7 @@ export function analizarCartera(
         polizas: foto.polizas,
         asegurados: foto.asegurados,
         comision: foto.comision,
+        sinImporte: foto.sinImporte,
         acumulado,
         ...flujo,
       });
@@ -374,10 +379,9 @@ export function analizarCartera(
         };
       g.polizas++;
       g.clientes.add(item.cliente.id);
-      g.comision =
-        g.comision === null || item.comision === null
-          ? null
-          : g.comision + item.comision;
+      // Subtotal: se suman los aportes calculables y se ignoran las pólizas sin
+      // importe, para no ocultar la comisión del grupo tras un «No disponible».
+      g.comision = (g.comision ?? 0) + (item.comision ?? 0);
       grupos.set(id, g);
     });
     return [...grupos.values()]
@@ -484,6 +488,11 @@ export function analizarCartera(
       comisionPendiente: foto.pendientesComision,
       mesesSinComisionDisponible: puntos.filter((p) => p.comision === null)
         .length,
+      // Meses con subtotal (comisión calculada) pero con pólizas sin importe
+      // excluidas: el acumulado los suma como parciales, no como huecos.
+      mesesComisionParcial: puntos.filter(
+        (p) => p.comision !== null && p.sinImporte > 0
+      ).length,
       finLegacyAmbiguo: foto.activas.filter(
         (p) => p.version.fechasVerificadas === false
       ).length,

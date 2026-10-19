@@ -235,10 +235,14 @@ describe('inteligencia de cartera con evidencia', () => {
       now
     );
     expect(r.metricas.asegurados).toBe(1);
-    expect(r.metricas.comision).toBeNull();
-    expect(r.metricas.acumulado).toBeNull();
+    // La única póliza no tiene importe calculable: el subtotal es 0, no null,
+    // y se informa aparte que hay meses parciales con pólizas sin importe.
+    expect(r.metricas.comision).toBe(0);
+    expect(r.metricas.acumulado).toBe(0);
     expect(r.calidad.comisionPendiente.premio).toBe(1);
-    expect(r.calidad.mesesSinComisionDisponible).toBeGreaterThan(0);
+    expect(r.calidad.sinImporte).toBe(1);
+    expect(r.calidad.mesesSinComisionDisponible).toBe(0);
+    expect(r.calidad.mesesComisionParcial).toBeGreaterThan(0);
     const vacio = analizarCartera(datos([]), filtro, now);
     expect(vacio.metricas).toMatchObject({
       asegurados: 0,
@@ -247,6 +251,20 @@ describe('inteligencia de cartera con evidencia', () => {
       acumulado: 0,
       promedio: null,
     });
+  });
+  it('muestra el subtotal de las pólizas calculables sin que una sin importe lo anule', () => {
+    const r = analizarCartera(
+      datos([poliza('p1', 'c1'), poliza('p2', 'c1', { prima: 0 })]),
+      filtro,
+      now
+    );
+    // p1 aporta 140; p2 no tiene importe calculable. Sin historia desconocida,
+    // el total no se anula: se muestra el subtotal de lo calculable.
+    expect(r.metricas.comision).toBe(140);
+    expect(r.calidad.sinImporte).toBe(1);
+    expect(r.calidad.sinHistoria).toBe(0);
+    expect(r.calidad.mesesSinComisionDisponible).toBe(0);
+    expect(r.calidad.mesesComisionParcial).toBeGreaterThan(0);
   });
   it('fin inclusivo y baja/exclusión desde la fecha efectiva; no acepta fechas legacy ambiguas', () => {
     const d = datos([
