@@ -1,6 +1,6 @@
 # Cartera JDN / Quintana Ruiz — contexto para agentes de IA
 
-Última revisión de este contexto: 17/10/2026. Alcance: todo el repositorio.
+Última revisión de este contexto: 01/11/2026. Alcance: todo el repositorio.
 Este archivo permite compartir lo construido y continuar el desarrollo con otra IA.
 Describe el código local revisado; no certifica qué cambios están desplegados ni
 qué migraciones se aplicaron al proyecto Supabase remoto.
@@ -46,7 +46,10 @@ El alias `@/` apunta a `src/`.
   de sesión. El middleware actualiza la sesión y exige login en rutas privadas.
 - **Dashboard (`/dashboard`):** clientes, pólizas, premio vigente, comisión
   aproximada, siniestros recientes y renovaciones; distribución por compañía y
-  ramo, navegación desde ramo a pólizas y ranking de clientes.
+  ramo, navegación desde ramo a pólizas y ranking de clientes. El encabezado
+  incluye una campanita exclusiva del tablero: cuenta tareas `PENDIENTE` vencidas
+  o con vencimiento dentro de 7 días en horario de Argentina y muestra las
+  primeras cinco con acceso a `/tareas`. No guarda estado de lectura.
 - **Acceso rápido:** botón flotante «Nuevo cliente» en el layout privado compartido,
   disponible en todas las secciones; abre `/clientes/nuevo`. Respeta el área segura
   móvil y queda debajo de los diálogos. Componente `NewClientShortcut`.
@@ -56,7 +59,15 @@ El alias `@/` apunta a `src/`.
   desde la aplicación; no existe una restricción única de DNI en la base.
 - **Pólizas (`/polizas`):** alta, edición, detalle, filtros, búsqueda por cliente
   o detalle, renovación, baja e historial. Estados: `VIGENTE`, `HISTORICA`, `BAJA`.
-  Hay alertas de renovación a 30/15/7 días.
+  Hay alertas de renovación a 30/15/7 días. El formulario de alta y edición
+  agrupa la vigencia en dos columnas, presenta fechas como DD/MM/AAAA y envía
+  valores ISO. La fecha de efecto se ofrece en opciones avanzadas al crear y
+  aparece al cambiar datos financieros en edición; una edición administrativa
+  conserva la fecha almacenada. La baja efectiva se muestra con estado `BAJA`
+  y ocultarla no borra su valor. El selector de compañía del formulario usa un
+  combobox con búsqueda sin acentos y lista desplazable; conserva el UUID y
+  colores de la compañía seleccionada. La consulta para ese selector recorre
+  todas las páginas del catálogo.
 - **Siniestros (`/siniestros`):** listado, alta, detalle, edición y eliminación
   con confirmación; asociados al cliente y opcionalmente a una póliza.
 - **Riesgo (`/riesgo`):** score de 0 a 100 y alertas según cantidad y frecuencia

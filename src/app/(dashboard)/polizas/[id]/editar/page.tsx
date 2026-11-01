@@ -7,7 +7,7 @@ import { invalidarMetricasPolizas } from '@/features/dashboard/use-comision-dash
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import { fetchPolizaById, updatePoliza } from '@/services/polizas.service';
-import { fetchCompanias } from '@/services/companias.service';
+import { fetchTodasCompanias } from '@/services/companias.service';
 import { fetchRamos } from '@/services/ramos.service';
 import { AppHeader } from '@/components/dashboard/app-header';
 import { PolizaForm } from '@/features/polizas/poliza-form';
@@ -35,15 +35,8 @@ export default function EditarPolizaPage({
   });
 
   const { data: companias } = useQuery({
-    queryKey: ['companias'],
-    queryFn: async () => {
-      const { data } = await fetchCompanias(createClient());
-      return (data ?? []).map((c) => ({
-        id: c.id,
-        nombre: c.nombre,
-        color: c.color,
-      }));
-    },
+    queryKey: ['companias', 'selector'],
+    queryFn: () => fetchTodasCompanias(createClient()),
   });
 
   const { data: ramos } = useQuery({
@@ -75,6 +68,7 @@ export default function EditarPolizaPage({
           <Skeleton className="bg-panel2 h-64" />
         ) : poliza ? (
           <PolizaForm
+            mode="edit"
             defaultValues={poliza}
             companias={companias ?? []}
             ramos={ramos ?? []}

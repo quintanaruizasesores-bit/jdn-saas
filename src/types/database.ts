@@ -103,6 +103,8 @@ export interface Siniestro {
 export interface Tarea {
   id: string;
   cliente_id: string | null;
+  poliza_id: string | null;
+  siniestro_id: string | null;
   titulo: string;
   descripcion: string | null;
   fecha_vencimiento: string | null;
@@ -110,6 +112,8 @@ export interface Tarea {
   created_at: string;
   updated_at: string;
   cliente?: Cliente;
+  poliza?: Poliza;
+  siniestro?: Siniestro;
 }
 
 export interface Actividad {

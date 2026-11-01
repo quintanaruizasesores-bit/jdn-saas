@@ -3,7 +3,15 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { TareaFormData } from '@/validations/tarea.schema';
 import { logActividad } from './actividad.service';
 
-export async function fetchTareas(supabase: SupabaseClient, filters: { estado?: string; cliente_id?: string } = {}) {
+export async function fetchTareas(
+  supabase: SupabaseClient,
+  filters: {
+    estado?: string;
+    cliente_id?: string;
+    poliza_id?: string;
+    siniestro_id?: string;
+  } = {}
+) {
   let query = supabase
     .from('tareas')
     .select(`*, cliente:clientes(id, nombre, apellido)`)
@@ -11,6 +19,9 @@ export async function fetchTareas(supabase: SupabaseClient, filters: { estado?: 
 
   if (filters.estado) query = query.eq('estado', filters.estado);
   if (filters.cliente_id) query = query.eq('cliente_id', filters.cliente_id);
+  if (filters.poliza_id) query = query.eq('poliza_id', filters.poliza_id);
+  if (filters.siniestro_id)
+    query = query.eq('siniestro_id', filters.siniestro_id);
   return query;
 }
 

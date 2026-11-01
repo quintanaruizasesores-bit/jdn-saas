@@ -112,6 +112,13 @@ h4 {
   outline-offset: 3px;
 }
 
+/* El buscador de los command palettes (cmdk) se enfoca al abrir el desplegable.
+   Su outline global queda recortado por el overflow del popover y se ve como
+   líneas azules en los bordes; el contenedor del input aporta el foco sutil. */
+[cmdk-input]:focus-visible {
+  outline: none;
+}
+
 ::-webkit-scrollbar {
   width: 11px;
   height: 11px;

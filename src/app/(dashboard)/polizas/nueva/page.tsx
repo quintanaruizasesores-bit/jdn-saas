@@ -8,7 +8,7 @@ import { AppHeader } from '@/components/dashboard/app-header';
 import { PolizaForm } from '@/features/polizas/poliza-form';
 import { createClient } from '@/lib/supabase/client';
 import { createPoliza } from '@/services/polizas.service';
-import { fetchCompanias } from '@/services/companias.service';
+import { fetchTodasCompanias } from '@/services/companias.service';
 import { fetchRamos } from '@/services/ramos.service';
 import type { PolizaFormData } from '@/validations/poliza.schema';
 
@@ -17,11 +17,8 @@ export default function NuevaPolizaPage() {
   const qc = useQueryClient();
 
   const { data: companias } = useQuery({
-    queryKey: ['companias'],
-    queryFn: async () => {
-      const { data } = await fetchCompanias(createClient());
-      return (data ?? []).map((c) => ({ id: c.id, nombre: c.nombre, color: c.color }));
-    },
+    queryKey: ['companias', 'selector'],
+    queryFn: () => fetchTodasCompanias(createClient()),
   });
 
   const { data: ramos } = useQuery({
@@ -47,6 +44,7 @@ export default function NuevaPolizaPage() {
       <AppHeader title="Nueva póliza" />
       <div className="max-w-2xl rounded-xl border border-line bg-panel p-6">
         <PolizaForm
+          mode="create"
           companias={companias ?? []}
           ramos={ramos ?? []}
           onSubmit={async (d) => {

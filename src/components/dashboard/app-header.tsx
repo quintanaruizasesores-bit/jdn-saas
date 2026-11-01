@@ -8,9 +8,11 @@ import { Button } from '@/components/ui/button';
 export function AppHeader({
   title,
   subtitle,
+  actions,
 }: {
   title?: React.ReactNode;
   subtitle?: string;
+  actions?: React.ReactNode;
 }) {
   const [clock, setClock] = useState('');
 
@@ -42,6 +44,7 @@ export function AppHeader({
         <span className="text-ink-faint hidden text-[11px] sm:inline">
           {clock}
         </span>
+        {actions}
         <form action={logoutAction}>
           <Button
             type="submit"

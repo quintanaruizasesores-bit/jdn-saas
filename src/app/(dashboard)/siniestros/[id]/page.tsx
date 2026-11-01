@@ -13,6 +13,8 @@ import { ErrorState } from '@/components/ui/error-state';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { createClient } from '@/lib/supabase/client';
 import { fetchSiniestroById, deleteSiniestro } from '@/services/siniestros.service';
+import { fetchTareas } from '@/services/tareas.service';
+import { TareaDialog } from '@/features/tareas/tarea-dialog';
 import {
   SINIESTRO_TIPO_LABELS,
   RESPONSABILIDAD_LABELS,
@@ -42,6 +44,14 @@ export default function SiniestroDetallePage({ params }: { params: Promise<{ id:
       return data;
     },
     retry: false,
+  });
+
+  const { data: tareas } = useQuery({
+    queryKey: ['tareas-siniestro', id],
+    queryFn: async () => {
+      const { data } = await fetchTareas(createClient(), { siniestro_id: id });
+      return data ?? [];
+    },
   });
 
   const deleteMutation = useMutation({
@@ -145,6 +155,39 @@ export default function SiniestroDetallePage({ params }: { params: Promise<{ id:
         <Row label="Descripción">{s.descripcion || '—'}</Row>
         {s.descripcion_raw && <Row label="Detalle original">{s.descripcion_raw}</Row>}
         <Row label="Registrado">{formatDate(s.created_at?.slice(0, 10))}</Row>
+      </div>
+
+      <div className="mt-6 max-w-2xl rounded-xl border border-line bg-panel p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-sm uppercase tracking-wider text-ink-dim">Tareas</h3>
+          <TareaDialog
+            clienteId={cliente?.id ?? s.cliente_id}
+            siniestroId={id}
+            onCreated={() => {
+              qc.invalidateQueries({ queryKey: ['tareas-siniestro', id] });
+              qc.invalidateQueries({ queryKey: ['tareas'] });
+            }}
+          />
+        </div>
+        {(tareas ?? []).length === 0 ? (
+          <p className="text-sm text-ink-faint">
+            Sin tareas registradas para este siniestro.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {(tareas ?? []).map((t) => (
+              <div
+                key={t.id}
+                className="flex items-center justify-between rounded-xl border border-line bg-bg2 p-3"
+              >
+                <span className="text-sm text-ink">{t.titulo}</span>
+                <span className="text-xs text-ink-faint">
+                  {t.estado} · vence {formatDate(t.fecha_vencimiento)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

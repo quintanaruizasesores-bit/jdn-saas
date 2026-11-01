@@ -26,7 +26,9 @@ import {
   darBajaPoliza,
 } from '@/services/polizas.service';
 import { fetchSiniestrosByPoliza } from '@/services/siniestros.service';
-import { fetchCompanias } from '@/services/companias.service';
+import { fetchTareas } from '@/services/tareas.service';
+import { TareaDialog } from '@/features/tareas/tarea-dialog';
+import { fetchTodasCompanias } from '@/services/companias.service';
 import { fetchRamos } from '@/services/ramos.service';
 import { SINIESTRO_TIPO_LABELS } from '@/lib/riesgo/calculate-risk-score';
 import { formatCurrency, formatDate, getClienteNombre } from '@/lib/utils';
@@ -79,12 +81,17 @@ export default function PolizaDetallePage({
     },
   });
 
-  const { data: companias } = useQuery({
-    queryKey: ['companias'],
+  const { data: tareas } = useQuery({
+    queryKey: ['tareas-poliza', id],
     queryFn: async () => {
-      const { data } = await fetchCompanias(createClient());
-      return (data ?? []).map((c) => ({ id: c.id, nombre: c.nombre, color: c.color }));
+      const { data } = await fetchTareas(createClient(), { poliza_id: id });
+      return data ?? [];
     },
+  });
+
+  const { data: companias } = useQuery({
+    queryKey: ['companias', 'selector'],
+    queryFn: () => fetchTodasCompanias(createClient()),
   });
 
   const { data: ramos } = useQuery({
@@ -231,6 +238,7 @@ export default function PolizaDetallePage({
             Editar
           </h3>
           <PolizaForm
+            mode="edit"
             defaultValues={poliza}
             companias={companias ?? []}
             ramos={ramos ?? []}
@@ -295,6 +303,41 @@ export default function PolizaDetallePage({
                   {formatDate(s.fecha)}
                 </span>
               </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="border-line bg-panel rounded-xl border p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-ink-dim text-sm tracking-wider uppercase">
+            Tareas
+          </h3>
+          <TareaDialog
+            clienteId={cliente?.id ?? poliza.cliente_id}
+            polizaId={id}
+            onCreated={() => {
+              qc.invalidateQueries({ queryKey: ['tareas-poliza', id] });
+              qc.invalidateQueries({ queryKey: ['tareas'] });
+            }}
+          />
+        </div>
+        {(tareas ?? []).length === 0 ? (
+          <p className="text-ink-faint text-sm">
+            Sin tareas registradas para esta póliza.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {(tareas ?? []).map((t) => (
+              <div
+                key={t.id}
+                className="border-line bg-bg2 flex items-center justify-between rounded-xl border p-3"
+              >
+                <span className="text-ink text-sm">{t.titulo}</span>
+                <span className="text-ink-faint text-xs">
+                  {t.estado} · vence {formatDate(t.fecha_vencimiento)}
+                </span>
+              </div>
             ))}
           </div>
         )}
