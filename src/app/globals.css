@@ -132,6 +132,40 @@ h4 {
   border: 3px solid var(--bg2);
 }
 
+/* Scrollbar discreta para menús y listas desplazables (desplegables, etc.). */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #c3cfe4 transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #c3cfe4;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #a7b7d6;
+  background-clip: padding-box;
+}
+
+/* Barra de filtros con desplazamiento horizontal sin scrollbar visible. */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
