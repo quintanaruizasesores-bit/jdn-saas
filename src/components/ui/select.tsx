@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Select = SelectPrimitive.Root;
@@ -66,18 +66,19 @@ const SelectContent = React.forwardRef<
       className={cn(
         'z-50 overflow-hidden rounded-xl border border-line bg-panel p-1 shadow-lg',
         position === 'popper' &&
-          'min-w-[var(--radix-select-trigger-width)]',
+          'min-w-[var(--radix-select-trigger-width)] max-w-[calc(100vw-1rem)]',
         className
       )}
       position={position}
+      collisionPadding={8}
       {...props}
     >
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn(
-          'p-1',
+          'scrollbar-thin p-1',
           position === 'popper' &&
-            'max-h-[var(--radix-select-content-available-height)] overflow-y-auto overscroll-contain'
+            'max-h-[min(320px,var(--radix-select-content-available-height))] overflow-y-auto overscroll-contain'
         )}
       >
         {children}
@@ -95,12 +96,15 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex cursor-pointer select-none items-center rounded-lg px-3 py-2 font-body text-sm text-ink-dim outline-none focus:bg-bg2 focus:text-primary data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'relative flex cursor-pointer select-none items-center rounded-lg py-2 pr-8 pl-3 font-body text-sm text-ink-dim outline-none focus:bg-bg2 focus:text-primary data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[state=checked]:font-medium data-[state=checked]:text-primary',
       className
     )}
     {...props}
   >
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    <SelectPrimitive.ItemIndicator className="absolute right-2.5 flex items-center">
+      <Check className="h-4 w-4 text-primary" aria-hidden="true" />
+    </SelectPrimitive.ItemIndicator>
   </SelectPrimitive.Item>
 ));
 SelectItem.displayName = SelectPrimitive.Item.displayName;

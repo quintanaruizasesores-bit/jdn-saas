@@ -8,6 +8,8 @@ import { Plus, Search } from 'lucide-react';
 import { AppHeader } from '@/components/dashboard/app-header';
 import { EstadoBadge } from '@/components/ui/estado-badge';
 import { CompaniaBadge } from '@/components/ui/compania-badge';
+import { getCompaniaColor } from '@/lib/companias/colores';
+import { ScrollFade } from '@/components/ui/scroll-fade';
 import { createClient } from '@/lib/supabase/client';
 import { fetchPolizas } from '@/services/polizas.service';
 import { fetchCompanias } from '@/services/companias.service';
@@ -37,9 +39,12 @@ const PAGE_SIZE = 50;
 
 function PolizasListado() {
   const searchParams = useSearchParams();
+  const estadoInicial = searchParams.get('estado') ?? '';
   const [search, setSearch] = useState('');
-  const [estado, setEstado] = useState('');
-  const [companiaId, setCompaniaId] = useState('');
+  const [estado, setEstado] = useState(
+    ['VIGENTE', 'HISTORICA', 'BAJA'].includes(estadoInicial) ? estadoInicial : ''
+  );
+  const [companiaId, setCompaniaId] = useState(searchParams.get('compania') ?? '');
   const [ramoId, setRamoId] = useState(searchParams.get('ramo') ?? '');
   const [page, setPage] = useState(0);
 
@@ -92,7 +97,7 @@ function PolizasListado() {
         subtitle="Buscá, filtrá y gestioná pólizas"
       />
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <ScrollFade className="mb-4" contentClassName="items-center py-1.5">
         <div className="relative min-w-[200px] flex-1">
           <Search className="text-ink-faint absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
@@ -112,7 +117,7 @@ function PolizasListado() {
             resetToFirstPage();
           }}
         >
-          <SelectTrigger className="border-line bg-bg2 w-[160px]">
+          <SelectTrigger className="border-line bg-bg2 w-[170px] shrink-0">
             <span className="min-w-0 flex-1 overflow-hidden text-left">
               <SelectValue placeholder="Compañía" />
             </span>
@@ -121,7 +126,17 @@ function PolizasListado() {
             <SelectItem value="all">Todas</SelectItem>
             {(companias ?? []).map((c) => (
               <SelectItem key={c.id} value={c.id} textValue={c.nombre}>
-                <CompaniaBadge nombre={c.nombre} color={c.color} />
+                <span className="flex min-w-0 items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{
+                      backgroundColor: getCompaniaColor(c.nombre, c.color)
+                        .accent,
+                    }}
+                    aria-hidden="true"
+                  />
+                  <span className="truncate">{c.nombre}</span>
+                </span>
               </SelectItem>
             ))}
           </SelectContent>
@@ -133,7 +148,7 @@ function PolizasListado() {
             resetToFirstPage();
           }}
         >
-          <SelectTrigger className="border-line bg-bg2 w-[140px]">
+          <SelectTrigger className="border-line bg-bg2 w-[140px] shrink-0">
             <SelectValue placeholder="Ramo" />
           </SelectTrigger>
           <SelectContent>
@@ -152,7 +167,7 @@ function PolizasListado() {
             resetToFirstPage();
           }}
         >
-          <SelectTrigger className="border-line bg-bg2 w-[130px]">
+          <SelectTrigger className="border-line bg-bg2 w-[130px] shrink-0">
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
@@ -162,12 +177,12 @@ function PolizasListado() {
             <SelectItem value="BAJA">Baja</SelectItem>
           </SelectContent>
         </Select>
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" className="shrink-0">
           <Link href="/polizas/nueva">
             <Plus className="mr-1 h-4 w-4" /> Nueva póliza
           </Link>
         </Button>
-      </div>
+      </ScrollFade>
 
       <div className="border-line bg-panel overflow-hidden rounded-xl border">
         {isLoading ? (

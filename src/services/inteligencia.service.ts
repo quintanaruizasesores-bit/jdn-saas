@@ -38,7 +38,7 @@ export async function cargarInteligencia(
     leerTodas<DatosInteligencia['clientes'][number]>(
       client,
       'clientes',
-      'id,nombre,apellido,provincia,localidad,deleted_at,created_at'
+      'id,nombre,apellido,provincia,localidad,email,telefono,deleted_at,created_at'
     ),
     leerTodas<DatosInteligencia['polizas'][number]>(client, 'polizas'),
     leerTodas<DatosInteligencia['historial'][number]>(

@@ -38,7 +38,7 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        'border-line bg-panel sticky top-0 flex h-screen w-16 shrink-0 flex-col border-r transition-[width] duration-200',
+        'border-line bg-panel sticky top-0 hidden h-screen w-16 shrink-0 flex-col border-r transition-[width] duration-200 md:flex',
         sidebarCollapsed ? 'md:w-16' : 'md:w-64'
       )}
     >
