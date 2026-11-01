@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -7,7 +8,6 @@ import { AppHeader } from '@/components/dashboard/app-header';
 import { TaskAlertBell } from '@/components/dashboard/task-alert-bell';
 import { KpiCard } from '@/components/dashboard/kpi-card';
 import { BarList } from '@/components/dashboard/bar-list';
-import { ComisionChart } from '@/components/dashboard/comision-chart';
 import { useComisionDashboard } from '@/features/dashboard/use-comision-dashboard';
 import { getCompaniaColor } from '@/lib/companias/colores';
 import { createClient } from '@/lib/supabase/client';
@@ -125,24 +125,6 @@ export default function DashboardPage() {
           variant="green"
         />
         <KpiCard
-          label={
-            comisiones?.resumen.sinDatos
-              ? 'Comisión mensual · importes cargados'
-              : 'Comisión mensual estimada'
-          }
-          value={
-            comisiones?.resumen.comisionActual != null
-              ? formatCurrency(comisiones.resumen.comisionActual)
-              : '—'
-          }
-          subtitle={
-            comisiones?.resumen.sinDatos
-              ? `14% del premio mensual · ${comisiones.resumen.sinDatos} pólizas pendientes`
-              : '14% del premio mensual · cartera al día'
-          }
-          variant="green"
-        />
-        <KpiCard
           label="Siniestros (90d)"
           value={formatNumber(kpis?.siniestros_recientes ?? 0)}
           variant="rust"
@@ -238,8 +220,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="mb-4 grid gap-4 lg:grid-cols-2">
-        <ComisionChart />
+      <div className="mb-4">
         <div className="border-line bg-panel min-w-0 rounded-2xl border p-4 sm:p-5">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
             <p className="text-ink-dim text-[11px] tracking-widest uppercase">
@@ -263,39 +244,42 @@ export default function DashboardPage() {
           ) : topClientes.length ? (
             <ol className="divide-line divide-y">
               {topClientes.map((cliente, index) => (
-                <li
-                  key={cliente.cliente_id}
-                  className="py-2.5 first:pt-0 last:pb-0"
-                >
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span className="bg-bg2 text-primary flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums">
-                      {index + 1}
-                    </span>
-                    <span className="text-ink min-w-0 flex-1 truncate text-sm font-medium">
-                      {cliente.cliente_nombre}
-                    </span>
-                    <span className="text-ink-faint shrink-0 text-[10px]">
-                      {formatNumber(cliente.total_polizas)} pólizas
-                    </span>
-                  </div>
-                  <div className="mt-1.5 grid grid-cols-2 gap-3 pl-8">
-                    <div>
-                      <span className="text-ink-faint block text-[10px]">
-                        Premio mensual
+                <li key={cliente.cliente_id}>
+                  <Link
+                    href={`/clientes/${cliente.cliente_id}`}
+                    aria-label={`Ver ficha de ${cliente.cliente_nombre}`}
+                    className="hover:bg-bg2 focus-visible:ring-primary/20 -mx-2 block rounded-xl px-2 py-2.5 outline-none transition-colors focus-visible:ring-4"
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="bg-bg2 text-primary flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums">
+                        {index + 1}
                       </span>
-                      <span className="text-ink text-xs font-semibold tabular-nums">
-                        {formatCurrency(cliente.prima_total)}
+                      <span className="text-ink min-w-0 flex-1 truncate text-sm font-medium">
+                        {cliente.cliente_nombre}
+                      </span>
+                      <span className="text-ink-faint shrink-0 text-[10px]">
+                        {formatNumber(cliente.total_polizas)} pólizas
                       </span>
                     </div>
-                    <div>
-                      <span className="text-ink-faint block text-[10px]">
-                        Comisión aproximada
-                      </span>
-                      <span className="text-ink text-xs font-semibold tabular-nums">
-                        {formatCurrency(cliente.comision_aproximada)}
-                      </span>
+                    <div className="mt-1.5 grid grid-cols-2 gap-3 pl-8">
+                      <div>
+                        <span className="text-ink-faint block text-[10px]">
+                          Premio mensual
+                        </span>
+                        <span className="text-ink text-xs font-semibold tabular-nums">
+                          {formatCurrency(cliente.prima_total)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-ink-faint block text-[10px]">
+                          Comisión aproximada
+                        </span>
+                        <span className="text-ink text-xs font-semibold tabular-nums">
+                          {formatCurrency(cliente.comision_aproximada)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 </li>
               ))}
             </ol>
