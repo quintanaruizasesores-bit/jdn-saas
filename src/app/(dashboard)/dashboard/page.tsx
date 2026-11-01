@@ -76,9 +76,9 @@ export default function DashboardPage() {
           subtitle="Cargando métricas..."
           actions={<TaskAlertBell />}
         />
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-3.5 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="bg-panel h-24" />
+            <Skeleton key={i} className="bg-panel h-20 sm:h-24" />
           ))}
         </div>
       </div>
@@ -110,7 +110,7 @@ export default function DashboardPage() {
         actions={<TaskAlertBell />}
       />
 
-      <div className="mb-6 grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2 lg:grid-cols-3">
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:mb-6 sm:gap-3.5 lg:grid-cols-3">
         <KpiCard
           label="Clientes"
           value={formatNumber(kpis?.total_clientes ?? 0)}
@@ -124,6 +124,7 @@ export default function DashboardPage() {
           label="Premio"
           value={formatCurrency(Number(kpis?.prima_total ?? 0))}
           variant="green"
+          className="col-span-2 lg:col-span-1"
         />
         <KpiCard
           label={
@@ -152,6 +153,7 @@ export default function DashboardPage() {
             )
           }
           variant="green"
+          className="col-span-2 lg:col-span-1"
         />
         <KpiCard
           label="Siniestros (90d)"
@@ -165,8 +167,8 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="mb-4 grid gap-4 lg:grid-cols-2">
-        <div className="border-line bg-panel min-w-0 rounded-2xl border p-4 sm:p-5">
+      <div className="mb-4 grid gap-3 sm:gap-4 lg:grid-cols-2">
+        <div className="border-line bg-panel min-w-0 rounded-xl border p-4 sm:rounded-2xl sm:p-5">
           <p className="text-ink-dim mb-4 text-[11px] tracking-widest uppercase">
             Distribución por <b className="text-primary">compañía</b>
           </p>
@@ -178,11 +180,11 @@ export default function DashboardPage() {
             }))}
           />
         </div>
-        <div className="border-line bg-panel min-w-0 rounded-2xl border p-4 sm:p-5">
+        <div className="border-line bg-panel min-w-0 rounded-xl border p-4 sm:rounded-2xl sm:p-5">
           <p className="text-ink-dim mb-4 text-[11px] tracking-widest uppercase">
             Por <b className="text-primary">ramo</b>
           </p>
-          <div className="h-[240px]">
+          <div className="h-[220px] sm:h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -250,7 +252,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="mb-4">
-        <div className="border-line bg-panel min-w-0 rounded-2xl border p-4 sm:p-5">
+        <div className="border-line bg-panel min-w-0 rounded-xl border p-4 sm:rounded-2xl sm:p-5">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
             <p className="text-ink-dim text-[11px] tracking-widest uppercase">
               Top <b className="text-primary">10 clientes por premio</b>
