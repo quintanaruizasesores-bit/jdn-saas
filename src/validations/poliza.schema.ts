@@ -1,4 +1,14 @@
 import { z } from 'zod';
+import { isIsoDate } from '@/lib/polizas/fecha-input';
+
+const optionalDate = z
+  .string()
+  .optional()
+  .nullable()
+  .refine(
+    (value) => !value || isIsoDate(value),
+    'Ingresá una fecha válida (DD/MM/AAAA)'
+  );
 
 export const polizaSchema = z
   .object({
@@ -6,10 +16,10 @@ export const polizaSchema = z
     compania_id: z.string().uuid().optional().nullable(),
     ramo_id: z.string().uuid().optional().nullable(),
     estado: z.enum(['VIGENTE', 'HISTORICA', 'BAJA']),
-    fecha_inicio: z.string().optional().nullable(),
-    fecha_fin: z.string().optional().nullable(),
-    fecha_baja: z.string().optional().nullable(),
-    comision_desde: z.string().optional().nullable(),
+    fecha_inicio: optionalDate,
+    fecha_fin: optionalDate,
+    fecha_baja: optionalDate,
+    comision_desde: optionalDate,
     prima: z.number().min(0, 'El premio mensual debe ser positivo'),
     detalle: z.string().optional().nullable(),
   })

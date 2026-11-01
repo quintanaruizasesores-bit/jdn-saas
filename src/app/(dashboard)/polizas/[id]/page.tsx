@@ -26,7 +26,7 @@ import {
   darBajaPoliza,
 } from '@/services/polizas.service';
 import { fetchSiniestrosByPoliza } from '@/services/siniestros.service';
-import { fetchCompanias } from '@/services/companias.service';
+import { fetchTodasCompanias } from '@/services/companias.service';
 import { fetchRamos } from '@/services/ramos.service';
 import { SINIESTRO_TIPO_LABELS } from '@/lib/riesgo/calculate-risk-score';
 import { formatCurrency, formatDate, getClienteNombre } from '@/lib/utils';
@@ -80,11 +80,8 @@ export default function PolizaDetallePage({
   });
 
   const { data: companias } = useQuery({
-    queryKey: ['companias'],
-    queryFn: async () => {
-      const { data } = await fetchCompanias(createClient());
-      return (data ?? []).map((c) => ({ id: c.id, nombre: c.nombre, color: c.color }));
-    },
+    queryKey: ['companias', 'selector'],
+    queryFn: () => fetchTodasCompanias(createClient()),
   });
 
   const { data: ramos } = useQuery({
@@ -231,6 +228,7 @@ export default function PolizaDetallePage({
             Editar
           </h3>
           <PolizaForm
+            mode="edit"
             defaultValues={poliza}
             companias={companias ?? []}
             ramos={ramos ?? []}

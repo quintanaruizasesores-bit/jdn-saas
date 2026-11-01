@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { AppHeader } from '@/components/dashboard/app-header';
+import { TaskAlertBell } from '@/components/dashboard/task-alert-bell';
 import { KpiCard } from '@/components/dashboard/kpi-card';
 import { BarList } from '@/components/dashboard/bar-list';
 import { ComisionChart } from '@/components/dashboard/comision-chart';
@@ -69,7 +70,11 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div>
-        <AppHeader title="Tablero operativo" subtitle="Cargando métricas..." />
+        <AppHeader
+          title="Tablero operativo"
+          subtitle="Cargando métricas..."
+          actions={<TaskAlertBell />}
+        />
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="bg-panel h-24" />
@@ -101,6 +106,7 @@ export default function DashboardPage() {
           </>
         }
         subtitle="Análisis en vivo de la cartera"
+        actions={<TaskAlertBell />}
       />
 
       <div className="mb-6 grid grid-cols-1 gap-3.5 min-[480px]:grid-cols-2 lg:grid-cols-3">
