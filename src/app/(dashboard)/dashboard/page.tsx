@@ -126,6 +126,24 @@ export default function DashboardPage() {
           variant="green"
         />
         <KpiCard
+          label={
+            comisiones?.resumen.sinDatos
+              ? 'Comisión mensual · importes cargados'
+              : 'Comisión mensual estimada'
+          }
+          value={
+            comisiones?.resumen.comisionActual != null
+              ? formatCurrency(comisiones.resumen.comisionActual)
+              : '—'
+          }
+          subtitle={
+            comisiones?.resumen.sinDatos
+              ? `14% del premio mensual · ${comisiones.resumen.sinDatos} pólizas pendientes`
+              : '14% del premio mensual · cartera al día'
+          }
+          variant="green"
+        />
+        <KpiCard
           label="Siniestros (90d)"
           value={formatNumber(kpis?.siniestros_recientes ?? 0)}
           variant="rust"
