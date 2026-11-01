@@ -74,7 +74,15 @@ El alias `@/` apunta a `src/`.
   de siniestros, robos, choques responsables y monto acumulado. Niveles: bajo
   0–30, medio 31–60, alto 61–100. Motor en `src/lib/riesgo/`.
 - **Tareas (`/tareas`):** seguimiento comercial, vencimientos y estados
-  `PENDIENTE`, `EN_PROCESO`, `FINALIZADA`.
+  `PENDIENTE`, `EN_PROCESO`, `FINALIZADA`. Una tarea puede relacionarse con un
+  cliente y además, opcionalmente, con una póliza y/o un siniestro
+  (`tareas.poliza_id`, `tareas.siniestro_id`, nullable, `ON DELETE SET NULL`,
+  migración 010). Desde las fichas de cliente, póliza y siniestro hay un botón
+  «Agregar tarea» que abre un diálogo modal (`TareaDialog` en
+  `src/features/tareas/`, título + vencimiento) y precarga el contexto; las fichas
+  de póliza y siniestro listan sus tareas relacionadas. El alta desde `/tareas`
+  sigue sin vínculos (los FKs quedan `null`). `fetchTareas` filtra por `estado`,
+  `cliente_id`, `poliza_id` y `siniestro_id`.
 - **Cumpleaños (`/cumpleanos`):** resumen de hoy, próximos 7 y 30 días, búsqueda,
   edad, teléfono y vista previa de saludo con apertura de WhatsApp.
 - **Configuración (`/config`):** gestión de compañías, ramos y plantilla de
@@ -148,6 +156,10 @@ Leer y aplicar las migraciones en orden al preparar una base nueva:
 9. `009_exportacion_integral.sql`: funciones de lectura del catálogo y lotes para
    exportar datos con precisión y exclusiones de secretos. Solo service_role;
    no cambia tablas, datos históricos ni RLS. Creada en la rama, no se presume aplicada.
+10. `010_tareas_relaciones.sql`: agrega `tareas.poliza_id` y `tareas.siniestro_id`
+    (nullable, `REFERENCES ... ON DELETE SET NULL`) e índices, para vincular una
+    tarea con una póliza y/o un siniestro. No cambia RLS. Creada en la rama, no se
+    presume aplicada: sin ella, el alta de tareas falla por columnas inexistentes.
 
 El README enumera solo las primeras dos en la instalación: consultar la carpeta
 completa para conocer el esquema actual. Agregar migraciones nuevas para cambios

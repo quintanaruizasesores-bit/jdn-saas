@@ -12,15 +12,16 @@ export function formatNumber(value: number): string {
 
 export function formatDate(date: string | null | undefined): string {
   if (!date) return '—';
-  try {
-    return new Date(date + 'T12:00:00').toLocaleDateString('es-AR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  } catch {
-    return date;
-  }
+  // Una fecha DATE pura (YYYY-MM-DD) se ancla al mediodía para evitar que la zona
+  // horaria la corra un día. Un TIMESTAMPTZ (con hora/offset) se parsea tal cual.
+  const soloFecha = /^\d{4}-\d{2}-\d{2}$/.test(date);
+  const parsed = new Date(soloFecha ? `${date}T12:00:00` : date);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return parsed.toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
 export function getClienteNombre(cliente: { nombre: string; apellido: string }): string {

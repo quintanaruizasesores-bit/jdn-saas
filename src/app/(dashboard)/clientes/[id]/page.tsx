@@ -23,6 +23,13 @@ import type { PolizaEstado } from '@/types/database';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 
+const ACCION_LABELS: Record<string, string> = {
+  CREAR: 'Cliente creado',
+  ACTUALIZAR: 'Datos actualizados',
+  ELIMINAR: 'Cliente eliminado',
+  BAJA_LOGICA: 'Cliente dado de baja',
+};
+
 export default function ClienteDetallePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -237,12 +244,16 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
           )}
         </TabsContent>
         <TabsContent value="actividad" className="mt-4 space-y-1">
-          {(actividad ?? []).map((a) => (
-            <div key={a.id} className="flex gap-3 text-xs text-ink-dim">
-              <span className="text-ink-faint">{formatDate(a.created_at)}</span>
-              <span>{a.accion}</span>
-            </div>
-          ))}
+          {(actividad ?? []).length === 0 ? (
+            <p className="text-sm text-ink-faint">Sin actividad registrada.</p>
+          ) : (
+            (actividad ?? []).map((a) => (
+              <div key={a.id} className="flex gap-3 text-xs text-ink-dim">
+                <span className="text-ink-faint">{formatDate(a.created_at)}</span>
+                <span>{ACCION_LABELS[a.accion] ?? a.accion}</span>
+              </div>
+            ))
+          )}
         </TabsContent>
       </Tabs>
     </div>
