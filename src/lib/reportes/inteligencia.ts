@@ -16,6 +16,7 @@ import {
   nombreProvincia,
   normalizarTexto,
   PROVINCIAS,
+  SIN_UBICACION,
 } from './geografia';
 
 export interface DatosInteligencia {
@@ -447,6 +448,119 @@ export function analizarCartera(
       companias: porCompania(items),
     };
   });
+  // ---------------------------------------------------------------------------
+  // Listas a nivel registro: cada indicador accionable debe poder abrir los
+  // registros afectados. Se conserva la honestidad de `null` donde el stock no
+  // es acreditable; las listas de atributos de cliente (ubicación, contacto) no
+  // dependen del corte y por eso nunca son `null`.
+  // ---------------------------------------------------------------------------
+  const nombreCliente = (c: Cliente) => `${c.apellido} ${c.nombre}`.trim();
+  const datosCliente = new Map(datos.clientes.map((c) => [c.id, c]));
+  const itemPoliza = (p: Poliza, v: Version) => ({
+    polizaId: p.id,
+    clienteId: p.cliente_id,
+    cliente: nombreCliente(datosCliente.get(p.cliente_id)!),
+    ramo: ramos.get(p.ramo_id ?? '')?.nombre ?? 'Sin ramo',
+    compania: companias.get(p.compania_id ?? '')?.nombre ?? 'Sin aseguradora',
+    companiaColor: companias.get(p.compania_id ?? '')?.color ?? null,
+    fechaFin: v.fecha_fin ?? null,
+    estado: estadoDerivado(v, filtros.hasta),
+  });
+  const diasHasta = (f: string) =>
+    Math.round((Date.parse(f) - Date.parse(filtros.hasta)) / 86400000);
+  const vencimientos = foto.desconocidas
+    ? null
+    : foto.activas
+        .filter(
+          (p) =>
+            p.version.fechasVerificadas !== false &&
+            p.version.fecha_fin &&
+            fechaValida(p.version.fecha_fin) &&
+            p.version.fecha_fin >= filtros.hasta &&
+            p.version.fecha_fin <= sumarDias(filtros.hasta, 90)
+        )
+        .map((p) => {
+          const dias = diasHasta(p.version.fecha_fin!);
+          return {
+            ...itemPoliza(p.poliza, p.version),
+            dias,
+            bucket: dias <= 30 ? 30 : dias <= 60 ? 60 : 90,
+          };
+        })
+        .sort((a, b) => (a.fechaFin! < b.fechaFin! ? -1 : 1));
+  const vencidas = foto.desconocidas
+    ? null
+    : polizas.flatMap((p) => {
+        if (!esCliente(p, filtros.hasta)) return [];
+        const v = versionEn(p, filtros.hasta);
+        if (!v || estadoDerivado(v, filtros.hasta) !== 'VENCIDA') return [];
+        return [itemPoliza(p, v)];
+      });
+  const sinImporteLista = foto.desconocidas
+    ? null
+    : foto.activas
+        .filter((p) => p.comision === null)
+        .map((p) => {
+          const a = aporteComision(p.version, filtros.hasta);
+          return {
+            ...itemPoliza(p.poliza, p.version),
+            motivo: typeof a === 'string' ? a : 'FECHAS',
+          };
+        });
+  const provinciaOK = (c: Cliente) =>
+    !filtros.provincia || normalizarProvincia(c.provincia) === filtros.provincia;
+  const clienteActivo = (c: Cliente) =>
+    !c.deleted_at || fechaRegistro(c.deleted_at) > filtros.hasta;
+  // Estado de vigencia por cliente sobre toda su cartera (no sólo el segmento):
+  // un cliente «sin pólizas vigentes» debe mirarse en forma global y sólo se
+  // afirma cuando no queda ninguna póliza con estado desconocido.
+  const vigenciaCliente = new Map<
+    string,
+    { vigente: boolean; desconocido: boolean }
+  >();
+  for (const p of datos.polizas) {
+    const v = versionEn(p, filtros.hasta);
+    const estado = v
+      ? vigente(v, filtros.hasta)
+      : ausenciaProbada(p, filtros.hasta)
+        ? false
+        : null;
+    const cur = vigenciaCliente.get(p.cliente_id) ?? {
+      vigente: false,
+      desconocido: false,
+    };
+    if (estado === true) cur.vigente = true;
+    else if (estado === null) cur.desconocido = true;
+    vigenciaCliente.set(p.cliente_id, cur);
+  }
+  const clientesActivos = datos.clientes.filter(
+    (c) => clienteActivo(c) && provinciaOK(c)
+  );
+  const ordenarClientes = <T extends { nombre: string }>(items: T[]) =>
+    items.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  const clientesSinVigentes = ordenarClientes(
+    clientesActivos
+      .filter((c) => {
+        const e = vigenciaCliente.get(c.id);
+        return !e || (!e.vigente && !e.desconocido);
+      })
+      .map((c) => ({
+        id: c.id,
+        nombre: nombreCliente(c),
+        provincia: nombreProvincia(normalizarProvincia(c.provincia)),
+      }))
+  );
+  const sinUbicacion = ordenarClientes(
+    clientesActivos
+      .filter((c) => normalizarProvincia(c.provincia) === SIN_UBICACION)
+      .map((c) => ({ id: c.id, nombre: nombreCliente(c) }))
+  );
+  const sinContacto = ordenarClientes(
+    clientesActivos
+      .filter((c) => !(c.email?.trim() || c.telefono?.trim()))
+      .map((c) => ({ id: c.id, nombre: nombreCliente(c) }))
+  );
+
   const porCliente = new Map<
     string,
     { id: string; nombre: string; polizas: number; provincia: string }
@@ -482,6 +596,14 @@ export function analizarCartera(
             .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')),
         })),
     motivos: movimientos(filtros.desde, filtros.hasta).motivos,
+    detalle: {
+      vencimientos,
+      vencidas,
+      sinImporte: sinImporteLista,
+      clientesSinVigentes,
+      sinUbicacion,
+      sinContacto,
+    },
     calidad: {
       sinHistoria: foto.desconocidas,
       sinImporte: foto.sinImporte,

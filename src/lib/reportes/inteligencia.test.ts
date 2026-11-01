@@ -396,3 +396,46 @@ describe('normalización geográfica conservadora', () => {
     ['', SIN_UBICACION],
   ])('%s → %s', (s, id) => expect(normalizarProvincia(s)).toBe(id));
 });
+
+describe('listas accionables de detalle', () => {
+  it('bucketiza vencimientos, detecta vencidas y clientes sin cobertura, ubicación y contacto', () => {
+    const cs: Cliente[] = [
+      cliente('c1', 'Córdoba'),
+      { ...cliente('c2', 'Córdoba'), telefono: '351-000' },
+      cliente('c3', null),
+    ];
+    const ps = [
+      poliza('p1', 'c1', { fecha_fin: '2026-11-06' }), // vence en 20 d → bucket 30
+      poliza('p2', 'c1', { fecha_fin: '2026-12-10' }), // ~54 d → bucket 60
+      poliza('p3', 'c1', { fecha_fin: '2027-05-01' }), // > 90 d → excluida
+      poliza('p4', 'c2', { fecha_fin: '2026-10-01' }), // vencida
+    ];
+    const r = analizarCartera(datos(ps, cs), {
+      desde: '2026-09-01',
+      hasta: '2026-10-17',
+    });
+    const v = r.detalle.vencimientos!;
+    expect(v.map((x) => x.polizaId)).toEqual(['p1', 'p2']);
+    expect(v.find((x) => x.polizaId === 'p1')!.bucket).toBe(30);
+    expect(v.find((x) => x.polizaId === 'p2')!.bucket).toBe(60);
+    expect(r.detalle.vencidas!.map((x) => x.polizaId)).toEqual(['p4']);
+    expect(r.detalle.clientesSinVigentes.map((x) => x.id).sort()).toEqual([
+      'c2',
+      'c3',
+    ]);
+    expect(r.detalle.sinUbicacion.map((x) => x.id)).toEqual(['c3']);
+    expect(r.detalle.sinContacto.map((x) => x.id).sort()).toEqual(['c1', 'c3']);
+  });
+
+  it('anula las listas de pólizas cuando falta historia al corte', () => {
+    const r = analizarCartera(
+      datos([poliza('p1', 'c1', { comision_desde: null, legacy_id: 7 })]),
+      { desde: '2026-09-01', hasta: '2026-10-17' }
+    );
+    expect(r.detalle.vencimientos).toBeNull();
+    expect(r.detalle.vencidas).toBeNull();
+    expect(r.detalle.sinImporte).toBeNull();
+    // Las listas de atributos de cliente no dependen del corte.
+    expect(Array.isArray(r.detalle.clientesSinVigentes)).toBe(true);
+  });
+});
