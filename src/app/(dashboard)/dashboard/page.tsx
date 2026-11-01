@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -288,6 +289,20 @@ export default function DashboardPage() {
               No hay premios mensuales vigentes y calculables para mostrar.
             </p>
           )}
+          <div className="border-line mt-4 border-t pt-3">
+            <Link
+              href="/polizas/pendientes-comision"
+              className="text-primary focus-visible:ring-primary/20 inline-flex items-center gap-1.5 rounded-lg text-xs font-medium outline-none hover:underline focus-visible:ring-4"
+            >
+              Revisar pólizas pendientes de comisión
+              {!!comisiones?.resumen.sinDatos && (
+                <span className="bg-primary/10 text-primary rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums">
+                  {formatNumber(comisiones.resumen.sinDatos)}
+                </span>
+              )}
+              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>
