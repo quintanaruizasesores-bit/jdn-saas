@@ -63,7 +63,7 @@ export function CompaniaCombobox({
           type="button"
           aria-label="Compañía"
           className={cn(
-            'border-line bg-bg focus:border-primary focus:ring-primary/10 font-body text-ink flex h-10 w-full min-w-0 items-center justify-between gap-2 rounded-xl border px-3 text-left text-sm outline-none focus:ring-4',
+            'border-line bg-bg font-body text-ink flex h-10 w-full min-w-0 items-center justify-between gap-2 rounded-xl border px-3 text-left text-sm outline-none transition-colors data-[state=open]:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15',
             className
           )}
         >
