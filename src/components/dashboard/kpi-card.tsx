@@ -1,9 +1,10 @@
+import type { ReactNode } from 'react';
 import { cn, formatCurrency, formatNumber } from '@/lib/utils';
 
 interface KpiCardProps {
   label: string;
   value: string | number;
-  subtitle?: string;
+  subtitle?: ReactNode;
   variant?: 'default' | 'green' | 'blue' | 'rust';
   isCurrency?: boolean;
 }

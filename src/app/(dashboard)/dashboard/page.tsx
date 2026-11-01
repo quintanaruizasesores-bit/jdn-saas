@@ -137,9 +137,19 @@ export default function DashboardPage() {
               : '—'
           }
           subtitle={
-            comisiones?.resumen.sinDatos
-              ? `14% del premio mensual · ${comisiones.resumen.sinDatos} pólizas pendientes`
-              : '14% del premio mensual · cartera al día'
+            comisiones?.resumen.sinDatos ? (
+              <>
+                14% del premio mensual ·{' '}
+                <Link
+                  href="/polizas/pendientes-comision"
+                  className="text-primary font-medium underline underline-offset-2 hover:no-underline"
+                >
+                  {formatNumber(comisiones.resumen.sinDatos)} pólizas pendientes
+                </Link>
+              </>
+            ) : (
+              '14% del premio mensual · cartera al día'
+            )
           }
           variant="green"
         />
