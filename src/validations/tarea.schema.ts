@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const tareaSchema = z.object({
   cliente_id: z.string().uuid().optional().nullable(),
+  poliza_id: z.string().uuid().optional().nullable(),
+  siniestro_id: z.string().uuid().optional().nullable(),
   titulo: z.string().min(1, 'Título requerido'),
   descripcion: z.string().optional().nullable(),
   fecha_vencimiento: z.string().optional().nullable(),

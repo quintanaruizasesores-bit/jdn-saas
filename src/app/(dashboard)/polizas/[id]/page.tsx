@@ -26,6 +26,8 @@ import {
   darBajaPoliza,
 } from '@/services/polizas.service';
 import { fetchSiniestrosByPoliza } from '@/services/siniestros.service';
+import { fetchTareas } from '@/services/tareas.service';
+import { TareaDialog } from '@/features/tareas/tarea-dialog';
 import { fetchTodasCompanias } from '@/services/companias.service';
 import { fetchRamos } from '@/services/ramos.service';
 import { SINIESTRO_TIPO_LABELS } from '@/lib/riesgo/calculate-risk-score';
@@ -76,6 +78,14 @@ export default function PolizaDetallePage({
         fecha: string | null;
         descripcion: string | null;
       }>;
+    },
+  });
+
+  const { data: tareas } = useQuery({
+    queryKey: ['tareas-poliza', id],
+    queryFn: async () => {
+      const { data } = await fetchTareas(createClient(), { poliza_id: id });
+      return data ?? [];
     },
   });
 
@@ -293,6 +303,41 @@ export default function PolizaDetallePage({
                   {formatDate(s.fecha)}
                 </span>
               </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="border-line bg-panel rounded-xl border p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-ink-dim text-sm tracking-wider uppercase">
+            Tareas
+          </h3>
+          <TareaDialog
+            clienteId={cliente?.id ?? poliza.cliente_id}
+            polizaId={id}
+            onCreated={() => {
+              qc.invalidateQueries({ queryKey: ['tareas-poliza', id] });
+              qc.invalidateQueries({ queryKey: ['tareas'] });
+            }}
+          />
+        </div>
+        {(tareas ?? []).length === 0 ? (
+          <p className="text-ink-faint text-sm">
+            Sin tareas registradas para esta póliza.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {(tareas ?? []).map((t) => (
+              <div
+                key={t.id}
+                className="border-line bg-bg2 flex items-center justify-between rounded-xl border p-3"
+              >
+                <span className="text-ink text-sm">{t.titulo}</span>
+                <span className="text-ink-faint text-xs">
+                  {t.estado} · vence {formatDate(t.fecha_vencimiento)}
+                </span>
+              </div>
             ))}
           </div>
         )}

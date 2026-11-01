@@ -15,6 +15,7 @@ import { fetchClienteById, softDeleteCliente } from '@/services/clientes.service
 import { fetchPolizasByCliente } from '@/services/polizas.service';
 import { fetchSiniestrosByCliente } from '@/services/siniestros.service';
 import { fetchTareas } from '@/services/tareas.service';
+import { TareaDialog } from '@/features/tareas/tarea-dialog';
 import { calculateRiskScore } from '@/lib/riesgo/calculate-risk-score';
 import { formatCurrency, formatDate, getClienteNombre } from '@/lib/utils';
 import { SINIESTRO_TIPO_LABELS, RESPONSABILIDAD_LABELS } from '@/lib/riesgo/calculate-risk-score';
@@ -215,12 +216,25 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
           ))}
         </TabsContent>
         <TabsContent value="tareas" className="mt-4 space-y-2">
-          {(tareas ?? []).map((t) => (
-            <div key={t.id} className="rounded-xl border border-line bg-panel p-3">
-              <p className="font-medium">{t.titulo}</p>
-              <p className="text-xs text-ink-faint">{t.estado} · vence {formatDate(t.fecha_vencimiento)}</p>
-            </div>
-          ))}
+          <div className="flex justify-end">
+            <TareaDialog
+              clienteId={id}
+              onCreated={() => {
+                qc.invalidateQueries({ queryKey: ['tareas-cliente', id] });
+                qc.invalidateQueries({ queryKey: ['tareas'] });
+              }}
+            />
+          </div>
+          {(tareas ?? []).length === 0 ? (
+            <p className="text-sm text-ink-faint">Sin tareas registradas.</p>
+          ) : (
+            (tareas ?? []).map((t) => (
+              <div key={t.id} className="rounded-xl border border-line bg-panel p-3">
+                <p className="font-medium">{t.titulo}</p>
+                <p className="text-xs text-ink-faint">{t.estado} · vence {formatDate(t.fecha_vencimiento)}</p>
+              </div>
+            ))
+          )}
         </TabsContent>
         <TabsContent value="actividad" className="mt-4 space-y-1">
           {(actividad ?? []).map((a) => (
