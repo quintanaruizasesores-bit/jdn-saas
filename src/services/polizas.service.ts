@@ -7,9 +7,18 @@ import {
   sanitizeSearchTerm,
 } from '@/lib/clientes/search';
 import { periodoComision } from '@/lib/dashboard/comision';
+import {
+  distanciaPatente,
+  fragmentosPatente,
+  patenteBuscada,
+  patentesEnDetalle,
+} from '@/lib/polizas/patentes';
 
 /** Tope de clientes que resuelve la búsqueda por nombre antes de filtrar pólizas. */
 const SEARCH_CLIENTE_LIMIT = 500;
+const PATENTE_BATCH_SIZE = 1000;
+const POLIZA_SELECT =
+  '*, cliente:clientes(id, nombre, apellido, email, telefono), compania:companias(*), ramo:ramos(id, nombre)';
 
 export interface PolizasFilters {
   search?: string;
@@ -35,6 +44,9 @@ export async function fetchPolizas(
     pageSize = 50,
   } = filters;
 
+  const patente = search ? patenteBuscada(search.trim()) : null;
+  if (patente) return fetchPolizasPorPatente(supabase, patente, filters);
+
   // Búsqueda server-side: el nombre vive en la tabla `clientes` (join), así que
   // primero resolvemos los cliente_id que matchean el término y después filtramos
   // pólizas por (cliente_id IN ...) OR detalle ILIKE. Así la búsqueda alcanza
@@ -59,10 +71,7 @@ export async function fetchPolizas(
 
   let query = supabase
     .from('polizas')
-    .select(
-      `*, cliente:clientes(id, nombre, apellido, email, telefono), compania:companias(*), ramo:ramos(id, nombre)`,
-      { count: 'exact' }
-    )
+    .select(POLIZA_SELECT, { count: 'exact' })
     .order('created_at', { ascending: false });
 
   if (compania_id) query = query.eq('compania_id', compania_id);
@@ -79,6 +88,100 @@ export async function fetchPolizas(
   }
 
   return query.range(page * pageSize, (page + 1) * pageSize - 1);
+}
+
+async function fetchPolizasPorPatente(
+  supabase: SupabaseClient,
+  patente: string,
+  filters: PolizasFilters
+) {
+  const [letras, numeros] = fragmentosPatente(patente);
+  const coincidencias: { id: string; created_at: string; distancia: number }[] =
+    [];
+
+  // Primero se buscan patentes completas, incluso si se escribieron con guiones
+  // o espacios. Sólo cuando no hay una exacta se admiten variantes de un carácter.
+  for (const aproximada of [false, true]) {
+    for (let offset = 0; ; offset += PATENTE_BATCH_SIZE) {
+      let query = supabase
+        .from('polizas')
+        .select('id, detalle, created_at')
+        .order('created_at', { ascending: false });
+      if (filters.compania_id)
+        query = query.eq('compania_id', filters.compania_id);
+      if (filters.ramo_id) query = query.eq('ramo_id', filters.ramo_id);
+      if (filters.estado) query = query.eq('estado', filters.estado);
+      if (filters.con_prima === 'con') query = query.gt('prima', 0);
+      if (filters.con_prima === 'sin') query = query.eq('prima', 0);
+
+      query = aproximada
+        ? query.or(`detalle.ilike.%${letras}%,detalle.ilike.%${numeros}%`)
+        : query.ilike('detalle', `%${letras}%${numeros}%`);
+      const { data, error } = await query.range(
+        offset,
+        offset + PATENTE_BATCH_SIZE - 1
+      );
+      if (error)
+        return { data: null, error, count: null, status: 0, statusText: '' };
+
+      for (const row of data ?? []) {
+        const distancia = Math.min(
+          ...patentesEnDetalle(row.detalle).map((valor) =>
+            distanciaPatente(patente, valor)
+          )
+        );
+        if (distancia === (aproximada ? 1 : 0)) {
+          coincidencias.push({
+            id: row.id,
+            created_at: row.created_at,
+            distancia,
+          });
+        }
+      }
+      if ((data ?? []).length < PATENTE_BATCH_SIZE) break;
+    }
+    if (coincidencias.length) break;
+  }
+
+  coincidencias.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const page = filters.page ?? 0;
+  const pageSize = filters.pageSize ?? 50;
+  const ids = coincidencias
+    .slice(page * pageSize, (page + 1) * pageSize)
+    .map((row) => row.id);
+  if (!ids.length)
+    return {
+      data: [],
+      error: null,
+      count: coincidencias.length,
+      status: 200,
+      statusText: 'OK',
+      coincidenciaPatente: coincidencias.length
+        ? aproximacionPatente(coincidencias)
+        : null,
+    };
+
+  const result = await supabase
+    .from('polizas')
+    .select(POLIZA_SELECT)
+    .in('id', ids);
+  if (result.error) return result;
+  const byId = new Map((result.data ?? []).map((row) => [row.id, row]));
+  return {
+    ...result,
+    data: ids.flatMap((id) => {
+      const row = byId.get(id);
+      return row ? [row] : [];
+    }),
+    count: coincidencias.length,
+    coincidenciaPatente: aproximacionPatente(coincidencias),
+  };
+}
+
+function aproximacionPatente(
+  coincidencias: { distancia: number }[]
+): 'exacta' | 'similar' {
+  return coincidencias[0].distancia === 0 ? 'exacta' : 'similar';
 }
 
 export async function fetchPolizaById(supabase: SupabaseClient, id: string) {

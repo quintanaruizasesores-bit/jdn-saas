@@ -23,6 +23,7 @@ function cliente(over: Partial<Cliente> = {}): Cliente {
     apellido: 'Pérez',
     dni: null,
     observaciones: null,
+    actividad: null,
     email: null,
     telefono: null,
     direccion: null,

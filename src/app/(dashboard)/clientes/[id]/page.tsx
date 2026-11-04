@@ -147,6 +147,7 @@ export default function ClienteDetallePage({ params }: { params: Promise<{ id: s
               </a>
             )}
             {cliente.dni && <span>DNI / CUIT {cliente.dni}</span>}
+            {cliente.actividad && <span>Actividad: {cliente.actividad}</span>}
           </div>
         </div>
         <div className="text-center">

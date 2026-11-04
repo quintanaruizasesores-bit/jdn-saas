@@ -24,6 +24,7 @@ export interface Cliente {
   apellido: string;
   dni: string | null;
   observaciones: string | null;
+  actividad: string | null;
   email: string | null;
   telefono: string | null;
   direccion: string | null;
