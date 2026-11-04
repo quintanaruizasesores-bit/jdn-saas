@@ -6,6 +6,7 @@ export const clienteSchema = z.object({
   apellido: z.string().optional().nullable(),
   dni: z.string().optional().nullable(),
   observaciones: z.string().optional().nullable(),
+  actividad: z.string().optional().nullable(),
   email: z.string().email('Email inválido').optional().nullable().or(z.literal('')),
   telefono: z.string().optional().nullable(),
   direccion: z.string().optional().nullable(),

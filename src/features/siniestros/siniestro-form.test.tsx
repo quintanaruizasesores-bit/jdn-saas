@@ -22,6 +22,7 @@ function clienteRow(): Cliente {
     apellido: 'Pérez',
     dni: null,
     observaciones: null,
+    actividad: null,
     email: null,
     telefono: '351 555 1234',
     direccion: null,

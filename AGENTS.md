@@ -57,6 +57,8 @@ El alias `@/` apunta a `src/`.
   paginación y baja lógica mediante `deleted_at`. La ficha reúne pólizas,
   siniestros, tareas y riesgo. DNI/CUIT se valida contra duplicados activos
   desde la aplicación; no existe una restricción única de DNI en la base.
+  `clientes.actividad` es un texto opcional de actividad u ocupación del cliente,
+  editable en el formulario y visible en la ficha; requiere la migración 011.
 - **Pólizas (`/polizas`):** alta, edición, detalle, filtros, búsqueda por cliente
   o detalle, renovación, baja e historial. Estados: `VIGENTE`, `HISTORICA`, `BAJA`.
   La búsqueda de una patente completa (ABC123 o AB123CD) normaliza espacios y
@@ -163,6 +165,9 @@ Leer y aplicar las migraciones en orden al preparar una base nueva:
     (nullable, `REFERENCES ... ON DELETE SET NULL`) e índices, para vincular una
     tarea con una póliza y/o un siniestro. No cambia RLS. Creada en la rama, no se
     presume aplicada: sin ella, el alta de tareas falla por columnas inexistentes.
+11. `011_clientes_actividad.sql`: agrega `clientes.actividad` (texto nullable).
+    No cambia RLS ni los datos existentes. Debe aplicarse antes de guardar
+    clientes desde el formulario que incluye el campo nuevo.
 
 El README enumera solo las primeras dos en la instalación: consultar la carpeta
 completa para conocer el esquema actual. Agregar migraciones nuevas para cambios

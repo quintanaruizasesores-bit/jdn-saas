@@ -21,6 +21,7 @@ const cliente = (
   direccion: null,
   dni: null,
   observaciones: null,
+  actividad: null,
   email: null,
   telefono: null,
   fecha_nacimiento: null,
