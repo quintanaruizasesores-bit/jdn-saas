@@ -59,6 +59,9 @@ El alias `@/` apunta a `src/`.
   desde la aplicación; no existe una restricción única de DNI en la base.
 - **Pólizas (`/polizas`):** alta, edición, detalle, filtros, búsqueda por cliente
   o detalle, renovación, baja e historial. Estados: `VIGENTE`, `HISTORICA`, `BAJA`.
+  La búsqueda de una patente completa (ABC123 o AB123CD) normaliza espacios y
+  guiones, valida coincidencias completas dentro de `detalle` y sólo ofrece
+  patentes con un carácter distinto cuando no hay coincidencia exacta.
   Hay alertas de renovación a 30/15/7 días. El formulario de alta y edición
   agrupa la vigencia en dos columnas, presenta fechas como DD/MM/AAAA y envía
   valores ISO. La fecha de efecto se ofrece en opciones avanzadas al crear y

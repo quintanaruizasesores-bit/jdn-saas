@@ -42,9 +42,13 @@ function PolizasListado() {
   const estadoInicial = searchParams.get('estado') ?? '';
   const [search, setSearch] = useState('');
   const [estado, setEstado] = useState(
-    ['VIGENTE', 'HISTORICA', 'BAJA'].includes(estadoInicial) ? estadoInicial : ''
+    ['VIGENTE', 'HISTORICA', 'BAJA'].includes(estadoInicial)
+      ? estadoInicial
+      : ''
   );
-  const [companiaId, setCompaniaId] = useState(searchParams.get('compania') ?? '');
+  const [companiaId, setCompaniaId] = useState(
+    searchParams.get('compania') ?? ''
+  );
   const [ramoId, setRamoId] = useState(searchParams.get('ramo') ?? '');
   const [page, setPage] = useState(0);
 
@@ -101,7 +105,7 @@ function PolizasListado() {
         <div className="relative min-w-[200px] flex-1">
           <Search className="text-ink-faint absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
-            placeholder="Buscar cliente, detalle..."
+            placeholder="Buscar cliente, patente o detalle..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -183,6 +187,15 @@ function PolizasListado() {
           </Link>
         </Button>
       </ScrollFade>
+
+      {data &&
+        'coincidenciaPatente' in data &&
+        data.coincidenciaPatente === 'similar' && (
+          <p className="text-ink-dim mb-3 text-sm">
+            No encontramos esa patente exacta. Mostramos patentes similares (un
+            carácter diferente).
+          </p>
+        )}
 
       <div className="border-line bg-panel overflow-hidden rounded-xl border">
         {isLoading ? (
