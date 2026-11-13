@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PassThrough, Readable } from 'node:stream';
-import { createClient, createServiceClient } from '@/lib/supabase/server';
-import { puedeExportar } from '@/lib/reportes/autorizacion';
+import { createClient } from '@/lib/supabase/server';
 import {
   escribirRespaldo,
   type CatalogoExportado,
@@ -24,33 +23,15 @@ export async function GET(request: NextRequest) {
       { error: 'Iniciá sesión para continuar.' },
       { status: 401, headers: privateHeaders }
     );
-  const { data: perfil, error } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-  if (
-    error ||
-    !puedeExportar(user.id, perfil?.role, process.env.BACKUP_ADMIN_USER_IDS)
-  )
-    return NextResponse.json(
-      {
-        error:
-          'La exportación integral requiere un administrador habilitado por el responsable del sistema.',
-      },
-      { status: 403, headers: privateHeaders }
-    );
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY)
-    return NextResponse.json(
-      { error: 'La exportación todavía no está configurada en el servidor.' },
-      { status: 503, headers: privateHeaders }
-    );
-  const service = await createServiceClient();
+  // Sin service_role: la exportación corre con la sesión del usuario. Las RPC
+  // son SECURITY INVOKER y la RLS por workspace (migración 013) recorta cada
+  // lectura al workspace del usuario; la migración 014 las concede a
+  // authenticated. Cada usuario exporta únicamente su propia cartera.
   const catalogo = async () => {
-    const { data, error } = await service.rpc('exportacion_catalogo');
+    const { data, error } = await supabase.rpc('exportacion_catalogo');
     if (error)
       throw new Error(
-        'No se pudo verificar el esquema. Revisá la migración 009.'
+        'No se pudo verificar el esquema. Revisá las migraciones 009 y 014.'
       );
     return data as CatalogoExportado;
   };
@@ -62,7 +43,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          'No se pudo verificar el esquema de exportación. El administrador debe revisar la migración 009.',
+          'No se pudo verificar el esquema de exportación. El administrador debe revisar las migraciones 009 y 014.',
       },
       { status: 503, headers: privateHeaders }
     );
@@ -87,7 +68,7 @@ export async function GET(request: NextRequest) {
       return catalogo();
     },
     lote: async (tabla: string, despues: string | null) => {
-      const { data, error } = await service.rpc('exportacion_lote', {
+      const { data, error } = await supabase.rpc('exportacion_lote', {
         tabla,
         despues,
         cantidad: 500,

@@ -3,47 +3,28 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 const mocks = vi.hoisted(() => ({
   user: { id: 'u1' } as { id: string } | null,
-  role: 'ADMIN',
   rpc: vi.fn(),
-  service: vi.fn(),
 }));
+// La exportación corre con la sesión del usuario: no hay service_role. La RLS
+// por workspace (migración 013) aísla las lecturas; las RPC (SECURITY INVOKER,
+// migración 014) solo devuelven la cartera del propio usuario.
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => ({
     auth: { getUser: async () => ({ data: { user: mocks.user } }) },
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          single: async () => ({ data: { role: mocks.role }, error: null }),
-        }),
-      }),
-    }),
+    rpc: mocks.rpc,
   }),
-  createServiceClient: async () => {
-    mocks.service();
-    return { rpc: mocks.rpc };
-  },
 }));
 import { GET } from './route';
 const req = () => new NextRequest('http://localhost/api/respaldo');
 beforeEach(() => {
-  vi.stubEnv('BACKUP_ADMIN_USER_IDS', 'u1');
-  vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'solo-prueba');
   mocks.user = { id: 'u1' };
-  mocks.role = 'ADMIN';
-  mocks.service.mockClear();
   mocks.rpc.mockReset();
 });
 describe('endpoint de copia integral', () => {
-  it('rechaza anónimos, roles ajenos y ADMIN sin habilitación antes de usar service_role', async () => {
+  it('rechaza anónimos sin tocar la base', async () => {
     mocks.user = null;
     expect((await GET(req())).status).toBe(401);
-    mocks.user = { id: 'u1' };
-    mocks.role = 'OPERADOR';
-    expect((await GET(req())).status).toBe(403);
-    mocks.role = 'ADMIN';
-    vi.stubEnv('BACKUP_ADMIN_USER_IDS', 'otro');
-    expect((await GET(req())).status).toBe(403);
-    expect(mocks.service).not.toHaveBeenCalled();
+    expect(mocks.rpc).not.toHaveBeenCalled();
   });
   it('no descarga un esquema sin verificar y no cachea errores', async () => {
     mocks.rpc.mockResolvedValue({
@@ -54,7 +35,7 @@ describe('endpoint de copia integral', () => {
     expect(response.status).toBe(503);
     expect(response.headers.get('Cache-Control')).toContain('no-store');
   });
-  it('entrega un archivo completo únicamente al administrador habilitado', async () => {
+  it('entrega un archivo completo a cualquier usuario autenticado (RLS lo aísla)', async () => {
     mocks.rpc.mockResolvedValue({
       error: null,
       data: { tablas: [], relaciones: [] },
