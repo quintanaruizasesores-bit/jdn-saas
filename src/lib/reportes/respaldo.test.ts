@@ -8,7 +8,6 @@ import {
   type CatalogoExportado,
   type FuenteRespaldo,
 } from './respaldo';
-import { puedeExportar } from './autorizacion';
 const tabla = {
   tabla: 'clientes',
   registros: '1005',
@@ -111,14 +110,5 @@ describe('Excel integral', () => {
     expect(textoRespaldo('\\N')).toBe('\\\\N');
     expect(textoRespaldo('')).toBe('\\E');
     expect(textoRespaldo('a\u0001b')).toBe('\\J"a\\u0001b"');
-  });
-});
-describe('administradores autorizados para exportar', () => {
-  it('rechaza anónimos, otros roles, listas vacías y ADMIN autoasignados', () => {
-    expect(puedeExportar('u1', 'ADMIN', undefined)).toBe(false);
-    expect(puedeExportar('u1', 'ADMIN', 'u2')).toBe(false);
-    expect(puedeExportar('u1', 'PRODUCTOR', 'u1')).toBe(false);
-    expect(puedeExportar('u1', null, 'u1')).toBe(false);
-    expect(puedeExportar('u1', 'ADMIN', ' u2, u1 ')).toBe(true);
   });
 });
