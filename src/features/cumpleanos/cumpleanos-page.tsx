@@ -53,7 +53,7 @@ interface PreparedRow {
 }
 
 export function CumpleanosPage() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const asesor = profile?.nombre ?? '';
 
   const [rango, setRango] = useState<RangoCumple>('hoy');
@@ -66,7 +66,7 @@ export function CumpleanosPage() {
 
   // "Hoy" en la zona de la app, estable durante la sesión de la página.
   const today = useMemo(() => getTodayInTimezone(), []);
-  const { ids: contactados, marcar } = useContactado(today.year);
+  const { ids: contactados, marcar } = useContactado(today.year, user?.id ?? null);
 
   const clientesQuery = useQuery({
     queryKey: ['cumpleanos-clientes'],

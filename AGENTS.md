@@ -1,263 +1,69 @@
-# Cartera JDN / Quintana Ruiz — contexto para agentes de IA
+# Cartera JDN / Quintana Ruiz — contexto operativo
 
-Última revisión de este contexto: 01/11/2026. Alcance: todo el repositorio.
-Este archivo permite compartir lo construido y continuar el desarrollo con otra IA.
-Describe el código local revisado; no certifica qué cambios están desplegados ni
-qué migraciones se aplicaron al proyecto Supabase remoto.
+Alcance: todo el repositorio. Revisado contra el código local el 13/11/2026. Este archivo no acredita el despliegue ni las migraciones aplicadas en Supabase remoto. No hay otros `AGENTS.md` en el árbol del proyecto.
 
-## Qué es el proyecto
+## Proyecto y arquitectura
 
-Aplicación de gestión de cartera de seguros para un corredor, con identidad
-visual de **Quintana Ruiz Asesores de Seguros**. El paquete conserva el nombre
-`cartera-jdn`. La interfaz y los textos de negocio están en español de Argentina.
+Gestor de cartera de seguros mono-corredor, con interfaz en español de Argentina e identidad **Quintana Ruiz Asesores de Seguros**. Los datos de negocio son compartidos entre usuarios autenticados; no hay `organization_id`, `tenant_id` ni productor asignado. El paquete se llama `cartera-jdn`.
 
-El modelo actual es **mono-corredor**, con datos de negocio compartidos entre
-usuarios autenticados. No hay aislamiento por organización o productor.
+- Next.js 15.5.19 (App Router), React 19.1, TypeScript estricto, Tailwind CSS v4, componentes UI basados en Radix/Base UI y Lucide. `@/` apunta a `src/`.
+- Supabase PostgreSQL, Auth, RLS y SSR con cookies; TanStack Query para caché, Zustand para estado de interfaz, React Hook Form + Zod para formularios. Recharts y Leaflet para visualización; ExcelJS para XLSX. Hay utilidades jsPDF en `src/lib/reportes/format.ts`, pero la exportación integral vigente es XLSX.
+- `src/app/`: rutas y endpoints; `src/app/(dashboard)/`: secciones privadas; `src/features/`: UI y hooks de dominio; `src/components/`: componentes compartidos; `src/services/`: acceso a datos; `src/lib/`: lógica de negocio y clientes Supabase; `src/validations/` y `src/types/database.ts`: esquemas y tipos; `supabase/migrations/`: esquema; `scripts/`: importación legacy.
+- Vitest, jsdom, Testing Library y pruebas de integración con PGlite. Vercel es el destino de deploy documentado en `README.md`; la configuración de Next.js no define ajustes especiales.
 
-## Stack y estructura
+## Funcionalidades presentes
 
-- Next.js 15.5.19 con App Router, React 19.1 y TypeScript estricto.
-- Tailwind CSS v4, componentes de estilo shadcn/ui, Radix/Base UI y Lucide.
-- TanStack Query para consultas y caché; Zustand para estado de interfaz.
-- Supabase: PostgreSQL, Auth, SSR con cookies y políticas RLS.
-- React Hook Form y Zod para formularios y validaciones.
-- Recharts para gráficos; ExcelJS y jsPDF para exportaciones.
-- Vitest, jsdom y Testing Library para pruebas. Destino de deploy: Vercel.
+- **Auth:** `/login`, `/register`, `/recuperar`, callback y logout. `src/middleware.ts` refresca sesión; redirige rutas privadas al login y devuelve 401 para APIs sin sesión. La recuperación usa `NEXT_PUBLIC_SITE_URL`.
+- **Tablero (`/dashboard`):** KPIs de clientes, pólizas, premio, comisión mensual estimada, siniestros recientes y renovaciones; distribución por compañía/ramo y top 10 clientes por premio. La campana solo aparece aquí: tareas `PENDIENTE` vencidas o dentro de 7 días, calculadas en horario de Argentina; muestra hasta cinco y enlaza a `/tareas`, sin estado de lectura. El layout privado incluye alerta de renovaciones y acceso flotante a `/clientes/nuevo`.
+- **Clientes (`/clientes`):** alta, edición, ficha, filtros, búsqueda y paginación en Supabase, baja lógica (`deleted_at`). La ficha reúne pólizas, siniestros, tareas y riesgo. DNI/CUIT duplicado se comprueba entre clientes activos en la aplicación; no hay índice único en la base. `clientes.actividad` es opcional y requiere migración 011 para guardar.
+- **Pólizas (`/polizas`):** alta, edición, ficha, filtros, renovación, baja e historial. Estados `VIGENTE`, `HISTORICA`, `BAJA`. Búsqueda por cliente/detalle en servidor; una patente completa argentina en `detalle` admite espacios, puntos o guiones, exige coincidencia exacta completa y solo ofrece variantes de un carácter cuando no hay exacta. Formulario con fechas DD/MM/AAAA hacia valores ISO, fecha de efecto financiera y baja efectiva. Selector de compañía con búsqueda sin acentos y catálogo paginado completo. `/polizas/pendientes-comision` lista registros sin aporte calculable y su motivo.
+- **Siniestros (`/siniestros`):** listado, alta, ficha, edición y eliminación con confirmación; relación obligatoria con cliente y opcional con póliza.
+- **Riesgo (`/riesgo`):** score 0–100 por frecuencia, tipo, responsabilidad e importe de siniestros; bajo 0–30, medio 31–60, alto 61–100. Motor en `src/lib/riesgo/`.
+- **Tareas (`/tareas`):** estados `PENDIENTE`, `EN_PROCESO`, `FINALIZADA`. Alta desde esta ruta sin vínculos; desde fichas de cliente, póliza y siniestro, `TareaDialog` precarga cliente y opcionalmente póliza/siniestro. Las fichas de póliza y siniestro listan tareas vinculadas. `fetchTareas` filtra por estado y esos tres IDs; las relaciones adicionales requieren migración 010.
+- **Cumpleaños (`/cumpleanos`):** hoy, próximos 7/30 días, búsqueda, edad, teléfono, vista previa y apertura de WhatsApp. Configuración de plantilla en `/config/cumpleanos`.
+- **Configuración (`/config`):** compañías, ramos, plantilla de cumpleaños y `/config/respaldo`. Colores editables de compañías según migración 008.
+- **Reportes (`/reportes`):** vistas Resumen, Rentabilidad, Salud, Oportunidades y Calidad; filtros, tendencias, mapa provincial Leaflet con GeoJSON local, distribuciones y cross-selling. `/api/inteligencia` valida filtros, exige sesión, consulta por lotes con RLS y calcula en servidor. Definiciones en `src/lib/reportes/inteligencia.ts` y `docs/reportes-inteligencia.md`.
+- **Respaldo:** `/api/respaldo` genera XLSX integral de diez tablas funcionales, incluso registros inactivos, con índice y manifiesto. Exige sesión, perfil `ADMIN`, ID en `BACKUP_ADMIN_USER_IDS`, `SUPABASE_SERVICE_ROLE_KEY` en servidor y migración 009. Es copia de datos, no backup técnico restaurable. `/api/reportes/[tipo]` devuelve 410 para descargas parciales retiradas.
+- **Trazabilidad:** servicios registran actividad mediante `log_actividad`; triggers mantienen `poliza_historial`.
 
-Organización del código:
+## Reglas de negocio que deben conservarse
 
-- `src/app/`: páginas, layouts, autenticación y endpoints del App Router.
-- `src/app/(dashboard)/`: dashboard, clientes, pólizas, siniestros, riesgo,
-  tareas, cumpleaños, reportes y configuración.
-- `src/features/`: formularios, componentes y hooks específicos de cada dominio.
-- `src/components/ui/`: controles compartidos; `src/components/dashboard/`:
-  navegación, encabezado, indicadores y gráficos del panel.
-- `src/services/`: consultas y mutaciones de Supabase por dominio.
-- `src/lib/`: lógica pura de negocio, utilidades y clientes Supabase.
-- `src/types/database.ts`: tipos del modelo; `src/validations/`: esquemas Zod.
-- `supabase/migrations/`: evolución del esquema; `scripts/`: importación legacy.
-- `public/brand/quintana-ruiz/` y `public/fonts/`: identidad y fuentes locales.
+- `prima` es mensual; la estimación de comisión aplica directamente 14 %. El KPI del tablero, su ranking y la página de pendientes usan `src/features/dashboard/use-comision-dashboard.ts` y `src/lib/dashboard/comision.ts`. El motor también calcula series históricas para reportes; el tablero actual no muestra un gráfico mensual de comisión. Son estimaciones de stock recurrente, no comisiones cobradas ni altas del mes.
+- Para cortes históricos, usar versiones financieras completas y fecha de efecto. La migración 007 acredita fotos desde su observación, nunca meses anteriores; ausencia de historia es `null`, no cero. El total actual suma aportes calculables y expone pendientes por separado; completar un premio hoy no crea historia pasada. Ver `docs/comisiones.md`.
+- Enviar fechas SQL `DATE` opcionales vacías como `null`; en updates parciales normalizar solo claves presentes. No borrar `fecha_baja` por ocultar su campo en el formulario ni alterar `fecha_efecto` en una edición administrativa.
+- Respetar `clientes.deleted_at` en listados activos. Conservar búsquedas de clientes y pólizas en Supabase para cubrir toda la cartera, no solo la página cargada; reutilizar `src/lib/clientes/search.ts`.
+- `numero_poliza` fue eliminada en migración 004. `clientes.cuit` se renombró a `observaciones` en 005; el DNI/CUIT identificador está en `clientes.dni`.
+- Cumpleaños usa `clientes.fecha_nacimiento` y el día en `America/Argentina/Buenos_Aires`; el 29/02 se observa el 28/02 en años no bisiestos. `wa.me` solo prepara el mensaje: lo envía el usuario. La marca «WhatsApp preparado» vive en `localStorage` por cliente y año, sin confirmar envío. Reutilizar `src/lib/cumpleanos/telefono.ts`.
+- Plantilla de cumpleaños en `app_settings` clave `birthday` (`template`, `empresa`). La lectura admite valores predeterminados si falta la tabla; guardar exige migración 006. Ver `docs/cumpleanos.md`.
+- Colores de compañías: usar `src/lib/companias/colores.ts`, `CompaniaBadge` y el color opcional `companias.color` (prevalece sobre paleta inicial); invalidar catálogos, pólizas y distribución al guardar. Ver `docs/colores-companias.md`.
 
-El alias `@/` apunta a `src/`.
+## Esquema, permisos y producción
 
-## Funcionalidades construidas
+Tablas: `profiles`, `clientes`, `companias`, `ramos`, `polizas`, `poliza_historial`, `siniestros`, `tareas`, `actividad`, `app_settings`. Las vistas `v_*` alimentan KPIs, distribuciones, renovaciones y ranking. Aplicar las migraciones **en orden 001–011** al preparar una base nueva; consultar `supabase/migrations/`, no solo la lista incompleta del `README.md`. Cambios de esquema nuevos requieren migración nueva; no reescribir migraciones ya aplicadas. No presumir que ninguna migración local esté desplegada remotamente. En particular: 007 historial financiero, 008 colores, 009 funciones de exportación, 010 FKs de tareas (`ON DELETE SET NULL`) y 011 actividad de clientes.
 
-- **Autenticación:** login, registro, solicitud de recuperación, callback y cierre
-  de sesión. El middleware actualiza la sesión y exige login en rutas privadas.
-- **Dashboard (`/dashboard`):** clientes, pólizas, premio vigente, comisión
-  aproximada, siniestros recientes y renovaciones; distribución por compañía y
-  ramo, navegación desde ramo a pólizas y ranking de clientes. El encabezado
-  incluye una campanita exclusiva del tablero: cuenta tareas `PENDIENTE` vencidas
-  o con vencimiento dentro de 7 días en horario de Argentina y muestra las
-  primeras cinco con acceso a `/tareas`. No guarda estado de lectura.
-- **Acceso rápido:** botón flotante «Nuevo cliente» en el layout privado compartido,
-  disponible en todas las secciones; abre `/clientes/nuevo`. Respeta el área segura
-  móvil y queda debajo de los diálogos. Componente `NewClientShortcut`.
-- **Clientes (`/clientes`):** alta, edición, ficha, búsqueda, filtros geográficos,
-  paginación y baja lógica mediante `deleted_at`. La ficha reúne pólizas,
-  siniestros, tareas y riesgo. DNI/CUIT se valida contra duplicados activos
-  desde la aplicación; no existe una restricción única de DNI en la base.
-  `clientes.actividad` es un texto opcional de actividad u ocupación del cliente,
-  editable en el formulario y visible en la ficha; requiere la migración 011.
-- **Pólizas (`/polizas`):** alta, edición, detalle, filtros, búsqueda por cliente
-  o detalle, renovación, baja e historial. Estados: `VIGENTE`, `HISTORICA`, `BAJA`.
-  La búsqueda de una patente completa (ABC123 o AB123CD) normaliza espacios y
-  guiones, valida coincidencias completas dentro de `detalle` y sólo ofrece
-  patentes con un carácter distinto cuando no hay coincidencia exacta.
-  Hay alertas de renovación a 30/15/7 días. El formulario de alta y edición
-  agrupa la vigencia en dos columnas, presenta fechas como DD/MM/AAAA y envía
-  valores ISO. La fecha de efecto se ofrece en opciones avanzadas al crear y
-  aparece al cambiar datos financieros en edición; una edición administrativa
-  conserva la fecha almacenada. La baja efectiva se muestra con estado `BAJA`
-  y ocultarla no borra su valor. El selector de compañía del formulario usa un
-  combobox con búsqueda sin acentos y lista desplazable; conserva el UUID y
-  colores de la compañía seleccionada. La consulta para ese selector recorre
-  todas las páginas del catálogo.
-- **Siniestros (`/siniestros`):** listado, alta, detalle, edición y eliminación
-  con confirmación; asociados al cliente y opcionalmente a una póliza.
-- **Riesgo (`/riesgo`):** score de 0 a 100 y alertas según cantidad y frecuencia
-  de siniestros, robos, choques responsables y monto acumulado. Niveles: bajo
-  0–30, medio 31–60, alto 61–100. Motor en `src/lib/riesgo/`.
-- **Tareas (`/tareas`):** seguimiento comercial, vencimientos y estados
-  `PENDIENTE`, `EN_PROCESO`, `FINALIZADA`. Una tarea puede relacionarse con un
-  cliente y además, opcionalmente, con una póliza y/o un siniestro
-  (`tareas.poliza_id`, `tareas.siniestro_id`, nullable, `ON DELETE SET NULL`,
-  migración 010). Desde las fichas de cliente, póliza y siniestro hay un botón
-  «Agregar tarea» que abre un diálogo modal (`TareaDialog` en
-  `src/features/tareas/`, título + vencimiento) y precarga el contexto; las fichas
-  de póliza y siniestro listan sus tareas relacionadas. El alta desde `/tareas`
-  sigue sin vínculos (los FKs quedan `null`). `fetchTareas` filtra por `estado`,
-  `cliente_id`, `poliza_id` y `siniestro_id`.
-- **Cumpleaños (`/cumpleanos`):** resumen de hoy, próximos 7 y 30 días, búsqueda,
-  edad, teléfono y vista previa de saludo con apertura de WhatsApp.
-- **Configuración (`/config`):** gestión de compañías, ramos y plantilla de
-  cumpleaños; también existen rutas `/config/companias`, `/config/ramos` y
-  `/config/cumpleanos`.
-- **Reportes (`/reportes`):** inteligencia comercial con filtros, ocho KPIs,
-  evolución, mapa provincial Leaflet/Georef local, distribuciones y cross-selling.
-  `/api/inteligencia` calcula en servidor usando sesión/RLS y lecturas por lotes.
-  Lógica y definiciones en `src/lib/reportes/inteligencia.ts` y
-  `docs/reportes-inteligencia.md`. Stock y flujos se diferencian; falta de historia
-  es `null`, nunca extrapolar. No existen productores asignados ni país del cliente.
-- **Respaldo (`/config/respaldo`):** copia integral XLSX de las diez tablas
-  funcionales, incluidos registros inactivos y configuraciones, índice y manifiesto.
-  `/api/respaldo` exige sesión ADMIN más `BACKUP_ADMIN_USER_IDS` privado del servidor.
-  No basta el rol editable. Requiere la migración 009 y service_role solo servidor;
-  sus funciones no son ejecutables por anon/authenticated. No es un backup técnico
-  restaurable. Los endpoints parciales `/api/reportes/[tipo]` responden 410.
-- **Trazabilidad:** servicios que registran actividad mediante `log_actividad`
-  e historial de pólizas mantenido mediante triggers.
+RLS permite al usuario autenticado leer/actualizar su propio `profiles`; las tablas de negocio y `app_settings` tienen políticas amplias para todos los autenticados. Los roles `ADMIN`, `PRODUCTOR`, `OPERADOR` no aíslan carteras ni autorizan operaciones generales. El registro solicita `ADMIN` y el propio perfil es editable: no basar permisos sensibles solo en ese rol. Deshabilitar registro público en Supabase para producción según `README.md`. La exportación integral añade una lista privada de IDs; las funciones de migración 009 solo conceden `EXECUTE` a `service_role`.
 
-El gráfico de comisión mensual está en `src/components/dashboard/comision-chart.tsx`,
-con lógica en `src/lib/dashboard/comision.ts`. Los importes de `prima` son todos
-mensuales, confirmado por el usuario: aplicar directamente el 14%. El gráfico
-muestra el stock recurrente de pólizas que aportan al corte, no las altas del mes.
-Usar versiones financieras completas con fecha de efecto; no extrapolar el estado
-actual al pasado. Cortes sin historia suficiente son `null`, no cero. La migración
-007 añade fecha de baja, fecha de efecto y snapshots completos; no acredita meses
-anteriores a su foto inicial. KPI y gráfico comparten cálculo y caché. Detalles,
-límites legacy y puesta en marcha en `docs/comisiones.md`. No son comisiones cobradas. Los pendientes actuales se revisan en
-`/polizas/pendientes-comision`, con motivo y acceso a edición por póliza. El motor
-devuelve esos ids junto con el indicador; completar un premio actual no inventa
-meses históricos.
-La comisión actual no se oculta porque falten fechas o haya pólizas sin importe:
-sumar los aportes calculables y mostrar pendientes por separado como subtotal.
-Las fotos completas VIGENTE acreditan el stock desde su observación, no antes.
+Usar `src/lib/supabase/client.ts` o `server.ts` según contexto y la sesión del usuario para operaciones normales. `SUPABASE_SERVICE_ROLE_KEY` omite RLS: solo servidor/importador, nunca `NEXT_PUBLIC_*` ni código cliente. No incluir secretos, `.env.local` ni datos personales reales en documentación, pruebas, logs o commits. El GeoJSON del mapa se sirve desde `public/geo/`; WhatsApp es un enlace externo, no una API de envío.
 
-## Reglas de negocio que hay que preservar
+## Desarrollo y convenciones
 
-- Las fechas SQL `DATE` opcionales deben enviarse como `null` si están vacías.
-  En actualizaciones parciales, normalizar únicamente las claves presentes.
-- La baja de clientes es lógica. Respetar `deleted_at` en listados de activos.
-- Mantener la búsqueda de clientes y pólizas en el servidor para alcanzar datos
-  fuera de la página cargada. Reutilizar `src/lib/clientes/search.ts`.
-- La columna `numero_poliza` fue eliminada: no reintroducirla por basarse en el
-  esquema inicial. El campo antiguo `clientes.cuit` ahora es `observaciones`.
-- Cumpleaños usa `clientes.fecha_nacimiento`, compara mes/día y calcula hoy en
-  `America/Argentina/Buenos_Aires`. El 29/02 se observa el 28/02 en años no bisiestos.
-- WhatsApp abre un enlace `wa.me` con mensaje precargado. El envío lo realiza el
-  usuario. La marca de “WhatsApp preparado” es local al navegador, por cliente
-  y año; no confirma envío. Reutilizar la normalización de teléfonos existente.
-- La plantilla de cumpleaños vive en `app_settings`, clave `birthday`, con
-  `template` y `empresa`. Si falta la tabla, la lectura admite valores por defecto;
-  el guardado requiere la migración 006. Más detalle en `docs/cumpleanos.md`.
-
-## Base de datos y migraciones
-
-Tablas principales: `profiles`, `clientes`, `companias`, `ramos`, `polizas`,
-`poliza_historial`, `siniestros`, `tareas`, `actividad` y `app_settings`.
-Las vistas `v_*` alimentan KPIs, distribución, producción, renovaciones y ranking.
-
-Leer y aplicar las migraciones en orden al preparar una base nueva:
-
-1. `001_initial_schema.sql`: tablas, enums, índices, triggers y RLS inicial.
-2. `002_views_and_functions.sql`: vistas y función de actividad.
-3. `003_cliente_legacy.sql`: identificación de clientes importados.
-4. `004_drop_numero_poliza.sql`: elimina el número y recrea la vista de renovaciones.
-5. `005_cliente_cuit_to_observaciones.sql`: renombra el campo del cliente.
-6. `006_app_settings.sql`: configuración general y plantilla de cumpleaños.
-7. `007_comisiones_recurrentes.sql`: baja efectiva y versiones financieras completas.
-8. `008_companias_color.sql`: color opcional por compañía y distribución con el mismo color.
-9. `009_exportacion_integral.sql`: funciones de lectura del catálogo y lotes para
-   exportar datos con precisión y exclusiones de secretos. Solo service_role;
-   no cambia tablas, datos históricos ni RLS. Creada en la rama, no se presume aplicada.
-10. `010_tareas_relaciones.sql`: agrega `tareas.poliza_id` y `tareas.siniestro_id`
-    (nullable, `REFERENCES ... ON DELETE SET NULL`) e índices, para vincular una
-    tarea con una póliza y/o un siniestro. No cambia RLS. Creada en la rama, no se
-    presume aplicada: sin ella, el alta de tareas falla por columnas inexistentes.
-11. `011_clientes_actividad.sql`: agrega `clientes.actividad` (texto nullable).
-    No cambia RLS ni los datos existentes. Debe aplicarse antes de guardar
-    clientes desde el formulario que incluye el campo nuevo.
-
-El README enumera solo las primeras dos en la instalación: consultar la carpeta
-completa para conocer el esquema actual. Agregar migraciones nuevas para cambios
-de esquema; no modificar migraciones ya aplicadas como solución a una base existente.
-
-## Autenticación y límites actuales
-
-- RLS está habilitado en las tablas. `profiles` permite leer y actualizar el
-  perfil propio; las tablas de negocio y `app_settings` permiten acceso a todos
-  los autenticados con políticas `USING (true)` / `WITH CHECK (true)`.
-- Existen roles `ADMIN`, `PRODUCTOR`, `OPERADOR`, pero eso no implementa por sí
-  mismo autorización por rol ni separación de carteras. El registro actual
-  solicita rol `ADMIN`. El README indica deshabilitar el registro público en
-  Supabase para producción.
-- No hay `organization_id` ni `tenant_id` en las tablas de negocio. Convertir la
-  app en multi-tenant exige cambios de esquema, políticas, backfill e inserciones.
-- Usar los clientes Supabase existentes y la sesión del usuario. La clave
-  `SUPABASE_SERVICE_ROLE_KEY` es solo para tareas de servidor/importación;
-  nunca incluirla en código cliente ni en variables `NEXT_PUBLIC_*`.
-- No copiar secretos, archivos `.env.local` ni datos personales reales a esta
-  documentación, pruebas, logs o commits.
-
-## Identidad visual
-
-Mantener la identidad Quintana Ruiz ya implementada:
-
-- Azul principal `#1E5BBF`, navy `#1A2556`, paneles blancos, fondos
-  `#F5F8FD` / `#F0F4FA` y bordes `#E4E8F0`.
-- Acciones principales azules con texto blanco; estados de éxito/error legibles.
-- Poppins en encabezados y cifras; Inter para lectura y controles. Las fuentes
-  se cargan con `next/font/local` y tienen licencias en `public/fonts/`.
-- Reutilizar tokens de `src/app/globals.css` y componentes existentes. Conservar
-  los logos originales y sus proporciones en `public/brand/quintana-ruiz/`.
-- Mantener adaptación a móvil, foco visible, contraste y textos en español.
-- Los colores de compañías se comparten mediante `src/lib/companias/colores.ts`:
-  Holando celeste, Sancor bordó, San Cristóbal azul, Río Uruguay azul oscuro,
-  Triunfo verde, Mercantil azul acero y Mapfre rojo. Reutilizar `CompaniaBadge`
-  en pólizas y la misma paleta en la distribución por compañía del dashboard.
-  Los usuarios pueden cambiarlos o restablecerlos en Configuración → Compañías.
-  El valor opcional `companias.color` prevalece sobre la paleta inicial y viaja en
-  `v_polizas_por_compania`. Invalidar los catálogos, pólizas y distribución al guardar.
-
-## Preparación y comandos
-
-Requisito documentado: Node.js 20+ y un proyecto Supabase.
-Instalar con `npm install` (o `npm ci` para reproducir el lockfile).
-Copiar `.env.example` a `.env.local` y completar los valores necesarios:
-`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` y
-`NEXT_PUBLIC_SITE_URL`. No documentar sus valores reales.
+Requisito documentado: Node.js 20+ y proyecto Supabase. `npm ci` reproduce el lockfile; configurar `.env.local` desde `.env.example` con URL y clave pública de Supabase y `NEXT_PUBLIC_SITE_URL`, más variables privadas solo cuando corresponda.
 
 ```bash
-npm run dev        # Desarrollo con Turbopack
-npm run typecheck  # TypeScript sin emitir archivos
+npm run dev        # Next con Turbopack
+npm run typecheck  # tsc --noEmit
 npm run lint       # ESLint
 npm test           # Vitest
-npm run build      # Build de producción
-npm start          # Servir el build
+npm run build      # build de producción
+npm start          # servir el build
 ```
 
-`npm run format:check` revisa formato. `npm run format` reescribe el repositorio
-completo: preferir formatear solo los archivos cambiados.
+`npm run format:check` verifica formato. `npm run format` reescribe todo el repositorio: formatear solo archivos modificados. No hay suite Playwright configurada; las pruebas de componentes y PGlite no sustituyen un recorrido con Supabase real. Verificar cambios con pruebas relevantes y reportar solo las comprobaciones ejecutadas.
 
-La importación desde el prototipo está en `scripts/migrate-from-prototype.ts`:
-`npm run migrate:prototype -- --html=/ruta/cartera_jdn-5.html`.
-El script usa `dotenv/config`; asegurar que las variables requeridas estén en
-su entorno (no asumir que carga `.env.local` como Next.js). Escribe en Supabase
-y puede duplicar siniestros si se repite: no usarlo como comando de verificación.
+`npm run migrate:prototype -- --html=/ruta/cartera_jdn-5.html` ejecuta `scripts/migrate-from-prototype.ts` y **escribe** en Supabase; puede duplicar siniestros si se repite. Usa `dotenv/config` y no carga `.env.local` automáticamente como Next.js. No usar como verificación.
 
-## Cómo continuar el desarrollo
-
-- Leer `git status` antes de editar y preservar los cambios ajenos o en curso,
-  incluidas otras ramas/worktrees dentro de `.claude/`.
-- Seguir la separación existente entre páginas, features, servicios, esquemas y
-  lógica pura. Reutilizar los clientes de `src/lib/supabase/` según navegador o servidor.
-- Mantener tipos y validaciones alineados con las migraciones; conservar la
-  invalidación de caché de TanStack Query después de las mutaciones.
-- Verificar lo que se cambió con pruebas relevantes; usar typecheck, lint y build
-  cuando corresponda. Reportar únicamente comprobaciones realmente ejecutadas.
-- Hay pruebas de riesgo, reportes, clientes, búsqueda, cumpleaños, servicios y
-  componentes, además de comisión en el árbol local. Vitest usa jsdom; las
-  pruebas de componentes no sustituyen un recorrido real con Supabase.
-- No hay suite Playwright configurada. Los resultados históricos de pruebas en
-  `docs/cumpleanos.md` no certifican el estado actual del repositorio.
-- Mantener este archivo al cambiar módulos, reglas de negocio, estructura o
-  esquema. Consultar `README.md` y `docs/cumpleanos.md` como documentación adicional.
+Antes de editar, leer `git status` y preservar trabajo ajeno, incluso worktrees en `.claude/`. Mantener la separación entre rutas, features, servicios, esquemas y lógica pura; al cambiar datos, alinear tipos, Zod, migración e invalidaciones de TanStack Query. Mantener la identidad de `src/app/globals.css`: azul `#1E5BBF`, navy `#1A2556`, Poppins/Inter locales, logos originales, diseño móvil, foco visible y textos en español.
 
 ## Graphify
 
-Cuando el usuario escriba `/graphify`, usar el skill instalado de Graphify y leer
-sus instrucciones antes de cualquier otra acción. La ruta indicada por el usuario
-es `~/.Codex/skills/graphify/SKILL.md`; si no existe, localizar la instalación
-disponible (en este entorno: `~/.agents/skills/graphify/SKILL.md`).
-Este archivo no implica que exista un grafo generado ni que Graphify se haya ejecutado.
+Si el usuario escribe `/graphify`, leer y seguir el skill instalado antes de cualquier otra acción: `~/.Codex/skills/graphify/SKILL.md` o, si falta, `~/.agents/skills/graphify/SKILL.md`. Este archivo no supone que exista un grafo generado.
