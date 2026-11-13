@@ -59,7 +59,7 @@ describe('saveBirthdaySettings', () => {
       Record<string, unknown>,
     ];
     expect(payload).toMatchObject({ key: BIRTHDAY_SETTINGS_KEY, value: { template: 'T', empresa: 'E' } });
-    expect(opts).toEqual({ onConflict: 'key' });
+    expect(opts).toEqual({ onConflict: 'workspace_id,key' });
   });
 
   it('propaga el error del upsert', async () => {

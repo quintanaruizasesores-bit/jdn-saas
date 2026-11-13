@@ -1,8 +1,9 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Toaster } from 'sonner';
+import { createClient } from '@/lib/supabase/client';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -16,6 +17,22 @@ export function Providers({ children }: { children: React.ReactNode }) {
         },
       })
   );
+
+  useEffect(() => {
+    const supabase = createClient();
+    let previousUserId: string | null | undefined;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        const currentUserId = session?.user.id ?? null;
+        if (previousUserId !== undefined && previousUserId !== currentUserId) {
+          queryClient.clear();
+        }
+        if (event === 'SIGNED_OUT') queryClient.clear();
+        previousUserId = currentUserId;
+      }
+    );
+    return () => subscription.unsubscribe();
+  }, [queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>
