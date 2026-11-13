@@ -57,7 +57,7 @@ export async function saveBirthdaySettings(
     .from('app_settings')
     .upsert(
       { key: BIRTHDAY_SETTINGS_KEY, value: settings, updated_at: new Date().toISOString() },
-      { onConflict: 'key' }
+      { onConflict: 'workspace_id,key' }
     );
   if (error) throw error;
 }
