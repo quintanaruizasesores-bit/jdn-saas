@@ -6,8 +6,8 @@ import {
 } from './cron';
 
 const BA = 'America/Argentina/Buenos_Aires';
-// 11:00 UTC = 08:00 en Buenos Aires: dentro de la ventana para hora_local 8.
-const NOW = new Date('2026-11-10T11:00:00Z');
+// 12:00 UTC = 09:00 en Buenos Aires: horario del cron (L–V).
+const NOW = new Date('2026-11-10T12:00:00Z');
 
 const prefBase: WorkspacePref = {
   workspace_id: 'w1',
@@ -53,13 +53,12 @@ describe('procesarResumenDiario', () => {
     });
   });
 
-  it('no envía fuera de la ventana horaria', async () => {
-    // 05:00 BA (08:00 UTC): antes de la hora elegida (8).
+  it('procesa sin importar la hora del disparo (lo decide el cron)', async () => {
+    // Cualquier marca horaria procesa: el horario lo fija el cron de Vercel.
     const d = deps({ now: new Date('2026-11-10T08:00:00Z') });
     const r = await procesarResumenDiario(d);
-    expect(r.procesados).toBe(0);
-    expect(d.tareasVencidas).not.toHaveBeenCalled();
-    expect(d.enviar).not.toHaveBeenCalled();
+    expect(r).toMatchObject({ procesados: 1, enviados: 1 });
+    expect(d.enviar).toHaveBeenCalled();
   });
 
   it('no envía si el usuario no tiene tareas vencidas', async () => {

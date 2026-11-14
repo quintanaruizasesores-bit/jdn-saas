@@ -7,13 +7,13 @@ pendientes**, usando [Resend](https://resend.com) desde el servidor. Está
 
 ## Qué se agregó
 
-- **Configuración por usuario** (`/config/notificaciones`): activar/desactivar,
+- **Configuración por usuario** (`/config/notificaciones`): activar/desactivar y
   correo de destino (sugiere el de la cuenta, editable sin tocar el correo de
-  acceso), horario del resumen (hora local) y zona horaria, más un botón
-  **Enviar correo de prueba** con estados de carga, éxito y error.
-- **Resumen diario** (`/api/notificaciones/cron`): endpoint programado que, en
-  el horario local de cada usuario, arma y envía el resumen **solo si hay tareas
-  vencidas**.
+  acceso), más un botón **Enviar correo de prueba** con estados de carga, éxito y
+  error. El horario es fijo (ver abajo), no se elige por usuario.
+- **Resumen diario** (`/api/notificaciones/cron`): endpoint programado que corre
+  **a las 09:00 (hora de Argentina), de lunes a viernes**, y arma y envía el
+  resumen **solo si hay tareas vencidas**.
 - **Correo de prueba** (`/api/notificaciones/prueba`): envío manual autenticado,
   limitado a una prueba por minuto, dirigido **solo al destino guardado**.
 - **Migración 015**: tablas `notificacion_email_prefs` (preferencias por
@@ -35,7 +35,7 @@ Se incluyen las tareas con:
 
 - estado **`PENDIENTE`** (misma semántica que la campana del dashboard),
 - con **fecha de vencimiento** (se excluyen las que no tienen),
-- cuya fecha es **anterior a "hoy"** en la zona horaria del usuario (una fecha
+- cuya fecha es **anterior a "hoy"** en horario de Argentina (una fecha
   `DATE` sin hora vence **al terminar ese día**, por lo que una tarea que vence
   hoy todavía **no** está vencida).
 
@@ -79,23 +79,22 @@ días siguientes mientras las tareas sigan vencidas y pendientes.
 7. **Aplicar la migración 015** a la base (junto con el despliegue del código).
    Requiere 012 y 013 aplicadas previamente.
 8. **Programación (Vercel Cron)**: ya está declarada en `vercel.json`
-   (`/api/notificaciones/cron`, cada hora en punto). Vercel envía
-   automáticamente `Authorization: Bearer <CRON_SECRET>`, así que basta con
-   tener `CRON_SECRET` configurado. El resumen funciona **aunque nadie abra la
-   app**.
+   (`/api/notificaciones/cron`, `0 12 * * 1-5` = **09:00 Argentina, L–V**).
+   Vercel envía automáticamente `Authorization: Bearer <CRON_SECRET>`, así que
+   basta con tener `CRON_SECRET` configurado. El resumen funciona **aunque nadie
+   abra la app**.
 
-> **Nota sobre el plan de Vercel:** el cron horario requiere un plan que permita
-> esa frecuencia (Pro). En el plan Hobby los cron se limitan a una ejecución
-> diaria; en ese caso el horario local por usuario no puede respetarse con
-> precisión y conviene un scheduler externo (o `pg_cron` de Supabase) que invoque
-> el endpoint cada hora con el header `Authorization: Bearer <CRON_SECRET>`.
+> **Nota sobre el plan de Vercel:** el cron corre **una vez por día** (L–V), por
+> lo que es compatible con el plan **Hobby** (que limita los cron a una ejecución
+> diaria). Vercel puede disparar el cron dentro de la hora programada, no al
+> minuto exacto; para un resumen matutino eso es suficiente.
 
-## Cómo se respeta el horario local y se evitan duplicados
+## Cómo se fija el horario y se evitan duplicados
 
-- El cron corre **cada hora**. Para cada usuario con recordatorios activos
-  calcula su **hora y fecha local** y envía solo si la hora actual está dentro de
-  una **ventana de 3 horas** a partir de la hora elegida (tolera reintentos y
-  ticks perdidos sin cambiar el día del resumen).
+- El cron corre **una vez por día, a las 09:00 de Argentina (L–V)**. El horario
+  lo fija el propio cron de Vercel: cada ejecución procesa a **todos** los
+  usuarios con recordatorios activos y tareas vencidas (no hay hora por usuario).
+- La **fecha civil en Argentina** identifica el resumen del día para deduplicar.
 - Un **índice único parcial** `(workspace_id, fecha_local)` para
   `tipo = 'RESUMEN_DIARIO'` garantiza **un único resumen por usuario y día
   local**, incluso ante ejecuciones concurrentes.

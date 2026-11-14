@@ -11,29 +11,11 @@ import {
 } from '@/services/notificaciones.service';
 import { DEFAULT_EMAIL_NOTIF_PREFS } from '@/lib/notificaciones/prefs';
 import { emailNotifPrefsSchema } from '@/validations/notificaciones.schema';
-import { APP_TIMEZONE } from '@/lib/cumpleanos/fechas';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const ZONAS_HORARIAS = [
-  'America/Argentina/Buenos_Aires',
-  'America/Montevideo',
-  'America/Santiago',
-  'America/Sao_Paulo',
-  'America/New_York',
-  'Europe/Madrid',
-  'UTC',
-];
 
 type EstadoPrueba = 'idle' | 'enviando' | 'ok' | 'error';
 
@@ -44,10 +26,6 @@ export function EmailNotificationsEditor() {
 
   const [activo, setActivo] = useState(false);
   const [destinatario, setDestinatario] = useState('');
-  const [horaLocal, setHoraLocal] = useState<number>(
-    DEFAULT_EMAIL_NOTIF_PREFS.hora_local
-  );
-  const [zonaHoraria, setZonaHoraria] = useState<string>(APP_TIMEZONE);
   const [estadoPrueba, setEstadoPrueba] = useState<EstadoPrueba>('idle');
 
   const prefsQuery = useQuery({
@@ -60,8 +38,6 @@ export function EmailNotificationsEditor() {
     if (prefsQuery.data) {
       setActivo(prefsQuery.data.activo);
       setDestinatario(prefsQuery.data.destinatario ?? '');
-      setHoraLocal(prefsQuery.data.hora_local);
-      setZonaHoraria(prefsQuery.data.zona_horaria);
     }
   }, [prefsQuery.data]);
 
@@ -70,28 +46,21 @@ export function EmailNotificationsEditor() {
     const d = prefsQuery.data;
     if (!d) return false;
     return (
-      d.activo !== activo ||
-      (d.destinatario ?? '') !== destinatario.trim() ||
-      d.hora_local !== horaLocal ||
-      d.zona_horaria !== zonaHoraria
+      d.activo !== activo || (d.destinatario ?? '') !== destinatario.trim()
     );
-  }, [prefsQuery.data, activo, destinatario, horaLocal, zonaHoraria]);
+  }, [prefsQuery.data, activo, destinatario]);
 
   const destinoGuardado = (prefsQuery.data?.destinatario ?? '').trim();
-
-  const zonasDisponibles = useMemo(() => {
-    const set = new Set(ZONAS_HORARIAS);
-    if (zonaHoraria) set.add(zonaHoraria);
-    return Array.from(set);
-  }, [zonaHoraria]);
 
   const save = useMutation({
     mutationFn: async () => {
       const parsed = emailNotifPrefsSchema.safeParse({
         activo,
         destinatario: destinatario.trim(),
-        hora_local: horaLocal,
-        zona_horaria: zonaHoraria,
+        // El horario de envío es fijo (09:00 Argentina, L–V); estos campos se
+        // conservan por compatibilidad del esquema pero no se eligen.
+        hora_local: DEFAULT_EMAIL_NOTIF_PREFS.hora_local,
+        zona_horaria: DEFAULT_EMAIL_NOTIF_PREFS.zona_horaria,
       });
       if (!parsed.success) {
         throw new Error(
@@ -192,46 +161,10 @@ export function EmailNotificationsEditor() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <Label htmlFor="hora" className="text-ink-dim">
-            Horario del resumen
-          </Label>
-          <Select
-            value={String(horaLocal)}
-            onValueChange={(v) => setHoraLocal(Number(v))}
-          >
-            <SelectTrigger id="hora" className="border-line bg-bg2 mt-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 24 }, (_, h) => (
-                <SelectItem key={h} value={String(h)}>
-                  {String(h).padStart(2, '0')}:00
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="zona" className="text-ink-dim">
-            Zona horaria
-          </Label>
-          <Select value={zonaHoraria} onValueChange={setZonaHoraria}>
-            <SelectTrigger id="zona" className="border-line bg-bg2 mt-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {zonasDisponibles.map((z) => (
-                <SelectItem key={z} value={z}>
-                  {z}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <p className="text-ink-faint border-line bg-bg2 rounded-md border px-3 py-2 text-[12px]">
+        El resumen se envía automáticamente a las <b>09:00 (hora de Argentina)</b>,
+        de <b>lunes a viernes</b>, solo los días en que tengas tareas vencidas.
+      </p>
 
       <div className="flex flex-wrap items-center gap-3">
         <Button

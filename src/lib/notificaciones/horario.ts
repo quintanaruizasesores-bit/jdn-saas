@@ -6,9 +6,6 @@
  */
 import { getTodayInTimezone, type FechaPartes } from '@/lib/cumpleanos/fechas';
 
-/** Ventana (en horas) tras la hora elegida durante la cual se intenta enviar. */
-export const VENTANA_ENVIO_HORAS = 3;
-
 function isoDate(p: FechaPartes): string {
   return `${p.year}-${String(p.month).padStart(2, '0')}-${String(p.day).padStart(2, '0')}`;
 }
@@ -27,20 +24,4 @@ export function horaLocal(zona: string, now: Date = new Date()): number {
   }).formatToParts(now);
   const hora = Number(parts.find((p) => p.type === 'hour')?.value);
   return Number.isFinite(hora) ? hora % 24 : 0;
-}
-
-/**
- * `true` si la hora local actual está dentro de la ventana de envío que empieza
- * en `horaObjetivo`. La ventana se recorta al final del día (no cruza
- * medianoche) para no enviar un resumen con una fecha local distinta a la que
- * se usó para deduplicar.
- */
-export function dentroDeVentana(
-  horaObjetivo: number,
-  zona: string,
-  now: Date = new Date()
-): boolean {
-  const actual = horaLocal(zona, now);
-  const fin = Math.min(horaObjetivo + VENTANA_ENVIO_HORAS, 24);
-  return actual >= horaObjetivo && actual < fin;
 }

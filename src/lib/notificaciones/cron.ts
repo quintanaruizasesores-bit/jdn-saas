@@ -5,7 +5,8 @@
  * sin tareas y errores de proveedor con mocks. El route de cron conecta estas
  * dependencias con Supabase (service_role) y Resend.
  */
-import { dentroDeVentana, fechaLocal } from './horario';
+import { APP_TIMEZONE } from '@/lib/cumpleanos/fechas';
+import { fechaLocal } from './horario';
 import { construirResumenEmail, type TareaVencidaResumen } from './resumen';
 
 export interface WorkspacePref {
@@ -66,14 +67,14 @@ export async function procesarResumenDiario(
   for (const pref of prefs) {
     try {
       if (!pref.activo) continue;
-      if (!dentroDeVentana(pref.hora_local, pref.zona_horaria, deps.now))
-        continue;
 
       const destinatario = pref.destinatario ?? pref.owner_email;
       if (!destinatario) continue; // nada a dónde enviar
 
       res.procesados++;
-      const hoyLocal = fechaLocal(pref.zona_horaria, deps.now);
+      // El cron corre una vez al día (09:00 Argentina, L–V). La fecha civil
+      // local en Argentina identifica el resumen del día para deduplicar.
+      const hoyLocal = fechaLocal(APP_TIMEZONE, deps.now);
 
       // Consultar el estado actualizado antes de decidir el envío.
       const tareas = await deps.tareasVencidas(pref.workspace_id, hoyLocal);

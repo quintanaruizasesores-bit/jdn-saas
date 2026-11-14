@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dentroDeVentana, fechaLocal, horaLocal } from './horario';
+import { fechaLocal, horaLocal } from './horario';
 
 const BA = 'America/Argentina/Buenos_Aires';
 
@@ -21,24 +21,5 @@ describe('horario local', () => {
   it('medianoche local da hora 0, no 24', () => {
     // 03:00 UTC = 00:00 en Buenos Aires.
     expect(horaLocal(BA, new Date('2026-11-10T03:00:00Z'))).toBe(0);
-  });
-});
-
-describe('dentroDeVentana', () => {
-  const at = (h: number) =>
-    // h:00 en Buenos Aires = (h+3):00 UTC.
-    new Date(`2026-11-10T${String(h + 3).padStart(2, '0')}:00:00Z`);
-
-  it('envía desde la hora elegida y durante la ventana', () => {
-    expect(dentroDeVentana(8, BA, at(8))).toBe(true); // justo a las 8
-    expect(dentroDeVentana(8, BA, at(10))).toBe(true); // 8 + 2h
-  });
-
-  it('no envía antes de la hora elegida', () => {
-    expect(dentroDeVentana(8, BA, at(7))).toBe(false);
-  });
-
-  it('no envía pasada la ventana (3 h)', () => {
-    expect(dentroDeVentana(8, BA, at(11))).toBe(false);
   });
 });
