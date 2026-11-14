@@ -1,6 +1,12 @@
 {
   "framework": "nextjs",
   "regions": ["gru1"],
+  "crons": [
+    {
+      "path": "/api/notificaciones/cron",
+      "schedule": "0 * * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

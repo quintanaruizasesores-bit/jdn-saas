@@ -1,11 +1,37 @@
 export type UserRole = 'ADMIN' | 'PRODUCTOR' | 'OPERADOR';
 export type PolizaEstado = 'VIGENTE' | 'HISTORICA' | 'BAJA';
-export type PrimaPeriodicidad = 'MENSUAL' | 'BIMESTRAL' | 'TRIMESTRAL' | 'CUATRIMESTRAL' | 'SEMESTRAL' | 'ANUAL' | 'UNICA';
-export type SiniestroTipo = 'CHOQUE' | 'ROBO' | 'INCENDIO' | 'GRANIZO' | 'OTROS';
-export type Responsabilidad = 'RESPONSABLE' | 'NO_RESPONSABLE' | 'INDETERMINADA';
+export type PrimaPeriodicidad =
+  | 'MENSUAL'
+  | 'BIMESTRAL'
+  | 'TRIMESTRAL'
+  | 'CUATRIMESTRAL'
+  | 'SEMESTRAL'
+  | 'ANUAL'
+  | 'UNICA';
+export type SiniestroTipo =
+  | 'CHOQUE'
+  | 'ROBO'
+  | 'INCENDIO'
+  | 'GRANIZO'
+  | 'OTROS';
+export type Responsabilidad =
+  | 'RESPONSABLE'
+  | 'NO_RESPONSABLE'
+  | 'INDETERMINADA';
 export type TareaEstado = 'PENDIENTE' | 'EN_PROCESO' | 'FINALIZADA';
-export type ActividadEntidad = 'CLIENTE' | 'POLIZA' | 'SINIESTRO' | 'TAREA' | 'COMPANIA' | 'RAMO';
-export type HistorialTipo = 'CREACION' | 'ACTUALIZACION' | 'RENOVACION' | 'BAJA' | 'PRIMA';
+export type ActividadEntidad =
+  | 'CLIENTE'
+  | 'POLIZA'
+  | 'SINIESTRO'
+  | 'TAREA'
+  | 'COMPANIA'
+  | 'RAMO';
+export type HistorialTipo =
+  | 'CREACION'
+  | 'ACTUALIZACION'
+  | 'RENOVACION'
+  | 'BAJA'
+  | 'PRIMA';
 export type CompaniaEstado = 'ACTIVA' | 'INACTIVA';
 export type RiesgoNivel = 'bajo' | 'medio' | 'alto';
 
@@ -139,6 +165,32 @@ export interface BirthdaySettings {
   empresa: string;
 }
 
+/** Preferencias de recordatorios por email (una fila por workspace). */
+export interface NotificacionEmailPrefs {
+  workspace_id: string;
+  activo: boolean;
+  destinatario: string | null;
+  hora_local: number;
+  zona_horaria: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Bitácora de envíos de email (resumen diario / prueba). */
+export interface NotificacionEmailEnvio {
+  id: string;
+  workspace_id: string;
+  tipo: 'RESUMEN_DIARIO' | 'PRUEBA';
+  fecha_local: string;
+  estado: 'ENVIANDO' | 'ENVIADO' | 'ERROR';
+  provider_id: string | null;
+  error: string | null;
+  total_tareas: number | null;
+  intentos: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface DashboardKpis {
   total_clientes: number;
   total_polizas: number;
@@ -163,13 +215,19 @@ export interface Database {
     Tables: {
       profiles: {
         Row: Profile;
-        Insert: Omit<Profile, 'created_at' | 'updated_at'> & { created_at?: string; updated_at?: string };
+        Insert: Omit<Profile, 'created_at' | 'updated_at'> & {
+          created_at?: string;
+          updated_at?: string;
+        };
         Update: Partial<Profile>;
         Relationships: [];
       };
       clientes: {
         Row: Cliente;
-        Insert: Omit<Cliente, 'id' | 'created_at' | 'updated_at' | 'deleted_at'> & {
+        Insert: Omit<
+          Cliente,
+          'id' | 'created_at' | 'updated_at' | 'deleted_at'
+        > & {
           id?: string;
           deleted_at?: string | null;
           created_at?: string;
@@ -180,43 +238,66 @@ export interface Database {
       };
       companias: {
         Row: Compania;
-        Insert: Omit<Compania, 'id' | 'created_at'> & { id?: string; created_at?: string };
+        Insert: Omit<Compania, 'id' | 'created_at'> & {
+          id?: string;
+          created_at?: string;
+        };
         Update: Partial<Compania>;
         Relationships: [];
       };
       ramos: {
         Row: Ramo;
-        Insert: Omit<Ramo, 'id' | 'created_at'> & { id?: string; created_at?: string };
+        Insert: Omit<Ramo, 'id' | 'created_at'> & {
+          id?: string;
+          created_at?: string;
+        };
         Update: Partial<Ramo>;
         Relationships: [];
       };
       polizas: {
         Row: Poliza;
-        Insert: Omit<Poliza, 'id' | 'created_at' | 'updated_at'> & { id?: string; created_at?: string; updated_at?: string };
+        Insert: Omit<Poliza, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
         Update: Partial<Poliza>;
         Relationships: [];
       };
       poliza_historial: {
         Row: PolizaHistorial;
-        Insert: Omit<PolizaHistorial, 'id' | 'created_at'> & { id?: string; created_at?: string };
+        Insert: Omit<PolizaHistorial, 'id' | 'created_at'> & {
+          id?: string;
+          created_at?: string;
+        };
         Update: Partial<PolizaHistorial>;
         Relationships: [];
       };
       siniestros: {
         Row: Siniestro;
-        Insert: Omit<Siniestro, 'id' | 'created_at'> & { id?: string; created_at?: string };
+        Insert: Omit<Siniestro, 'id' | 'created_at'> & {
+          id?: string;
+          created_at?: string;
+        };
         Update: Partial<Siniestro>;
         Relationships: [];
       };
       tareas: {
         Row: Tarea;
-        Insert: Omit<Tarea, 'id' | 'created_at' | 'updated_at'> & { id?: string; created_at?: string; updated_at?: string };
+        Insert: Omit<Tarea, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
         Update: Partial<Tarea>;
         Relationships: [];
       };
       actividad: {
         Row: Actividad;
-        Insert: Omit<Actividad, 'id' | 'created_at'> & { id?: string; created_at?: string };
+        Insert: Omit<Actividad, 'id' | 'created_at'> & {
+          id?: string;
+          created_at?: string;
+        };
         Update: Partial<Actividad>;
         Relationships: [];
       };
@@ -226,15 +307,52 @@ export interface Database {
         Update: Partial<AppSetting>;
         Relationships: [];
       };
+      notificacion_email_prefs: {
+        Row: NotificacionEmailPrefs;
+        Insert: Omit<
+          NotificacionEmailPrefs,
+          'workspace_id' | 'created_at' | 'updated_at'
+        > & {
+          workspace_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<NotificacionEmailPrefs>;
+        Relationships: [];
+      };
+      notificacion_email_envios: {
+        Row: NotificacionEmailEnvio;
+        Insert: Omit<
+          NotificacionEmailEnvio,
+          'id' | 'created_at' | 'updated_at'
+        > & {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<NotificacionEmailEnvio>;
+        Relationships: [];
+      };
     };
     Views: {
       v_dashboard_kpis: { Row: DashboardKpis; Relationships: [] };
       v_polizas_por_compania: {
-        Row: { compania_id: string; compania_nombre: string; total_polizas: number; prima_total: number; color?: string | null };
+        Row: {
+          compania_id: string;
+          compania_nombre: string;
+          total_polizas: number;
+          prima_total: number;
+          color?: string | null;
+        };
         Relationships: [];
       };
       v_polizas_por_ramo: {
-        Row: { ramo_id: string; ramo_nombre: string; total_polizas: number; prima_total: number };
+        Row: {
+          ramo_id: string;
+          ramo_nombre: string;
+          total_polizas: number;
+          prima_total: number;
+        };
         Relationships: [];
       };
       v_renovaciones_proximas: { Row: RenovacionProxima; Relationships: [] };
@@ -243,17 +361,32 @@ export interface Database {
         Relationships: [];
       };
       v_clientes_top: {
-        Row: { cliente_id: string; cliente_nombre: string; total_polizas: number; prima_total: number };
+        Row: {
+          cliente_id: string;
+          cliente_nombre: string;
+          total_polizas: number;
+          prima_total: number;
+        };
         Relationships: [];
       };
-      v_siniestros_por_tipo: { Row: { tipo: SiniestroTipo; total: number }; Relationships: [] };
+      v_siniestros_por_tipo: {
+        Row: { tipo: SiniestroTipo; total: number };
+        Relationships: [];
+      };
       v_siniestros_por_responsabilidad: {
         Row: { responsabilidad: Responsabilidad; total: number };
         Relationships: [];
       };
     };
     Functions: {
-      [_ in never]: never;
+      reclamar_resumen_diario: {
+        Args: {
+          p_workspace_id: string;
+          p_fecha_local: string;
+          p_max_intentos?: number;
+        };
+        Returns: string | null;
+      };
     };
     Enums: {
       [_ in never]: never;
