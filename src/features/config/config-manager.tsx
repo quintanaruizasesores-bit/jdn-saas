@@ -20,9 +20,15 @@ import { ErrorState } from '@/components/ui/error-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BirthdayTemplateEditor } from '@/features/config/birthday-template-editor';
 import { CompaniaColorEditor } from '@/features/config/compania-color-editor';
+import { EmailNotificationsEditor } from '@/features/config/email-notifications-editor';
 import { RespaldoPanel } from '@/features/config/respaldo-panel';
 
-type ConfigTab = 'companias' | 'ramos' | 'cumpleanos' | 'respaldo';
+type ConfigTab =
+  | 'companias'
+  | 'ramos'
+  | 'cumpleanos'
+  | 'notificaciones'
+  | 'respaldo';
 
 export function ConfigManager({
   defaultTab = 'companias',
@@ -118,6 +124,9 @@ export function ConfigManager({
           <TabsTrigger value="companias">Compañías</TabsTrigger>
           <TabsTrigger value="ramos">Ramos</TabsTrigger>
           <TabsTrigger value="cumpleanos">Cumpleaños</TabsTrigger>
+          <TabsTrigger value="notificaciones">
+            Notificaciones por email
+          </TabsTrigger>
           <TabsTrigger value="respaldo">Respaldo y exportación</TabsTrigger>
         </TabsList>
 
@@ -239,6 +248,9 @@ export function ConfigManager({
 
         <TabsContent value="cumpleanos" className="mt-4">
           <BirthdayTemplateEditor />
+        </TabsContent>
+        <TabsContent value="notificaciones" className="mt-4">
+          <EmailNotificationsEditor />
         </TabsContent>
         <TabsContent value="respaldo" className="mt-4">
           <RespaldoPanel />
