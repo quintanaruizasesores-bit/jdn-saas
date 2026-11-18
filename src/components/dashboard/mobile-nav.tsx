@@ -14,6 +14,7 @@ import {
   CheckSquare,
   Cake,
   ChartNoAxesCombined,
+  Sparkles,
   Settings,
   LogOut,
 } from 'lucide-react';
@@ -36,6 +37,7 @@ const secundarias = [
   { href: '/riesgo', label: 'Riesgo', icon: Shield },
   { href: '/tareas', label: 'Tareas', icon: CheckSquare },
   { href: '/cumpleanos', label: 'Cumpleaños', icon: Cake },
+  { href: '/cross-selling', label: 'Cross-Selling', icon: Sparkles },
   { href: '/reportes', label: 'Reportes', icon: ChartNoAxesCombined },
   { href: '/config', label: 'Configuración', icon: Settings },
 ];
