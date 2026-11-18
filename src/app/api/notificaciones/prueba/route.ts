@@ -114,14 +114,19 @@ export async function POST() {
       { headers: privateHeaders }
     );
   } catch (e) {
+    const err = e as Error & { status?: number };
+    const detalle = (err.message ?? 'Error desconocido').slice(0, 500);
     await supabase
       .from(ENVIOS_TABLE)
-      .update({ estado: 'ERROR', error: (e as Error).message.slice(0, 500) })
+      .update({ estado: 'ERROR', error: detalle })
       .eq('id', envio.id);
     return NextResponse.json(
       {
-        error:
-          'No se pudo enviar el correo de prueba. Intentá de nuevo más tarde.',
+        error: 'No se pudo enviar el correo de prueba.',
+        // Detalle del proveedor para diagnóstico en la pantalla de config.
+        detalle,
+        resendStatus: typeof err.status === 'number' ? err.status : undefined,
+        from: process.env.RESEND_FROM ?? null,
       },
       { status: 502, headers: privateHeaders }
     );

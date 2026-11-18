@@ -19,6 +19,35 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 type EstadoPrueba = 'idle' | 'enviando' | 'ok' | 'error';
 
+interface DiagPrueba {
+  httpStatus: number;
+  mensaje: string;
+  detalle?: string;
+  resendStatus?: number;
+  from?: string | null;
+  pista?: string;
+}
+
+/** Pista accionable según el código de error, para diagnosticar el envío. */
+function pistaDeError(httpStatus: number, resendStatus?: number): string {
+  if (httpStatus === 503)
+    return 'Faltan RESEND_API_KEY y/o RESEND_FROM en el servidor, o cambiaste las variables y todavía no hiciste Redeploy en Vercel.';
+  if (httpStatus === 400)
+    return 'Guardá primero un correo de destino válido antes de probar.';
+  if (httpStatus === 429)
+    return 'Enviaste una prueba hace menos de un minuto. Esperá ~60 segundos y reintentá.';
+  switch (resendStatus) {
+    case 401:
+      return 'La API Key de Resend es inválida o es de otra cuenta. Creá una nueva (Full access) en la MISMA cuenta donde el dominio figura Verified, cargala en Vercel y redeployá.';
+    case 403:
+      return 'La API Key no tiene permiso para enviar desde ese dominio, o el dominio del remitente no está verificado en esta cuenta de Resend.';
+    case 422:
+      return 'El remitente (RESEND_FROM) no coincide con un dominio verificado, o su formato es inválido. Debe ser: Nombre <casilla@tu-dominio-verificado>.';
+    default:
+      return 'Revisá el detalle de Resend de abajo. Si cambiaste variables en Vercel, confirmá que hiciste Redeploy y que el valor es el del environment Production.';
+  }
+}
+
 export function EmailNotificationsEditor() {
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -27,6 +56,7 @@ export function EmailNotificationsEditor() {
   const [activo, setActivo] = useState(false);
   const [destinatario, setDestinatario] = useState('');
   const [estadoPrueba, setEstadoPrueba] = useState<EstadoPrueba>('idle');
+  const [diag, setDiag] = useState<DiagPrueba | null>(null);
 
   const prefsQuery = useQuery({
     queryKey: ['email-notif-prefs'],
@@ -78,20 +108,41 @@ export function EmailNotificationsEditor() {
 
   const enviarPrueba = async () => {
     setEstadoPrueba('enviando');
+    setDiag(null);
     try {
       const res = await fetch('/api/notificaciones/prueba', { method: 'POST' });
       const body = (await res.json().catch(() => ({}))) as {
         error?: string;
         destinatario?: string;
+        detalle?: string;
+        resendStatus?: number;
+        from?: string | null;
       };
-      if (!res.ok)
-        throw new Error(body.error ?? 'No se pudo enviar la prueba.');
+      if (!res.ok) {
+        setEstadoPrueba('error');
+        setDiag({
+          httpStatus: res.status,
+          mensaje: body.error ?? 'No se pudo enviar la prueba.',
+          detalle: body.detalle,
+          resendStatus: body.resendStatus,
+          from: body.from,
+          pista: pistaDeError(res.status, body.resendStatus),
+        });
+        toast.error(body.error ?? 'No se pudo enviar la prueba.');
+        return;
+      }
       setEstadoPrueba('ok');
       toast.success(
         `Correo de prueba enviado a ${body.destinatario ?? destinoGuardado}`
       );
     } catch (e) {
       setEstadoPrueba('error');
+      setDiag({
+        httpStatus: 0,
+        mensaje: 'No se pudo contactar al servidor.',
+        detalle: (e as Error).message,
+        pista: 'Problema de red o la función del servidor no respondió. Revisá la conexión y reintentá.',
+      });
       toast.error((e as Error).message);
     }
   };
@@ -197,6 +248,39 @@ export function EmailNotificationsEditor() {
           El correo de prueba se envía al destino guardado. Guardá tus cambios
           antes de probar.
         </p>
+      )}
+
+      {estadoPrueba === 'error' && diag && (
+        <div className="border-red/40 bg-red/5 space-y-2 rounded-md border p-3 text-[12px]">
+          <p className="text-red text-sm font-medium">
+            No se pudo enviar el correo de prueba
+          </p>
+          <p className="text-ink-dim">{diag.pista}</p>
+          <dl className="text-ink-faint grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+            <dt>Estado HTTP</dt>
+            <dd className="font-mono">{diag.httpStatus || '—'}</dd>
+            {typeof diag.resendStatus === 'number' && (
+              <>
+                <dt>Respuesta de Resend</dt>
+                <dd className="font-mono">{diag.resendStatus}</dd>
+              </>
+            )}
+            {diag.from && (
+              <>
+                <dt>Remitente (RESEND_FROM)</dt>
+                <dd className="font-mono break-all">{diag.from}</dd>
+              </>
+            )}
+          </dl>
+          {diag.detalle && (
+            <div>
+              <p className="text-ink-faint mb-1">Detalle del proveedor:</p>
+              <pre className="bg-bg2 border-line text-ink-dim max-h-40 overflow-auto rounded border p-2 text-[11px] break-all whitespace-pre-wrap">
+                {diag.detalle}
+              </pre>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
