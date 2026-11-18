@@ -12,6 +12,12 @@ export interface SendEmailParams {
   text: string;
   /** Clave de idempotencia del proveedor (evita duplicados en reintentos). */
   idempotencyKey?: string;
+  /** Dirección de respuesta (p. ej. para que el cliente responda al asesor). */
+  replyTo?: string;
+  /** Encabezados adicionales (p. ej. List-Unsubscribe en comunicación comercial). */
+  headers?: Record<string, string>;
+  /** Remitente alternativo (por defecto RESEND_FROM). */
+  from?: string;
 }
 
 export interface SendEmailResult {
@@ -45,7 +51,7 @@ export async function sendEmail(
   fetchImpl: typeof fetch = fetch
 ): Promise<SendEmailResult> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM;
+  const from = params.from ?? process.env.RESEND_FROM;
   if (!apiKey || !from) {
     throw new EmailSendError(
       'El envío de correos no está configurado (faltan RESEND_API_KEY y/o RESEND_FROM).',
@@ -70,6 +76,8 @@ export async function sendEmail(
         subject: params.subject,
         html: params.html,
         text: params.text,
+        ...(params.replyTo ? { reply_to: params.replyTo } : {}),
+        ...(params.headers ? { headers: params.headers } : {}),
       }),
     });
   } catch (e) {
