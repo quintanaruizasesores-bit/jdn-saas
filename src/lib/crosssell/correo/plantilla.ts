@@ -60,6 +60,77 @@ export function generarBorrador(vars: {
   return { asunto, cuerpo };
 }
 
+/**
+ * Plantillas de ejemplo (editables) que se siembran la primera vez para que el
+ * usuario entienda cómo usar la herramienta: muestran el uso de variables, el
+ * tono sugerido y el cierre. No afirman que el cliente carezca de la cobertura
+ * en otra aseguradora: proponen sumarla con nosotros.
+ */
+export interface PlantillaSugerida {
+  nombre: string;
+  asunto: string;
+  cuerpo: string;
+}
+
+export const PLANTILLAS_SUGERIDAS: PlantillaSugerida[] = [
+  {
+    nombre: 'Presentación general',
+    asunto: '{{nombre}}, ¿sumamos tu {{coberturaOfrecida}}?',
+    cuerpo: [
+      'Hola {{nombre}}, ¿cómo estás?',
+      '',
+      'Como ya confiás en nosotros para tu {{ramoAsegurado}}, queríamos contarte que también podemos ayudarte con {{coberturaOfrecida}}.',
+      '',
+      'Podemos prepararte una propuesta personalizada, sin compromiso. Si te interesa, respondé este correo y lo vemos juntos.',
+      '',
+      '¡Saludos!',
+      'Equipo de {{empresa}}.',
+    ].join('\n'),
+  },
+  {
+    nombre: 'Hogar para clientes con auto',
+    asunto: '{{nombre}}, protejamos también tu hogar',
+    cuerpo: [
+      'Hola {{nombre}}, ¿cómo va todo?',
+      '',
+      'Ya te acompañamos con tu seguro de {{ramoAsegurado}}, y pensamos que podríamos darte la misma tranquilidad para tu hogar.',
+      '',
+      'Tenemos distintas alternativas de {{coberturaOfrecida}} que se adaptan a lo que necesites. ¿Querés que te preparemos una propuesta?',
+      '',
+      'Un abrazo,',
+      'Equipo de {{empresa}}.',
+    ].join('\n'),
+  },
+  {
+    nombre: 'Accidentes personales para clientes con vida',
+    asunto: '{{nombre}}, un complemento para tu tranquilidad',
+    cuerpo: [
+      'Hola {{nombre}}, ¿cómo estás?',
+      '',
+      'Sabemos que valorás estar cubierto, por eso confiaste en nosotros para tu {{ramoAsegurado}}.',
+      '',
+      'Queríamos comentarte sobre {{coberturaOfrecida}}, una cobertura que muchos clientes suman como complemento. Si querés, te armamos una propuesta a tu medida.',
+      '',
+      'Saludos,',
+      'Equipo de {{empresa}}.',
+    ].join('\n'),
+  },
+  {
+    nombre: 'Seguimiento / recordatorio',
+    asunto: '{{nombre}}, ¿lo charlamos?',
+    cuerpo: [
+      'Hola {{nombre}}, ¿cómo estás?',
+      '',
+      'Te escribo para retomar lo de {{coberturaOfrecida}}. Si te quedó alguna duda o querés que preparemos una propuesta personalizada, estoy a disposición.',
+      '',
+      'Respondé este correo cuando puedas y lo coordinamos.',
+      '',
+      '¡Gracias!',
+      'Equipo de {{empresa}}.',
+    ].join('\n'),
+  },
+];
+
 /** Convierte texto plano (con saltos de línea) en HTML escapado por párrafos. */
 export function textoAHtml(texto: string): string {
   return texto
