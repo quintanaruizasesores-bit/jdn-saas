@@ -3,6 +3,7 @@ import {
   construirCorreo,
   generarBorrador,
   renderPlantilla,
+  PLANTILLAS_SUGERIDAS,
   type VariablesCorreo,
 } from './plantilla';
 
@@ -37,6 +38,46 @@ describe('generarBorrador', () => {
     expect(texto).not.toContain('otra aseguradora');
     expect(texto).not.toContain('otra compañía');
     expect(cuerpo).toContain('propuesta personalizada');
+  });
+});
+
+describe('PLANTILLAS_SUGERIDAS', () => {
+  const VARIABLES_VALIDAS = new Set([
+    'nombre',
+    'apellido',
+    'ramoAsegurado',
+    'coberturaOfrecida',
+    'empresa',
+  ]);
+
+  it('tiene varias plantillas de ejemplo con nombre, asunto y cuerpo', () => {
+    expect(PLANTILLAS_SUGERIDAS.length).toBeGreaterThanOrEqual(3);
+    for (const p of PLANTILLAS_SUGERIDAS) {
+      expect(p.nombre.trim()).not.toBe('');
+      expect(p.asunto.trim()).not.toBe('');
+      expect(p.cuerpo.trim()).not.toBe('');
+    }
+  });
+
+  it('solo usa variables válidas y no afirma ausencia en otra aseguradora', () => {
+    for (const p of PLANTILLAS_SUGERIDAS) {
+      const texto = `${p.asunto}\n${p.cuerpo}`;
+      for (const [, clave] of texto.matchAll(/\{\{\s*([a-zA-Z]+)\s*\}\}/g)) {
+        expect(VARIABLES_VALIDAS.has(clave), `variable {{${clave}}}`).toBe(true);
+      }
+      const lower = texto.toLowerCase();
+      expect(lower).not.toContain('otra aseguradora');
+      expect(lower).not.toContain('otra compañía');
+      expect(lower).not.toMatch(/no (tenés|tiene|registr|cuenta con)/);
+    }
+  });
+
+  it('renderiza sin dejar variables sin resolver', () => {
+    for (const p of PLANTILLAS_SUGERIDAS) {
+      const render = renderPlantilla(`${p.asunto}\n${p.cuerpo}`, vars);
+      expect(render).not.toMatch(/\{\{.*?\}\}/);
+      expect(render).toContain('Juan');
+    }
   });
 });
 
