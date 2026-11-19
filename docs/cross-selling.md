@@ -60,6 +60,13 @@ cliente. Variables disponibles en plantillas: `{{nombre}} {{apellido}}
 propone sumar la cobertura con nosotros y **nunca** afirma ausencia en otra
 compañía.
 
+La primera vez se siembran **plantillas de ejemplo editables** (`PLANTILLAS_SUGERIDAS`
+en `src/lib/crosssell/correo/plantilla.ts`): presentación general, hogar para
+clientes con auto, accidentes personales para clientes con vida y seguimiento.
+Se crean automáticamente al «Detectar oportunidades» o con el botón «Generar
+ejemplos» de la pestaña Plantillas; sirven para ver cómo se usan las variables y
+se pueden editar o borrar.
+
 Salvaguardas del envío (`POST /api/cross-selling/correos/enviar`): requiere
 sesión; valida supresión; **advierte si ya se contactó esa cobertura** (pide
 confirmación); reclamo atómico `crosssell_reclamar_correo` + `Idempotency-Key`

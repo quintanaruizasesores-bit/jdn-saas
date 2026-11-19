@@ -21,6 +21,7 @@ import {
   CATEGORIAS_SUGERIDAS,
   sugerirCategoriaSlug,
 } from '@/lib/crosssell/normalizar';
+import { PLANTILLAS_SUGERIDAS } from '@/lib/crosssell/correo/plantilla';
 import {
   detectarOportunidades,
   coberturasVigentesPorCliente,
@@ -570,6 +571,26 @@ export async function deletePlantilla(supabase: SupabaseClient, id: string) {
   return supabase.from(PLANTILLA_TABLE).delete().eq('id', id);
 }
 
+/**
+ * Siembra plantillas de ejemplo (editables) si el workspace no tiene ninguna.
+ * Idempotente; corre bajo la sesión del usuario (el trigger asigna el workspace).
+ */
+export async function asegurarPlantillasDefault(
+  supabase: SupabaseClient
+): Promise<CrossSellPlantilla[]> {
+  const existentes = await fetchPlantillas(supabase);
+  if (existentes.length > 0) return existentes;
+  const filas = PLANTILLAS_SUGERIDAS.map((p) => ({
+    nombre: p.nombre,
+    asunto: p.asunto,
+    cuerpo: p.cuerpo,
+    activa: true,
+  }));
+  const { error } = await supabase.from(PLANTILLA_TABLE).insert(filas);
+  if (error && !esTablaFaltante(error)) throw error;
+  return fetchPlantillas(supabase);
+}
+
 // ---------------------------------------------------------------------------
 // Correos (borradores + historial)
 // ---------------------------------------------------------------------------
@@ -742,9 +763,10 @@ export async function regenerarOportunidades(
   supabase: SupabaseClient,
   now = new Date()
 ): Promise<RegeneracionResultado> {
-  // Asegura que haya categorías y reglas (semillas editables) la primera vez.
+  // Asegura categorías, reglas y plantillas (semillas editables) la primera vez.
   await asegurarCategoriasDefault(supabase);
   await asegurarReglasDefault(supabase);
+  await asegurarPlantillasDefault(supabase);
 
   const hoy = now.toISOString().slice(0, 10);
   const [cartera, categorias, ramoMapRows, reglas, exclusiones, abiertas] =

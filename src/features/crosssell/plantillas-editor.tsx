@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import type { CrossSellPlantilla } from '@/types/database';
 import {
+  asegurarPlantillasDefault,
   deletePlantilla,
   fetchPlantillas,
   upsertPlantilla,
@@ -77,6 +78,15 @@ export function PlantillasEditor() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const sembrarEjemplos = useMutation({
+    mutationFn: () => asegurarPlantillasDefault(createClient()),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['crosssell', 'plantillas'] });
+      toast.success('Plantillas de ejemplo generadas.');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const nueva = () => {
     setForm(EMPTY);
     setOpen(true);
@@ -101,15 +111,28 @@ export function PlantillasEditor() {
           Plantillas reutilizables. Variables:{' '}
           {VARIABLES_DISPONIBLES.map((v) => `{{${v.clave}}}`).join(' ')}
         </p>
-        <Button onClick={nueva} size="sm" className="gap-1">
-          <Plus className="h-4 w-4" /> Nueva plantilla
-        </Button>
+        <div className="flex gap-2">
+          {plantillas.length === 0 && (
+            <Button
+              onClick={() => sembrarEjemplos.mutate()}
+              size="sm"
+              variant="outline"
+              className="gap-1"
+              disabled={sembrarEjemplos.isPending}
+            >
+              <Sparkles className="h-4 w-4" /> Generar ejemplos
+            </Button>
+          )}
+          <Button onClick={nueva} size="sm" className="gap-1">
+            <Plus className="h-4 w-4" /> Nueva plantilla
+          </Button>
+        </div>
       </div>
 
       {plantillas.length === 0 ? (
         <EmptyState
           title="Sin plantillas"
-          description="Creá plantillas reutilizables para acelerar la preparación de correos."
+          description='Tocá "Generar ejemplos" para cargar plantillas editables y ver cómo se usan las variables, o creá la tuya.'
         />
       ) : (
         <ul className="space-y-2">
