@@ -27,19 +27,36 @@ export function LoginForm() {
 
   return (
     <form action={handleSubmit} className="space-y-4">
-      {error && <p className="text-sm text-red">{error}</p>}
+      {searchParams.get('estado') === 'contrasena-actualizada' && (
+        <p role="status" className="text-green text-sm">
+          Tu contraseña se actualizó. Iniciá sesión con la nueva contraseña.
+        </p>
+      )}
+      {error && <p className="text-red text-sm">{error}</p>}
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" required autoComplete="email" />
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Contraseña</Label>
-        <Input id="password" name="password" type="password" required autoComplete="current-password" />
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          required
+          autoComplete="current-password"
+        />
       </div>
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? 'Ingresando…' : 'Ingresar'}
       </Button>
-      <div className="flex justify-between text-xs text-ink-faint">
+      <div className="text-ink-faint flex justify-between text-xs">
         <Link href="/recuperar" className="hover:text-primary">
           ¿Olvidaste tu contraseña?
         </Link>

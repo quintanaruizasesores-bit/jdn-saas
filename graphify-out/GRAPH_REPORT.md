@@ -1,25 +1,26 @@
-# Graph Report - jdn-saas  (2026-11-19)
+# Graph Report - jdn-saas  (2026-11-25)
 
 ## Corpus Check
-- cluster-only mode — file stats not available
+- 293 files · ~116,501 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1539 nodes · 3900 edges · 122 communities (86 shown, 24 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 7 edges (avg confidence: 0.85)
+- 1554 nodes · 3938 edges · 119 communities (84 shown, 23 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 8 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `88da1020`
+- Built from commit: `ab77a840`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - fechas.ts
-- utils.ts
-- inteligencia.ts
+- riesgo/page.tsx
+- reportes-dashboard.tsx
 - comision.ts
 - crosssell.service.ts
-- reportes-ui.tsx
+- dashboard/page.tsx
 - package.json
 - 001_initial_schema.sql
 - dependencies
@@ -34,30 +35,30 @@
 - components.json
 - polizas/[id]/page.tsx
 - cliente-combobox.tsx
-- createClient
-- config-manager.tsx
+- actions.ts
+- @testing-library/react
 - 017_crosssell_correos.sql
 - compilerOptions
 - baja/route.ts
 - crosssell.schema.ts
-- siniestro-form.tsx
+- siniestros/[id]/editar/page.tsx
 - cliente-combobox.test.tsx
 - correo/plantilla.ts
 - vitest
 - prueba/route.ts
-- ConfigManager
-- siniestros.service.ts
+- clientes-top.ts
+- utils.ts
 - dropdown-menu.tsx
-- polizas.service.ts
+- utils/format.ts
 - sheet.tsx
 - task-alert-bell.tsx
 - email-notifications-editor.test.tsx
 - cron.ts
 - Cartera JDN
-- crosssell-module.tsx
+- config-manager.tsx
 - resumen.ts
 - Módulo Cumpleaños
-- respaldo.test.ts
+- respaldo/route.ts
 - cliente-form.tsx
 - (dashboard)/layout.tsx
 - enviar/route.ts
@@ -70,29 +71,28 @@
 - Cross-Selling (venta cruzada asistida)
 - Recordatorios automáticos por email (tareas vencidas)
 - 012_workspaces_expand.sql
-- enviar/route.test.ts
+- baja.ts
 - clientes.service.ts
-- reportes-dashboard.tsx
-- respaldo.ts
+- oportunidades/route.ts
+- Bandeja
 - Comisión mensual recurrente estimada
 - Reportes e inteligencia de cartera
-- poliza-date-field.tsx
+- useComisionDashboard
 - Cartera JDN / Quintana Ruiz — contexto operativo
 - actividad
 - app/layout.tsx
 - public.exportacion_catalogo
 - @supabase/ssr
 - zod
-- respaldo/route.ts
+- dashboard.service.test.ts
 - update_updated_at
 - 007_comisiones_recurrentes.sql
-- getCompaniaColor
+- registerAction
 - normalizar.ts
-- updatePoliza
 - tareas
 - public.polizas
 - eslint.config.mjs
-- regenerar/route.ts
+- createClient
 - prueba/route.test.ts
 - alert.tsx
 - public.exportacion_catalogo
@@ -101,7 +101,6 @@
 - ResizeObserver
 - estado-badge.tsx
 - use-contactado.ts
-- mapa-argentina.tsx
 - public.v_polizas_por_compania
 - Migración de datos de la cartera existente
 - Controles de seguridad multi-tenant
@@ -111,7 +110,6 @@
 - MULTITENANT_ARCHITECTURE.md
 - MULTITENANT_ROLLBACK.md
 - MULTITENANT_VALIDATION.md
-- lint-staged
 - postcss.config.mjs
 - geo/README.md
 - @vitejs/plugin-react
@@ -127,15 +125,15 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `cn()` - 107 edges
-2. `react` - 73 edges
+2. `react` - 74 edges
 3. `createClient()` - 70 edges
-4. `vitest` - 64 edges
+4. `vitest` - 66 edges
 5. `@tanstack/react-query` - 45 edges
-6. `Button` - 41 edges
+6. `Button` - 42 edges
 7. `lucide-react` - 41 edges
 8. `@supabase/supabase-js` - 29 edges
 9. `sonner` - 27 edges
-10. `periodoComision()` - 24 edges
+10. `Input` - 24 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `main()` --calls--> `parseSiniestroText()`  [EXTRACTED]
@@ -146,41 +144,41 @@
   src/app/(dashboard)/polizas/pendientes-comision/page.test.tsx → src/features/dashboard/use-comision-dashboard.ts
 - `NavLink()` --calls--> `cn()`  [EXTRACTED]
   src/components/dashboard/mobile-nav.tsx → src/lib/utils.ts
-- `AlertAction()` --calls--> `cn()`  [EXTRACTED]
+- `AlertTitle()` --calls--> `cn()`  [EXTRACTED]
   src/components/ui/alert.tsx → src/lib/utils.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (122 total, 24 thin omitted)
+## Communities (119 total, 23 thin omitted)
 
 ### Community 0 - "fechas.ts"
 Cohesion: 0.05
-Nodes (54): CumpleanosPage(), PreparedRow, clienteHoy(), calcularEdad(), daysUntilBirthday(), diffInDays(), FechaPartes, formatCumpleanos() (+46 more)
+Nodes (53): CumpleanosPage(), PreparedRow, clienteHoy(), calcularEdad(), daysUntilBirthday(), diffInDays(), FechaPartes, formatCumpleanos() (+45 more)
 
-### Community 1 - "utils.ts"
-Cohesion: 0.06
-Nodes (44): recharts, extractData(), main(), PrototypePoliza, CHART_COLORS, DashboardPage(), PendientesComisionPage(), configure() (+36 more)
+### Community 1 - "riesgo/page.tsx"
+Cohesion: 0.15
+Nodes (16): recharts, CHART_COLORS, RiesgoPage(), RiskBadge(), styles, calculateRiskScore(), POLIZA_ESTADO_LABELS, RiskInput (+8 more)
 
-### Community 2 - "inteligencia.ts"
-Cohesion: 0.09
-Nodes (35): dynamic, GET(), maxDuration, m, VersionComision, aliases, EXTERIOR, nombreProvincia() (+27 more)
+### Community 2 - "reportes-dashboard.tsx"
+Cohesion: 0.05
+Nodes (79): leaflet, @radix-ui/react-dialog, react-leaflet, dynamic, GET(), maxDuration, m, CrossSelling() (+71 more)
 
 ### Community 3 - "comision.ts"
-Cohesion: 0.09
-Nodes (30): calcularClientesTop(), ClienteTop, PolizaClienteTop, redondear(), now, aporteComision(), calcularComisionMensual(), construirVersionesComision() (+22 more)
+Cohesion: 0.13
+Nodes (15): COMISION_RATE, ComisionDashboard, ComisionMensual, ComisionPendiente, HistorialComision, MotivoComisionPendiente, MOTIVOS_COMISION_PENDIENTE, PERIODICIDAD_LEGACY_CONFIRMADA (+7 more)
 
 ### Community 4 - "crosssell.service.ts"
-Cohesion: 0.09
-Nodes (40): CategoriasEditor(), PlantillasEditor(), ReglasEditor(), asegurarCategoriasDefault(), asegurarPlantillasDefault(), asegurarReglasDefault(), autosugerirMapeos(), cargarCartera() (+32 more)
+Cohesion: 0.10
+Nodes (37): CategoriasEditor(), PlantillasEditor(), ReglasEditor(), asegurarCategoriasDefault(), asegurarPlantillasDefault(), asegurarReglasDefault(), autosugerirMapeos(), CATEGORIA_TABLE (+29 more)
 
-### Community 5 - "reportes-ui.tsx"
-Cohesion: 0.15
-Nodes (29): @radix-ui/react-dialog, CrossSelling(), GeografiaPanel(), ListaRegistrosDialog(), Registro, Acento, acentoBarra, Barras() (+21 more)
+### Community 5 - "dashboard/page.tsx"
+Cohesion: 0.21
+Nodes (10): CHART_COLORS, DashboardPage(), BarList(), BarListItem, KpiCard(), KpiCardProps, formatNumber(), fetchDashboardKpis() (+2 more)
 
 ### Community 6 - "package.json"
 Cohesion: 0.05
-Nodes (36): name, private, version, @base-ui/react, clsx, date-fns, dotenv, eslint (+28 more)
+Nodes (36): lint-staged, *.{ts,tsx,js,jsx,json,css,md}, name, private, version, @base-ui/react, clsx, date-fns (+28 more)
 
 ### Community 7 - "001_initial_schema.sql"
 Cohesion: 0.11
@@ -191,32 +189,32 @@ Cohesion: 0.06
 Nodes (35): dependencies, @base-ui/react, class-variance-authority, clsx, cmdk, date-fns, exceljs, @hookform/resolvers (+27 more)
 
 ### Community 9 - "createClient"
-Cohesion: 0.14
-Nodes (20): @tanstack/react-query, EditarClientePage(), NuevoClientePage(), Providers(), RenewalAlertsBanner(), Skeleton(), BirthdayTemplateEditor(), SAMPLE (+12 more)
+Cohesion: 0.15
+Nodes (23): sonner, @tanstack/react-query, Providers(), RenewalAlertsBanner(), SelectContent, SelectItem, SelectTrigger, Textarea() (+15 more)
 
 ### Community 10 - "database.ts"
-Cohesion: 0.06
-Nodes (31): BadgeVariant, ESTADO_LABEL, ESTADO_OPCIONES, ESTADO_VARIANT, Actividad, ActividadEntidad, AppSetting, CompaniaEstado (+23 more)
+Cohesion: 0.07
+Nodes (29): BadgeVariant, ESTADO_LABEL, ESTADO_OPCIONES, ESTADO_VARIANT, Actividad, AppSetting, CompaniaEstado, CrossSellCategoria (+21 more)
 
 ### Community 11 - "react"
-Cohesion: 0.22
-Nodes (16): react, sonner, Button, ButtonProps, buttonVariants, Input, Label, SelectContent (+8 more)
+Cohesion: 0.28
+Nodes (7): react, Button, ButtonProps, buttonVariants, Input, Label, LoginForm()
 
 ### Community 12 - "cumpleanos-page.tsx"
-Cohesion: 0.19
-Nodes (18): PolizasListado(), SiniestroDetalle, SiniestroDetallePage(), SiniestrosPage(), AppHeader(), EmptyState(), ErrorState(), Table() (+10 more)
+Cohesion: 0.22
+Nodes (12): AppHeader(), CompaniaBadge(), EmptyState(), ErrorState(), ScrollFade(), Table(), TableBody(), TableCell() (+4 more)
 
 ### Community 13 - "lucide-react"
-Cohesion: 0.15
-Nodes (19): class-variance-authority, lucide-react, Badge(), badgeVariants, Checkbox(), ConfirmDialog(), ConfirmDialogProps, DialogContent (+11 more)
+Cohesion: 0.18
+Nodes (17): class-variance-authority, lucide-react, Badge(), badgeVariants, Checkbox(), ConfirmDialog(), ConfirmDialogProps, DialogContent (+9 more)
 
 ### Community 14 - "cn"
-Cohesion: 0.11
-Nodes (22): Avatar(), AvatarBadge(), AvatarFallback(), AvatarGroup(), AvatarGroupCount(), AvatarImage(), Card, CardContent() (+14 more)
+Cohesion: 0.12
+Nodes (21): Avatar(), AvatarBadge(), AvatarFallback(), AvatarGroup(), AvatarGroupCount(), AvatarImage(), Card, CardContent() (+13 more)
 
 ### Community 15 - "motor.ts"
-Cohesion: 0.12
-Nodes (24): calcularScore(), clamp(), coberturasVigentesPorCliente(), detectarOportunidades(), fechaValida(), MotorCategoria, MotorCliente, MotorEntrada (+16 more)
+Cohesion: 0.13
+Nodes (23): calcularScore(), clamp(), coberturasVigentesPorCliente(), detectarOportunidades(), fechaValida(), MotorCategoria, MotorCliente, MotorEntrada (+15 more)
 
 ### Community 16 - "devDependencies"
 Cohesion: 0.08
@@ -227,20 +225,20 @@ Cohesion: 0.09
 Nodes (21): aliases, components, hooks, lib, ui, utils, iconLibrary, menuAccent (+13 more)
 
 ### Community 18 - "polizas/[id]/page.tsx"
-Cohesion: 0.24
-Nodes (15): @supabase/supabase-js, EditarPolizaPage(), PolizaDetallePage(), NuevaPolizaPage(), invalidarMetricasPolizas(), PolizaForm(), fetchTodasCompanias(), createPoliza() (+7 more)
+Cohesion: 0.07
+Nodes (43): @supabase/supabase-js, EditarPolizaPage(), PolizaDetallePage(), NuevaPolizaPage(), ConfigManager(), invalidarMetricasPolizas(), PolizaDateField(), typingDate() (+35 more)
 
 ### Community 19 - "cliente-combobox.tsx"
 Cohesion: 0.17
 Nodes (14): cmdk, @radix-ui/react-popover, Command, CommandEmpty, CommandInput, CommandItem, CommandList, PopoverContent (+6 more)
 
-### Community 20 - "createClient"
-Cohesion: 0.15
-Nodes (16): dynamic, GET(), headers, maxDuration, runtime, GET(), RecuperarPage(), handleSubmit() (+8 more)
+### Community 20 - "actions.ts"
+Cohesion: 0.14
+Nodes (13): loginAction(), logoutAction(), recoverAction(), RecoveryState, restablecerContrasenaAction(), handleSubmit(), RecuperarForm(), camposContrasena (+5 more)
 
-### Community 21 - "config-manager.tsx"
-Cohesion: 0.16
-Nodes (10): ACCION_LABELS, ClienteDetallePage(), TabsContent, TabsList, TabsTrigger, ConfigTab, RespaldoPanel(), softDeleteCliente() (+2 more)
+### Community 21 - "@testing-library/react"
+Cohesion: 0.18
+Nodes (5): @testing-library/react, @testing-library/user-event, companias, base, createTarea
 
 ### Community 22 - "017_crosssell_correos.sql"
 Cohesion: 0.15
@@ -251,48 +249,44 @@ Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
 ### Community 24 - "baja/route.ts"
-Cohesion: 0.22
-Nodes (15): dynamic, GET(), pagina(), POST(), registrar(), runtime, b64url(), BajaPayload (+7 more)
+Cohesion: 0.36
+Nodes (8): dynamic, GET(), pagina(), POST(), registrar(), runtime, createServiceClient(), suprimirEmail()
 
 ### Community 25 - "crosssell.schema.ts"
 Cohesion: 0.11
 Nodes (17): CrossSellCategoriaInput, crossSellCategoriaSchema, CrossSellCorreoDraftInput, crossSellCorreoDraftSchema, CrossSellCorreoEnviarInput, CrossSellExclusionInput, crossSellExclusionSchema, CrossSellOportunidadUpdateInput (+9 more)
 
-### Community 26 - "siniestro-form.tsx"
-Cohesion: 0.20
-Nodes (11): react-hook-form, EditarSiniestroPage(), NuevoSiniestroForm(), RESPONSABILIDADES, SiniestroForm(), SiniestroFormProps, TIPOS, fetchPolizasByCliente() (+3 more)
-
-### Community 27 - "cliente-combobox.test.tsx"
-Cohesion: 0.14
-Nodes (6): @testing-library/react, @testing-library/user-event, mockFetchClienteById, mockFetchClientes, companias, base
+### Community 26 - "siniestros/[id]/editar/page.tsx"
+Cohesion: 0.23
+Nodes (11): EditarSiniestroPage(), NuevoSiniestroForm(), SiniestroForm(), SiniestroFormProps, fetchPolizasByCliente(), createSiniestro(), fetchSiniestroById(), fetchSiniestros() (+3 more)
 
 ### Community 28 - "correo/plantilla.ts"
-Cohesion: 0.21
-Nodes (14): CorreoEditor(), construirCorreo(), CorreoRenderizado, generarBorrador(), PLANTILLAS_SUGERIDAS, PlantillaSugerida, renderPlantilla(), vars (+6 more)
+Cohesion: 0.19
+Nodes (16): CorreoEditor(), construirCorreo(), CorreoRenderizado, generarBorrador(), PLANTILLAS_SUGERIDAS, PlantillaSugerida, renderPlantilla(), vars (+8 more)
 
 ### Community 29 - "vitest"
-Cohesion: 0.14
+Cohesion: 0.13
 Nodes (6): @electric-sql/pglite, vitest, mocks, db, db, db
 
 ### Community 30 - "prueba/route.ts"
 Cohesion: 0.20
 Nodes (12): dynamic, POST(), privateHeaders, runtime, emailConfigurado(), EmailSendError, safeText(), sendEmail() (+4 more)
 
-### Community 31 - "ConfigManager"
-Cohesion: 0.13
-Nodes (5): ConfigManager(), deleteCompania(), upsertCompania(), deleteRamo(), upsertRamo()
+### Community 31 - "clientes-top.ts"
+Cohesion: 0.21
+Nodes (13): calcularClientesTop(), ClienteTop, PolizaClienteTop, redondear(), now, aporteComision(), calcularComisionMensual(), construirVersionesComision() (+5 more)
 
-### Community 32 - "siniestros.service.ts"
-Cohesion: 0.23
-Nodes (10): TareasPage(), logActividad(), createSiniestro(), updateSiniestro(), createTarea(), deleteTarea(), fetchTareas(), updateTarea() (+2 more)
+### Community 32 - "utils.ts"
+Cohesion: 0.16
+Nodes (24): ACCION_LABELS, ClienteDetallePage(), ClientesPage(), PolizasListado(), SiniestroDetalle, SiniestroDetallePage(), SiniestrosPage(), TareasPage() (+16 more)
 
 ### Community 33 - "dropdown-menu.tsx"
 Cohesion: 0.12
 Nodes (9): DropdownMenuCheckboxItem(), DropdownMenuContent(), DropdownMenuItem(), DropdownMenuLabel(), DropdownMenuRadioItem(), DropdownMenuSeparator(), DropdownMenuShortcut(), DropdownMenuSubContent() (+1 more)
 
-### Community 34 - "polizas.service.ts"
-Cohesion: 0.30
-Nodes (11): buildClienteSearchFilters(), CLIENTE_SEARCH_COLUMNS, sanitizeSearchTerm(), distanciaPatente(), fragmentosPatente(), patenteBuscada(), patentesEnDetalle(), aproximacionPatente() (+3 more)
+### Community 34 - "utils/format.ts"
+Cohesion: 0.24
+Nodes (10): extractData(), main(), PrototypePoliza, mapLegacyTipo(), parseCount(), ParsedSiniestroEvent, parseSiniestroText(), splitNombreCompleto() (+2 more)
 
 ### Community 35 - "sheet.tsx"
 Cohesion: 0.17
@@ -311,48 +305,48 @@ Cohesion: 0.21
 Nodes (10): CronDeps, CronResult, NOW, prefBase, unaTarea, WorkspacePref, fechaLocal(), horaLocal() (+2 more)
 
 ### Community 39 - "Cartera JDN"
-Cohesion: 0.14
-Nodes (13): Arquitectura, Cartera JDN, Configuración, Deploy en Vercel, Identidad visual — Quintana Ruiz, Licencia, Módulos, Requisitos (+5 more)
+Cohesion: 0.13
+Nodes (14): Arquitectura, Cartera JDN, Configuración, Deploy en Vercel, Identidad visual — Quintana Ruiz, Licencia, Módulos, Recuperación de contraseña con Supabase Auth (+6 more)
 
-### Community 40 - "crosssell-module.tsx"
-Cohesion: 0.18
-Nodes (10): dynamic, Bandeja(), Detalle(), ABIERTOS, computeKpis(), CrossSellingModule(), fetchOportunidadesApi(), OPORTUNIDADES_KEY (+2 more)
+### Community 40 - "config-manager.tsx"
+Cohesion: 0.12
+Nodes (16): @radix-ui/react-tabs, dynamic, TabsContent, TabsList, TabsTrigger, ConfigTab, RespaldoPanel(), ABIERTOS (+8 more)
 
 ### Community 41 - "resumen.ts"
-Cohesion: 0.29
-Nodes (12): atrasoLabel(), construirPruebaEmail(), construirResumenEmail(), diasDeAtraso(), escapeHtml(), fechaLegible(), MAX_TAREAS_EMAIL, parseIso() (+4 more)
+Cohesion: 0.28
+Nodes (11): atrasoLabel(), construirPruebaEmail(), construirResumenEmail(), diasDeAtraso(), fechaLegible(), MAX_TAREAS_EMAIL, parseIso(), ResumenEmail (+3 more)
 
 ### Community 42 - "Módulo Cumpleaños"
 Cohesion: 0.15
 Nodes (12): Comandos de verificación, Cumpleaños y fechas, Dónde se guarda la plantilla, Estado "WhatsApp preparado", Generación del link `wa.me`, Módulo Cumpleaños, Normalización de teléfonos, Qué se agregó (+4 more)
 
-### Community 43 - "respaldo.test.ts"
-Cohesion: 0.22
-Nodes (10): GET(), catalogosIguales(), escribirRespaldo(), FuenteRespaldo, catalogo, filas, fuente, generar() (+2 more)
+### Community 43 - "respaldo/route.ts"
+Cohesion: 0.10
+Nodes (22): exceljs, dynamic, GET(), maxDuration, privateHeaders, runtime, mocks, db (+14 more)
 
 ### Community 44 - "cliente-form.tsx"
-Cohesion: 0.37
-Nodes (8): ClienteForm(), displayToIso(), isoToDisplay(), maskFechaInput(), MIN_YEAR, validateFechaNacimiento(), ClienteFormData, clienteSchema
+Cohesion: 0.32
+Nodes (9): NuevoClientePage(), ClienteForm(), displayToIso(), isoToDisplay(), maskFechaInput(), MIN_YEAR, validateFechaNacimiento(), ClienteFormData (+1 more)
 
 ### Community 45 - "(dashboard)/layout.tsx"
 Cohesion: 0.23
 Nodes (7): zustand, AppSidebar(), navItems, MobileNav(), NewClientShortcut(), UiState, useUiStore
 
 ### Community 46 - "enviar/route.ts"
-Cohesion: 0.23
-Nodes (11): dynamic, headers, POST(), runtime, urlBaja(), contarEnviosPrevios(), CORREO_TABLE, emailSuprimido() (+3 more)
+Cohesion: 0.11
+Nodes (17): dynamic, headers, POST(), runtime, contarEnviosPreviosMock, CORREO, createClientMock, emailConfiguradoMock (+9 more)
 
 ### Community 47 - "notificaciones.service.ts"
-Cohesion: 0.24
-Nodes (9): EmailNotifPrefsRow, fetchEmailPrefs(), fetchEmailPrefsRow(), fetchTareasVencidas(), nombreCliente(), PREFS_TABLE, TareaVencidaRow, makeQuery() (+1 more)
+Cohesion: 0.23
+Nodes (10): EmailNotifPrefsRow, fetchEmailPrefs(), fetchEmailPrefsRow(), fetchTareasVencidas(), nombreCliente(), PREFS_TABLE, saveEmailPrefs(), TareaVencidaRow (+2 more)
 
 ### Community 48 - "016_crosssell_core.sql"
 Cohesion: 0.24
 Nodes (11): idx_crosssell_ramo_map_categoria, public.crosssell_categoria, public.crosssell_ramo_map, public.assign_workspace_id, public.ramos, public.workspaces, tr_crosssell_categoria_updated_at, tr_crosssell_ramo_map_updated_at (+3 more)
 
 ### Community 49 - "reportes/format.ts"
-Cohesion: 0.29
-Nodes (9): RFC-4180, exceljs, jspdf, jspdf-autotable, Cell, cellToString(), toCsv(), toPdf() (+1 more)
+Cohesion: 0.33
+Nodes (8): RFC-4180, jspdf, jspdf-autotable, Cell, cellToString(), toCsv(), toPdf(), toXlsx()
 
 ### Community 50 - "scripts"
 Cohesion: 0.18
@@ -378,21 +372,21 @@ Nodes (9): Archivos principales, Cómo se fija el horario y se evitan duplicados
 Cohesion: 0.20
 Nodes (8): public.create_user_workspace, idx_companias_workspace_nombre, idx_ramos_workspace_nombre, public.workspaces, auth.users, public.companias, public.ramos, tr_profile_create_workspace
 
-### Community 56 - "enviar/route.test.ts"
-Cohesion: 0.20
-Nodes (7): contarEnviosPreviosMock, CORREO, createClientMock, emailConfiguradoMock, emailSuprimidoMock, Scenario, sendEmailMock
+### Community 56 - "baja.ts"
+Cohesion: 0.47
+Nodes (7): b64url(), BajaPayload, firma(), firmarTokenBaja(), fromB64url(), secret(), verificarTokenBaja()
 
 ### Community 57 - "clientes.service.ts"
-Cohesion: 0.31
-Nodes (7): ClientesPage(), assertDniUnico(), ClientesFilters, createCliente(), fetchClientes(), normalizeClienteDates(), updateCliente()
-
-### Community 58 - "reportes-dashboard.tsx"
-Cohesion: 0.31
-Nodes (7): esVista(), inicial(), ReportesDashboard(), VistaId, VISTAS, fecha(), Salud()
-
-### Community 59 - "respaldo.ts"
 Cohesion: 0.24
-Nodes (6): db, CatalogoExportado, ColumnaExportada, EXCEL_FILAS_DATOS, FilaExportada, TablaExportada
+Nodes (9): EditarClientePage(), assertDniUnico(), ClientesFilters, createCliente(), fetchClienteById(), fetchClientes(), normalizeClienteDates(), updateCliente() (+1 more)
+
+### Community 58 - "oportunidades/route.ts"
+Cohesion: 0.33
+Nodes (6): dynamic, GET(), headers, maxDuration, runtime, fetchOportunidades()
+
+### Community 59 - "Bandeja"
+Cohesion: 0.40
+Nodes (6): Bandeja(), Detalle(), actualizarOportunidad(), addExclusion(), fetchEventosCliente(), logCrossSellEvento()
 
 ### Community 60 - "Comisión mensual recurrente estimada"
 Cohesion: 0.22
@@ -402,9 +396,9 @@ Nodes (8): Cambio mínimo persistente: migración 007, Comisión mensual recurre
 Cohesion: 0.22
 Nodes (8): Archivos de esta implementación, Auditoría previa (17/10/2026), Definiciones y límites, Diseño, Exportación integral y habilitación, Limitaciones y evolución posible, Reportes e inteligencia de cartera, Verificaciones ejecutadas
 
-### Community 62 - "poliza-date-field.tsx"
-Cohesion: 0.61
-Nodes (6): PolizaDateField(), typingDate(), displayDate(), isIsoDate(), parseDisplayDate(), optionalDate
+### Community 62 - "useComisionDashboard"
+Cohesion: 0.60
+Nodes (4): PendientesComisionPage(), configure(), pendiente, useComisionDashboard()
 
 ### Community 63 - "Cartera JDN / Quintana Ruiz — contexto operativo"
 Cohesion: 0.25
@@ -427,12 +421,12 @@ Cohesion: 0.36
 Nodes (5): @supabase/ssr, state, updateSession(), config, middleware()
 
 ### Community 68 - "zod"
-Cohesion: 0.25
-Nodes (6): zod, loginSchema, recuperarSchema, registerSchema, companiaSchema, ramoSchema
+Cohesion: 0.29
+Nodes (5): zod, companiaSchema, ramoSchema, TareaFormData, tareaSchema
 
-### Community 69 - "respaldo/route.ts"
-Cohesion: 0.25
-Nodes (5): dynamic, maxDuration, privateHeaders, runtime, mocks
+### Community 69 - "dashboard.service.test.ts"
+Cohesion: 0.40
+Nodes (3): now, Page, row
 
 ### Community 70 - "update_updated_at"
 Cohesion: 0.25
@@ -442,17 +436,13 @@ Nodes (7): tr_clientes_updated_at, tr_polizas_updated_at, tr_profiles_updated_at
 Cohesion: 0.29
 Nodes (4): public.preparar_version_comision, idx_poliza_historial_comision, public.poliza_historial, tr_polizas_version_comision
 
-### Community 72 - "getCompaniaColor"
-Cohesion: 0.38
-Nodes (5): CompaniaBadge(), COMPANIA_COLORS, CompaniaColor, DEFAULT_COLOR, getCompaniaColor()
+### Community 72 - "registerAction"
+Cohesion: 0.67
+Nodes (3): RegisterPage(), handleSubmit(), registerAction()
 
 ### Community 73 - "normalizar.ts"
 Cohesion: 0.43
 Nodes (5): CATEGORIAS_SUGERIDAS, CategoriaSugerida, KEYWORDS_PALABRA_COMPLETA, normalizarTexto(), sugerirCategoriaSlug()
-
-### Community 74 - "updatePoliza"
-Cohesion: 0.38
-Nodes (4): darBajaPoliza(), normalizePolizaDates(), renovarPoliza(), updatePoliza()
 
 ### Community 75 - "tareas"
 Cohesion: 0.33
@@ -466,9 +456,9 @@ Nodes (7): public.clientes, public.companias, public.poliza_historial, public.po
 Cohesion: 0.33
 Nodes (5): compat, __dirname, eslintConfig, __filename, @eslint/eslintrc
 
-### Community 78 - "regenerar/route.ts"
-Cohesion: 0.33
-Nodes (5): dynamic, headers, maxDuration, POST(), runtime
+### Community 78 - "createClient"
+Cohesion: 0.18
+Nodes (10): dynamic, headers, maxDuration, POST(), runtime, GET(), { exchangeCodeForSession }, NuevaContrasenaPage() (+2 more)
 
 ### Community 79 - "prueba/route.test.ts"
 Cohesion: 0.33
@@ -499,24 +489,24 @@ Cohesion: 0.50
 Nodes (3): public.v_polizas_por_compania, public.companias, public.polizas
 
 ## Knowledge Gaps
-- **420 isolated node(s):** `MonthDay`, `CumpleResumen`, `PrototypePoliza`, `BarListItem`, `KpiCardProps` (+415 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 595 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **24 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **423 isolated node(s):** `$schema`, `style`, `rsc`, `tsx`, `config` (+418 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 600 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **23 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `vitest` connect `vitest` to `fechas.ts`, `utils.ts`, `inteligencia.ts`, `comision.ts`, `package.json`, `lucide-react`, `motor.ts`, `polizas/[id]/page.tsx`, `config-manager.tsx`, `baja/route.ts`, `cliente-combobox.test.tsx`, `correo/plantilla.ts`, `prueba/route.ts`, `siniestros.service.ts`, `polizas.service.ts`, `task-alert-bell.tsx`, `email-notifications-editor.test.tsx`, `cron.ts`, `resumen.ts`, `respaldo.test.ts`, `cliente-form.tsx`, `notificaciones.service.ts`, `reportes/format.ts`, `cron/route.ts`, `enviar/route.test.ts`, `clientes.service.ts`, `respaldo.ts`, `poliza-date-field.tsx`, `@supabase/ssr`, `respaldo/route.ts`, `normalizar.ts`, `updatePoliza`, `prueba/route.test.ts`, `use-contactado.ts`?**
-  _High betweenness centrality (0.124) - this node is a cross-community bridge._
-- **Why does `react` connect `react` to `utils.ts`, `reportes-ui.tsx`, `package.json`, `createClient`, `cumpleanos-page.tsx`, `lucide-react`, `cn`, `polizas/[id]/page.tsx`, `cliente-combobox.tsx`, `config-manager.tsx`, `siniestro-form.tsx`, `dropdown-menu.tsx`, `sheet.tsx`, `task-alert-bell.tsx`, `email-notifications-editor.test.tsx`, `crosssell-module.tsx`, `reportes-dashboard.tsx`, `poliza-date-field.tsx`, `alert.tsx`, `use-contactado.ts`, `mapa-argentina.tsx`?**
-  _High betweenness centrality (0.089) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `dependencies` to `package.json`?**
-  _High betweenness centrality (0.049) - this node is a cross-community bridge._
-- **What connects `MonthDay`, `CumpleResumen`, `PrototypePoliza` to the rest of the system?**
-  _420 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `vitest` connect `vitest` to `fechas.ts`, `riesgo/page.tsx`, `reportes-dashboard.tsx`, `comision.ts`, `package.json`, `motor.ts`, `polizas/[id]/page.tsx`, `actions.ts`, `@testing-library/react`, `cliente-combobox.test.tsx`, `correo/plantilla.ts`, `prueba/route.ts`, `clientes-top.ts`, `utils/format.ts`, `task-alert-bell.tsx`, `email-notifications-editor.test.tsx`, `cron.ts`, `resumen.ts`, `respaldo/route.ts`, `cliente-form.tsx`, `enviar/route.ts`, `notificaciones.service.ts`, `reportes/format.ts`, `cron/route.ts`, `baja.ts`, `clientes.service.ts`, `useComisionDashboard`, `@supabase/ssr`, `dashboard.service.test.ts`, `normalizar.ts`, `createClient`, `prueba/route.test.ts`, `use-contactado.ts`?**
+  _High betweenness centrality (0.193) - this node is a cross-community bridge._
+- **Why does `auth` connect `actividad` to `actions.ts`?**
+  _High betweenness centrality (0.128) - this node is a cross-community bridge._
+- **Why does `react` connect `react` to `reportes-dashboard.tsx`, `dashboard/page.tsx`, `package.json`, `createClient`, `cumpleanos-page.tsx`, `lucide-react`, `cn`, `polizas/[id]/page.tsx`, `cliente-combobox.tsx`, `siniestros/[id]/editar/page.tsx`, `utils.ts`, `dropdown-menu.tsx`, `sheet.tsx`, `task-alert-bell.tsx`, `email-notifications-editor.test.tsx`, `config-manager.tsx`, `clientes.service.ts`, `alert.tsx`, `use-contactado.ts`?**
+  _High betweenness centrality (0.087) - this node is a cross-community bridge._
+- **What connects `$schema`, `style`, `rsc` to the rest of the system?**
+  _423 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `fechas.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.05258033106134372 - nodes in this community are weakly interconnected._
-- **Should `utils.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.06349206349206349 - nodes in this community are weakly interconnected._
-- **Should `inteligencia.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.09485815602836879 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05328005328005328 - nodes in this community are weakly interconnected._
+- **Should `reportes-dashboard.tsx` be split into smaller, more focused modules?**
+  _Cohesion score 0.05079850492694529 - nodes in this community are weakly interconnected._
+- **Should `comision.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.13 - nodes in this community are weakly interconnected._

@@ -57,7 +57,13 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && isAuthRoute) {
+  const isRecoveryRoute =
+    request.nextUrl.pathname === '/recuperar' ||
+    request.nextUrl.pathname === '/recuperar/nueva-contrasena' ||
+    (request.nextUrl.pathname === '/auth/callback' &&
+      request.nextUrl.searchParams.get('type') === 'recovery');
+
+  if (user && isAuthRoute && !isRecoveryRoute) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
