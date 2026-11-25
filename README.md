@@ -101,6 +101,29 @@ src/
 2. Configurar variables de entorno (mismas que `.env.local`, sin `SERVICE_ROLE` en runtime cliente)
 3. Deploy automático en cada push a `main`
 
+### Recuperación de contraseña con Supabase Auth
+
+1. En Vercel, configurá `NEXT_PUBLIC_SITE_URL=https://quintanaruiz.com.ar` en
+   **Production**. Volvé a desplegar después de cambiar la variable.
+2. En Supabase, abrí **Authentication → URL Configuration**. Guardá
+   `https://quintanaruiz.com.ar` en **Site URL** y agregá
+   `https://quintanaruiz.com.ar/auth/callback?type=recovery` a **Redirect URLs**.
+   Si vas a probar con
+   `NEXT_PUBLIC_SITE_URL=http://localhost:3000`, agregá también
+   `http://localhost:3000/auth/callback?type=recovery`.
+3. En **Authentication → Email Templates → Reset Password**, el enlace del correo
+   debe usar `{{ .ConfirmationURL }}` para que Supabase confirme la recuperación.
+   Configurá SMTP propio en Supabase Auth para enviar a usuarios que no sean miembros
+   del proyecto. El correo de recuperación lo envía Supabase Auth.
+4. Abrí `/login`, elegí **¿Olvidaste tu contraseña?** y pedí un enlace para una
+   cuenta de prueba. Abrilo en el mismo navegador donde lo solicitaste para que
+   Supabase complete PKCE. Guardá la nueva contraseña y verificá que podés iniciar
+   sesión con ella.
+
+Referencias de Supabase. [URL de redirección](https://supabase.com/docs/guides/auth/redirect-urls) ·
+[Plantillas de correo](https://supabase.com/docs/guides/auth/auth-email-templates) ·
+[SMTP personalizado](https://supabase.com/docs/guides/auth/auth-smtp).
+
 ## Tests
 
 - **Vitest** para unit/integration (`npm test`).

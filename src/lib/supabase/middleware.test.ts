@@ -33,4 +33,15 @@ describe('sesión de APIs y páginas', () => {
     );
     expect(r.headers.get('x-middleware-next')).toBe('1');
   });
+
+  it.each(['/auth/callback?type=recovery', '/recuperar/nueva-contrasena'])(
+    'permite que una sesión autenticada continúe la recuperación en %s',
+    async (pathname) => {
+      state.user = { id: 'prueba' };
+      const r = await updateSession(
+        new NextRequest(`http://localhost${pathname}`)
+      );
+      expect(r.headers.get('x-middleware-next')).toBe('1');
+    }
+  );
 });
