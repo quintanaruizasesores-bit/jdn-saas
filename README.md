@@ -103,11 +103,12 @@ src/
 
 ### Recuperación de contraseña con Supabase Auth
 
-1. En Vercel, configurá `NEXT_PUBLIC_SITE_URL` con el dominio público, por ejemplo
-   `https://jdn-saas.vercel.app`. Volvé a desplegar después de cambiar la variable.
-2. En Supabase, abrí **Authentication → URL Configuration**. Usá el mismo dominio en
-   **Site URL** y agregá `https://jdn-saas.vercel.app/auth/callback?type=recovery`
-   a **Redirect URLs**, reemplazando el dominio si corresponde. Si vas a probar con
+1. En Vercel, configurá `NEXT_PUBLIC_SITE_URL=https://quintanaruiz.com.ar` en
+   **Production**. Volvé a desplegar después de cambiar la variable.
+2. En Supabase, abrí **Authentication → URL Configuration**. Guardá
+   `https://quintanaruiz.com.ar` en **Site URL** y agregá
+   `https://quintanaruiz.com.ar/auth/callback?type=recovery` a **Redirect URLs**.
+   Si vas a probar con
    `NEXT_PUBLIC_SITE_URL=http://localhost:3000`, agregá también
    `http://localhost:3000/auth/callback?type=recovery`.
 3. En **Authentication → Email Templates → Reset Password**, el enlace del correo
